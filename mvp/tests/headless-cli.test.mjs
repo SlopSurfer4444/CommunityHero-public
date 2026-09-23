@@ -22,7 +22,8 @@ function workspace(state) {
   return {
     account: state.account, workspaceVersion: `v${state.version}`, operator: { id: 'operator', role: 'owner' },
     settings: { externalWritesEnabled: true }, sync: { status: frontierDone ? 'complete' : 'partial', ...openEvidence, scan: { closed: { done: false } } }, items: state.items,
-    proposals: state.proposals, approvals: state.approvals, operations: state.operations, jobs: state.jobs, materials: state.materials
+    proposals: state.proposals, approvals: state.approvals, operations: state.operations, jobs: state.jobs, materials: state.materials,
+    ...(state.companyKnowledgeAuthority ? { companyKnowledgeAuthority: state.companyKnowledgeAuthority } : {})
   };
 }
 
@@ -52,6 +53,7 @@ async function fakeServer(overrides = {}) {
       return send(200, { jobId: job.id });
     }
     if (request.url === '/api/materials/import' && request.method === 'POST') {
+      if (Object.hasOwn(state, 'materialsResponse')) return send(200, state.materialsResponse);
       state.materials.push({ id: 'import-policy', kind: 'knowledge', imported: true });
       const job = { id: 'materials-job', kind: 'materials', status: 'completed', result: { imported: 1 } }; state.jobs.push(job);
       return send(200, { jobId: job.id });
@@ -123,6 +125,59 @@ async function run(args, options = {}) {
     return { code: error.code, stdout: error.stdout || '', stderr: error.stderr || '' };
   }
 }
+
+const suppressedImport = { imported: 0, authority: 'communityhero', legacyImportSuppressed: true };
+const canonicalPolicy = {
+  account: 'BAW Russia', enginePrepare: true, materialsResponse: suppressedImport,
+  companyKnowledgeAuthority: { owner: 'communityhero', account: 'BAW Russia', companyKey: 'baw-russia' },
+  materials: [{ id: 'canonical-policy', kind: 'rule', companyKnowledge: true, account: 'BAW Russia', text: 'Synthetic policy' }]
+};
+
+test('materials synchronous suppression returns without job polling, with and without wait', async t => {
+  const fake = await fakeServer(canonicalPolicy); t.after(fake.close);
+  for (const wait of [[], ['--wait']]) {
+    const result = await run(['materials', '--base-url', fake.url, '--account', 'baw-russia', ...wait]);
+    assert.equal(result.code, 0, result.stderr); assert.deepEqual(JSON.parse(result.stdout), suppressedImport);
+  }
+  assert.equal(fake.state.requests.filter(row => row.path === '/api/materials/import').length, 2);
+  assert.equal(fake.state.requests.filter(row => row.path.startsWith('/api/engine/jobs/')).length, 0);
+});
+
+test('prepare and queue accept canonical account policy after synchronous suppression', async t => {
+  for (const command of ['prepare', 'queue']) {
+    const fake = await fakeServer({ ...canonicalPolicy, materials: structuredClone(canonicalPolicy.materials) }); t.after(fake.close);
+    const dir = await mkdtemp(join(tmpdir(), 'communityhero-cli-'));
+    const result = await run([command, '--base-url', fake.url, '--account', 'baw-russia', '--checkpoint', join(dir, 'state.json'),
+      ...(command === 'prepare' ? ['--item', 'item-1'] : ['--max-cycles', '2'])]);
+    assert.equal(result.code, 0, result.stderr); assert.equal(fake.state.prepareCalls, 1);
+    assert.equal(fake.state.requests.filter(row => row.path === '/api/materials/import').length, 1);
+    assert(!fake.state.requests.some(row => /jobs\/(undefined|null|materials-job)$/.test(row.path)));
+  }
+});
+
+test('synchronous suppression without canonical policy stops before preparation and resume does not reimport', async t => {
+  const fake = await fakeServer({ ...canonicalPolicy, materials: [] }); t.after(fake.close);
+  const dir = await mkdtemp(join(tmpdir(), 'communityhero-cli-')), checkpoint = join(dir, 'state.json');
+  for (const resume of [false, true]) {
+    const result = await run(['queue', '--base-url', fake.url, '--account', 'baw-russia', ...(resume ? ['--resume', checkpoint] : ['--checkpoint', checkpoint])]);
+    assert.equal(result.code, 1); assert.match(result.stderr, /MATERIALS_UNAVAILABLE/);
+  }
+  assert.equal(fake.state.prepareCalls, 0);
+  assert.equal(fake.state.requests.filter(row => row.path === '/api/materials/import').length, 1);
+  assert.equal(fake.state.requests.filter(row => row.path.startsWith('/api/engine/jobs/')).length, 0);
+});
+
+test('malformed materials success is unknown and queue resume never retries it', async t => {
+  const fake = await fakeServer({ materialsResponse: { imported: 0 } }); t.after(fake.close);
+  const dir = await mkdtemp(join(tmpdir(), 'communityhero-cli-')), checkpoint = join(dir, 'state.json');
+  for (const resume of [false, true]) {
+    const result = await run(['queue', '--base-url', fake.url, '--account', 'likeavto', ...(resume ? ['--resume', checkpoint] : ['--checkpoint', checkpoint])]);
+    assert.equal(result.code, 4); assert.match(result.stderr, /UNKNOWN_MUTATION_OUTCOME/);
+  }
+  assert.equal(fake.state.requests.filter(row => row.path === '/api/materials/import').length, 1);
+  assert.equal(fake.state.requests.filter(row => row.path.startsWith('/api/engine/jobs/')).length, 0);
+  assert.equal(fake.state.prepareCalls, 0);
+});
 
 test('prepare-only run binds account, uses assistant generation, and persists no session secret', async t => {
   const fake = await fakeServer(); t.after(fake.close);

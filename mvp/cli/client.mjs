@@ -127,7 +127,7 @@ export class CommunityHeroClient {
   }
 
   sync(body = {}) { return this.mutate('/api/sync', body); }
-  importMaterials() { return this.mutate('/api/materials/import', {}); }
+  async importMaterials() { return materialsImportResult(await this.mutate('/api/materials/import', {})); }
   prepareEngine(body) { return this.mutate('/api/engine/prepare', body); }
   createConversation(body) { return this.mutate('/api/conversations', body); }
   sendConversationMessage(id, body) { return this.mutate(`/api/conversations/${encodeURIComponent(id)}/messages`, body); }
@@ -148,6 +148,37 @@ export class CommunityHeroClient {
 }
 
 export const TERMINAL_JOBS = new Set(['completed', 'failed', 'error', 'cancelled', 'interrupted']);
+
+export function materialsImportResult(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const keys = Object.keys(value).sort().join(',');
+    if (keys === 'jobId' && typeof value.jobId === 'string' && value.jobId.trim() === value.jobId
+      && value.jobId.length > 0 && !/[\u0000-\u001f\u007f]/.test(value.jobId)) return value;
+    if (keys === 'authority,imported,legacyImportSuppressed' && value.imported === 0
+      && value.authority === 'communityhero' && value.legacyImportSuppressed === true) return value;
+  }
+  throw new UnknownMutationError('POST', '/api/materials/import', { code: 'INVALID_MATERIALS_IMPORT_RESPONSE' });
+}
+
+export function hasAccountPolicy(snapshot, canonicalOnly = false) {
+  const materials = Array.isArray(snapshot?.materials) ? snapshot.materials : [];
+  const canonical = value => String(value || '').toLowerCase().replace(/[^a-zа-я0-9]+/giu, '');
+  const marker = snapshot?.companyKnowledgeAuthority;
+  if (marker?.owner === 'communityhero' && marker.account === snapshot.account
+    && canonical(marker.companyKey) === canonical(snapshot.account) && canonical(snapshot.account)) {
+    return materials.some(row => row?.companyKnowledge === true && row.account === snapshot.account
+      && ['rule', 'policy'].includes(row.kind) && typeof row.text === 'string' && row.text.trim());
+  }
+  if (canonicalOnly || marker != null) return false;
+  return materials.some(row => row?.imported === true && row.kind === 'knowledge');
+}
+
+export async function settleMaterialsImport(client, result, options = {}) {
+  const admitted = materialsImportResult(result);
+  const settled = admitted.jobId ? await waitForJob(client, admitted.jobId, options) : { snapshot: await client.bootstrap(), result: admitted };
+  if (!hasAccountPolicy(settled.snapshot, !admitted.jobId)) throw new CliError('Account policy materials are unavailable; generation was not started', { code: 'MATERIALS_UNAVAILABLE' });
+  return settled;
+}
 
 export async function waitForJob(client, jobId, { pollMs = 1000, maxPolls = 120, signal, onPoll = () => {} } = {}) {
   for (let poll = 0; poll < maxPolls; poll += 1) {

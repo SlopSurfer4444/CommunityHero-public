@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import { CommunityHeroClient, CliError, loadSessionCookie, waitForJob } from './client.mjs';
+import { CommunityHeroClient, CliError, loadSessionCookie, settleMaterialsImport, waitForJob } from './client.mjs';
 import { generateProposals, readCheckpoint, runScan, runWorkflow } from './workflow.mjs';
 import { runQueue } from './queue.mjs';
 
@@ -126,8 +126,13 @@ async function main() {
   if (command === 'export') { await client.engineStatus(); return output(await client.request('/api/engine/export', { mutation: false })); }
   if (command === 'backup') return output(await client.mutate('/api/backup', {}));
   if (command === 'materials') {
-    const launched = await client.importMaterials(); progress({ event: 'materials.started', jobId: launched.jobId });
-    return output(options.wait ? await wait(launched.jobId) : launched);
+    const launched = await client.importMaterials();
+    progress(launched.jobId ? { event: 'materials.started', jobId: launched.jobId } : { event: 'materials.legacy-import-suppressed', authority: launched.authority });
+    if (!launched.jobId || options.wait) {
+      const settled = await settleMaterialsImport(client, launched, { pollMs, maxPolls, signal: controller.signal, onPoll: job => progress({ event: 'job.poll', jobId: job.id, status: job.status }) });
+      return output(launched.jobId ? settled : launched);
+    }
+    return output(launched);
   }
   if (command === 'history') {
     const snapshot = await client.bootstrap();

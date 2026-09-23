@@ -1,6 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import { CliError, waitForJob } from './client.mjs';
+import { CliError, settleMaterialsImport, waitForJob } from './client.mjs';
 
 const VERSION = 1;
 const DEFAULT_INSTRUCTION = 'Подготовь безопасные предложения для выбранных комментариев. Для каждого выбери ответ и закрытие, закрытие без ответа или явно объясни, почему нужно участие человека. Ничего не публикуй.';
@@ -41,17 +41,15 @@ export async function generateProposals(client, itemIds, { instruction = DEFAULT
       state = { ...state, materialsReady: true, materialsSource: 'parent-refresh' };
       if (checkpointPath) state = await writeCheckpoint(checkpointPath, state);
     } else {
-      if (!state.materialsJobId) {
+      if (!state.materialsJobId && !state.materialsImport) {
         onProgress({ event: 'materials.request' });
         try {
-          const launched = await client.importMaterials(); state = { ...state, phase: 'materials-running', materialsJobId: launched.jobId };
+          const launched = await client.importMaterials(); state = { ...state, phase: 'materials-running', materialsImport: launched, materialsJobId: launched.jobId ?? null };
           if (checkpointPath) state = await writeCheckpoint(checkpointPath, state);
         } catch (error) { await persistFailure(checkpointPath, state, error); throw error; }
       }
-      const imported = await waitForJob(client, state.materialsJobId, { pollMs, maxPolls, signal, onPoll: job => onProgress({ event: 'job.poll', jobId: job.id, status: job.status }) });
-      if (!(imported.snapshot.materials || []).some(row => row.imported === true && row.kind === 'knowledge'))
-        throw new CliError('Imported account policy materials are unavailable; generation was not started', { code: 'MATERIALS_UNAVAILABLE' });
-      state = { ...state, phase: 'starting', materialsReady: true, materialsSource: 'import-job' };
+      await settleMaterialsImport(client, state.materialsImport || { jobId: state.materialsJobId }, { pollMs, maxPolls, signal, onPoll: job => onProgress({ event: 'job.poll', jobId: job.id, status: job.status }) });
+      state = { ...state, phase: 'starting', materialsReady: true, materialsSource: state.materialsJobId ? 'import-job' : 'communityhero-authority' };
       if (checkpointPath) state = await writeCheckpoint(checkpointPath, state);
     }
   }

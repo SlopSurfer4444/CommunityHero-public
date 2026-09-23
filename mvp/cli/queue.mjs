@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { CliError, waitForJob } from './client.mjs';
+import { CliError, settleMaterialsImport, waitForJob } from './client.mjs';
 import { readCheckpoint, runWorkflow, writeCheckpoint } from './workflow.mjs';
 
 const ACTIVE_PROPOSALS = new Set(['draft', 'approved', 'dispatching', 'unknown', 'succeeded']);
@@ -115,18 +115,19 @@ export async function runQueue(client, options) {
 
   // A fresh database has no account policy. Import it before any model request.
   if (!state.materialsReady) {
-    if (!state.materialsJobId) {
+    if (!state.materialsJobId && !state.materialsImport) {
       try {
-        const launched = await client.importMaterials(); state = await save(path, { ...state, materialsJobId: launched.jobId, phase: 'materials-running' });
+        const launched = await client.importMaterials(); state = await save(path, { ...state, materialsImport: launched, materialsJobId: launched.jobId ?? null, phase: 'materials-running' });
       } catch (error) {
         state = await save(path, { ...state, phase: error.code === 'UNKNOWN_MUTATION_OUTCOME' ? 'unknown' : 'stopped', stopReason: 'materials-import-launch-failed', error: { code: error.code, message: error.message } });
         throw error;
       }
     }
-    const imported = await waitForJob(client, state.materialsJobId, { pollMs, maxPolls, signal, onPoll: job => onProgress({ event: 'job.poll', jobId: job.id, status: job.status }) });
-    if (!(imported.snapshot.materials || []).some(row => row.imported === true && row.kind === 'knowledge')) {
-      state = await save(path, { ...state, phase: 'stopped', stopReason: 'materials-unavailable' });
-      throw new CliError('Imported account policy materials are unavailable; queue generation was not started', { code: 'MATERIALS_UNAVAILABLE' });
+    try {
+      await settleMaterialsImport(client, state.materialsImport || { jobId: state.materialsJobId }, { pollMs, maxPolls, signal, onPoll: job => onProgress({ event: 'job.poll', jobId: job.id, status: job.status }) });
+    } catch (error) {
+      state = await save(path, { ...state, phase: error.code === 'UNKNOWN_MUTATION_OUTCOME' ? 'unknown' : 'stopped', stopReason: 'materials-unavailable' });
+      throw error;
     }
     state = await save(path, { ...state, materialsReady: true, materialsJobId: null, phase: 'running' });
   }

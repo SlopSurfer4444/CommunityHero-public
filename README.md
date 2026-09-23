@@ -32,7 +32,7 @@ Launcher запускает сервер в текущем терминале н
 
 ```powershell
 cargo check --locked --manifest-path mvp/server/Cargo.toml --all-targets
-node --test mvp/tests/active-instructions.test.mjs mvp/tests/headless-cli.test.mjs mvp/tests/workspace-delta.test.mjs mvp/tests/evaluation/evaluate.test.mjs mvp/tests/evaluation/model-review.test.mjs mvp/adapters/assistant-rule-semantics.test.mjs
+node --test mvp/tests/materials-import-contract.test.mjs mvp/tests/active-instructions.test.mjs mvp/tests/headless-cli.test.mjs mvp/tests/workspace-delta.test.mjs mvp/tests/evaluation/evaluate.test.mjs mvp/tests/evaluation/model-review.test.mjs mvp/adapters/assistant-rule-semantics.test.mjs
 node project/rules-normalization-candidate-2026-09-23/verify.mjs
 ```
 

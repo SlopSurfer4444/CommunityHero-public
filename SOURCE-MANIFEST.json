@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "kind": "public-source-byte-manifest",
   "selfExcluded": "SOURCE-MANIFEST.json",
-  "files": 280,
-  "bytes": 4354458,
+  "files": 281,
+  "bytes": 4365926,
   "entries": [
     {
       "path": ".gitignore",
@@ -12,18 +12,18 @@
     },
     {
       "path": "README.md",
-      "bytes": 6540,
-      "sha256": "a4240e9192008147270ac5083836689bef18e83730a76fd8079b554f1eab32a2"
+      "bytes": 6585,
+      "sha256": "79deccd7b28298ac328530b477fba5fca6ce5b1cb61d84ecda2e203579be1b40"
     },
     {
       "path": "SOURCE-ADMISSION.json",
-      "bytes": 43391,
-      "sha256": "35db0856b02d9df1d29d9aee39bd249edad6b124c340e6d16b15e1804357bdfd"
+      "bytes": 44019,
+      "sha256": "1419957c33dd75c223f5a98a370a6c832024ba6fb31a2472267598b00751a4b7"
     },
     {
       "path": "VALIDATION.md",
-      "bytes": 3161,
-      "sha256": "9697cefaf5b816ebe89562884f868af3388c961abd146ceee99fc92481b679bb"
+      "bytes": 4264,
+      "sha256": "562e1e692dffbbf28751f6256303e0c104c007d3d28bd459e057ecc815b4e15a"
     },
     {
       "path": "dev.ps1",
@@ -272,23 +272,23 @@
     },
     {
       "path": "mvp/cli/client.mjs",
-      "bytes": 8071,
-      "sha256": "8170a04f8cad9c2d942fe202f02a2fd3920125c4b747da32e7e3d72f0f5cf804"
+      "bytes": 10080,
+      "sha256": "635f3bdea5a471e8792c565118a8d2c24a5bc6e9f222314e33bb071b474efed2"
     },
     {
       "path": "mvp/cli/communityhero.mjs",
-      "bytes": 14890,
-      "sha256": "3f137551ddedf57e91a0ee05bf730e9e75152c9bc86d18a48ffa4e9fd487ed1a"
+      "bytes": 15279,
+      "sha256": "76fdc99cbb0671084462e98909f5045a8720d8bb1962972790572cfa9e926066"
     },
     {
       "path": "mvp/cli/queue.mjs",
-      "bytes": 14518,
-      "sha256": "8b063a804589e2afe6fe85330578b0935727641bce6e971dde21ece7e3f9444d"
+      "bytes": 14482,
+      "sha256": "9aa23216f1902d7dbffbe7324011c3dc2e9bfb877fe2d105866ef005df852e4c"
     },
     {
       "path": "mvp/cli/workflow.mjs",
-      "bytes": 15076,
-      "sha256": "30cec61bc86f9de818009216ccf434119dd66aa854460510f8f515066e279c13"
+      "bytes": 14986,
+      "sha256": "0c2a1564dd1c330cbd0e975e58e1873b3cc5ce766fa646893a95baf4d15e6817"
     },
     {
       "path": "mvp/server/Cargo.lock",
@@ -887,8 +887,8 @@
     },
     {
       "path": "mvp/tests/headless-cli.test.mjs",
-      "bytes": 29019,
-      "sha256": "71df6a969175172fc8c443c2280788dcd13b55344c0448a66a5b11df48866c6d"
+      "bytes": 32899,
+      "sha256": "093adfcfbfa19952e47f1a048da88c03ca176b2d3cbf09d0313bd007adb351af"
     },
     {
       "path": "mvp/tests/http-acceptance.mjs",
@@ -899,6 +899,11 @@
       "path": "mvp/tests/list-window.test.mjs",
       "bytes": 3168,
       "sha256": "c02e525fd56ed717e534861adcc22fd6b1b030b5bf000b4fe9a6d135eda8fc3e"
+    },
+    {
+      "path": "mvp/tests/materials-import-contract.test.mjs",
+      "bytes": 3540,
+      "sha256": "f4f80157ac5914cb60c5b9f16ca9b0416dcd20e1583e22151c6d754aa478a159"
     },
     {
       "path": "mvp/tests/media-readiness.test.mjs",

@@ -196,19 +196,19 @@
     },
     {
       "path": "mvp/cli/client.mjs",
-      "sourceSha256": "8170a04f8cad9c2d942fe202f02a2fd3920125c4b747da32e7e3d72f0f5cf804"
+      "sourceSha256": "635f3bdea5a471e8792c565118a8d2c24a5bc6e9f222314e33bb071b474efed2"
     },
     {
       "path": "mvp/cli/communityhero.mjs",
-      "sourceSha256": "3f137551ddedf57e91a0ee05bf730e9e75152c9bc86d18a48ffa4e9fd487ed1a"
+      "sourceSha256": "76fdc99cbb0671084462e98909f5045a8720d8bb1962972790572cfa9e926066"
     },
     {
       "path": "mvp/cli/queue.mjs",
-      "sourceSha256": "8b063a804589e2afe6fe85330578b0935727641bce6e971dde21ece7e3f9444d"
+      "sourceSha256": "9aa23216f1902d7dbffbe7324011c3dc2e9bfb877fe2d105866ef005df852e4c"
     },
     {
       "path": "mvp/cli/workflow.mjs",
-      "sourceSha256": "30cec61bc86f9de818009216ccf434119dd66aa854460510f8f515066e279c13"
+      "sourceSha256": "0c2a1564dd1c330cbd0e975e58e1873b3cc5ce766fa646893a95baf4d15e6817"
     },
     {
       "path": "mvp/server/Cargo.lock",
@@ -684,7 +684,7 @@
     },
     {
       "path": "mvp/tests/headless-cli.test.mjs",
-      "sourceSha256": "71df6a969175172fc8c443c2280788dcd13b55344c0448a66a5b11df48866c6d"
+      "sourceSha256": "093adfcfbfa19952e47f1a048da88c03ca176b2d3cbf09d0313bd007adb351af"
     },
     {
       "path": "mvp/tests/http-acceptance.mjs",
@@ -693,6 +693,10 @@
     {
       "path": "mvp/tests/list-window.test.mjs",
       "sourceSha256": "c02e525fd56ed717e534861adcc22fd6b1b030b5bf000b4fe9a6d135eda8fc3e"
+    },
+    {
+      "path": "mvp/tests/materials-import-contract.test.mjs",
+      "sourceSha256": "f4f80157ac5914cb60c5b9f16ca9b0416dcd20e1583e22151c6d754aa478a159"
     },
     {
       "path": "mvp/tests/media-readiness.test.mjs",
@@ -1115,6 +1119,20 @@
     {
       "path": "mvp/tests/evaluation/evaluate.test.mjs",
       "reason": "test description identifies synthetic replacement"
+    }
+  ],
+  "updates": [
+    {
+      "date": "2026-09-23",
+      "purpose": "CLI materials response union: synchronous canonical suppression and asynchronous job; account policy verification and no blind retry",
+      "paths": [
+        "mvp/cli/client.mjs",
+        "mvp/cli/communityhero.mjs",
+        "mvp/cli/workflow.mjs",
+        "mvp/cli/queue.mjs",
+        "mvp/tests/headless-cli.test.mjs",
+        "mvp/tests/materials-import-contract.test.mjs"
+      ]
     }
   ]
 }
