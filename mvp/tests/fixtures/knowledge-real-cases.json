@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "notice": "Public synthetic replacement; no customer cases are distributed.",
+  "cases": [
+    {
+      "id": "synthetic-evaluation-1",
+      "itemId": "synthetic-item-1",
+      "postKey": "synthetic-post-1",
+      "account": "synthetic-account",
+      "platform": "synthetic-a",
+      "sourceIds": [
+        "synthetic-source-1"
+      ]
+    },
+    {
+      "id": "synthetic-evaluation-2",
+      "itemId": "synthetic-item-2",
+      "postKey": "synthetic-post-1",
+      "account": "synthetic-account",
+      "platform": "synthetic-a",
+      "sourceIds": []
+    },
+    {
+      "id": "synthetic-evaluation-3",
+      "itemId": "synthetic-item-3",
+      "postKey": "synthetic-post-2",
+      "account": "synthetic-account",
+      "platform": "synthetic-b",
+      "sourceIds": []
+    },
+    {
+      "id": "synthetic-evaluation-4",
+      "itemId": "synthetic-item-4",
+      "postKey": "synthetic-post-2",
+      "account": "synthetic-account",
+      "platform": "synthetic-b",
+      "sourceIds": [
+        "synthetic-source-4"
+      ]
+    },
+    {
+      "id": "synthetic-evaluation-5",
+      "itemId": "synthetic-item-5",
+      "postKey": "synthetic-post-3",
+      "account": "synthetic-account",
+      "platform": "synthetic-a",
+      "sourceIds": []
+    },
+    {
+      "id": "synthetic-evaluation-6",
+      "itemId": "synthetic-item-6",
+      "postKey": "synthetic-post-3",
+      "account": "synthetic-account",
+      "platform": "synthetic-a",
+      "sourceIds": []
+    },
+    {
+      "id": "synthetic-evaluation-7",
+      "itemId": "synthetic-item-7",
+      "postKey": "synthetic-post-4",
+      "account": "synthetic-account",
+      "platform": "synthetic-b",
+      "sourceIds": [
+        "synthetic-source-7"
+      ]
+    },
+    {
+      "id": "synthetic-evaluation-8",
+      "itemId": "synthetic-item-8",
+      "postKey": "synthetic-post-4",
+      "account": "synthetic-account",
+      "platform": "synthetic-b",
+      "sourceIds": []
+    },
+    {
+      "id": "synthetic-evaluation-9",
+      "itemId": "synthetic-item-9",
+      "postKey": "synthetic-post-5",
+      "account": "synthetic-account",
+      "platform": "synthetic-a",
+      "sourceIds": []
+    },
+    {
+      "id": "synthetic-evaluation-10",
+      "itemId": "synthetic-item-10",
+      "postKey": "synthetic-post-5",
+      "account": "synthetic-account",
+      "platform": "synthetic-a",
+      "sourceIds": [
+        "synthetic-source-10"
+      ]
+    }
+  ]
+}

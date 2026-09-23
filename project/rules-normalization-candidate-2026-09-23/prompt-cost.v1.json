@@ -1,0 +1,29 @@
+{
+  "definition": "Actual prepareAssistantRequest serializer and rule semantics helper; rule-only synthetic empty-item request. Includes material titles, IDs, revisions, kind/trust and knowledge manifest; excludes unchanged system instructions and real item/post/private context. Planned version hashes use fixed-width 64-hex placeholders: byte/character cost is exact for this planned shape, not a live prepared bundle and not token usage.",
+  "serializer": "mvp/adapters/assistant.mjs:prepareAssistantRequest",
+  "before": {
+    "materialCount": 31,
+    "rulePayload": {
+      "utf16Units": 42813,
+      "utf8Bytes": 55913
+    },
+    "request": {
+      "utf16Units": 43080,
+      "utf8Bytes": 56180
+    }
+  },
+  "after": {
+    "materialCount": 44,
+    "rulePayload": {
+      "utf16Units": 47378,
+      "utf8Bytes": 58001
+    },
+    "request": {
+      "utf16Units": 47645,
+      "utf8Bytes": 58268
+    }
+  },
+  "modelCalls": 0,
+  "rulePayloadDeltaUtf8": 2088,
+  "rulePayloadReductionPercentUtf8": -3.73
+}

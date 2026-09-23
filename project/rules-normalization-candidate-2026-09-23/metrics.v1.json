@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "sourceEntries": 31,
+  "sourceVersionCount": 31,
+  "sourceClauseCount": 183,
+  "editorialAtoms": 71,
+  "editorialExamples": 14,
+  "normalizedRules": 41,
+  "retainedTypedConstraints": 3,
+  "archivedLegacyContracts": 7,
+  "archivedLegacyFieldConventions": 1,
+  "scenarioCount": 48,
+  "original": {
+    "utf16Units": 15713,
+    "utf8Bytes": 28280
+  },
+  "normalizedCandidateText": {
+    "definition": "Concatenated explicit WHEN/action/exception text of active rules + literal constraints; excludes archived contracts, IDs, provenance, category labels and decision explanations. Actual serialized prompt cost is separate in prompt-cost.v1.json.",
+    "utf16Units": 12496,
+    "utf8Bytes": 22515
+  },
+  "reductionPercentUtf16": 20.47,
+  "tokenCount": "not measured",
+  "semanticEquivalence": "normalization plus two deliberate owner clarifications; review pending; structural coverage is not semantic proof",
+  "activationPerformed": false
+}

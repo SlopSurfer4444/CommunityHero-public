@@ -1,0 +1,78 @@
+/* Match the established iteration-04 assistant and composer surfaces. */
+:root {
+  --composer-radius: 22px;
+  --command: #29282e;
+  --tool-shadow: 0 1px 3px #24212b0d, 0 4px 14px #24212b06;
+}
+button { border-radius: calc(var(--composer-radius) * .4); }
+.assistant-panel {
+  width: 0;
+  margin: 8px 0;
+  border: 0;
+  border-radius: 26px;
+  background: #eeedf2;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  transition: width 240ms cubic-bezier(.32,0,.2,1), opacity 160ms ease,
+    margin 240ms ease, visibility 0s linear 240ms;
+}
+.assistant-panel.is-open {
+  width: 340px;
+  margin-right: 8px;
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+.assistant-head { min-height: 62px; padding: 16px 14px 10px; border: 0; }
+.assistant-head div { color: #292431; }
+.conversation-tools { border: 0; padding: 0 14px 8px; }
+.conversation-tools select { background: #f5f4f7; }
+.chat-scroll { padding: 12px 14px; }
+.context-banner { background: transparent; padding: 0 3px; margin-bottom: 18px; }
+.chat-bubble { max-width: 100%; margin: 14px 0; font-size: 13px; }
+.chat-bubble.user { background: #e1dfe8; border-radius: 12px; padding: 10px 12px; }
+.chat-bubble.assistant { background: transparent; border: 0; padding: 0 3px; }
+.chat-bubble time { margin-top: 6px; }
+.proposal-card { background: #fff; border-color: #ddd6e9; border-radius: 10px; }
+.assistant-bottom { flex: none; padding: 0 12px 12px; border: 0; }
+.attach-row { padding: 6px 3px 8px; }
+.chat-composer {
+  position: relative;
+  min-height: 112px;
+  display: block;
+  padding: 0 0 44px;
+  border: 0;
+  border-radius: var(--composer-radius);
+  background: #fff;
+  box-shadow: var(--tool-shadow);
+}
+.chat-composer textarea {
+  display: block; width: 100%; min-height: 60px; padding: 12px 16px 8px;
+  background: transparent; border-radius: var(--composer-radius); resize: none;
+  font-size: 14px; line-height: 21px;
+}
+.chat-composer .send-button { position: absolute; bottom: 12px; right: 12px; }
+.assistant-bottom > small { display: block; padding: 5px 4px 0; }
+.composer {
+  border: 0; border-radius: var(--composer-radius); background: #e8e6ed;
+  box-shadow: var(--tool-shadow); margin: 0 16px 12px;
+}
+.composer textarea { background: transparent; font-size: 14px; padding: 12px 16px 8px; }
+.composer-top { padding: 12px 16px 0; }
+.composer-actions { border: 0; padding: 5px 12px 12px; }
+.composer-actions > button:not(.send-button) { font-size: 12px; }
+button.send-button {
+  display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center;
+  width: 32px; height: 32px; min-height: 32px; padding: 0;
+  border-radius: 50%; background: var(--command); color: #fff;
+  border: 1px solid var(--command); line-height: 1;
+}
+button.send-button:hover:not(:disabled) { background: #403d48; border-color: #403d48; }
+@media(max-width:1200px) { .assistant-panel.is-open { width: 310px; } }
+@media(max-width:850px) {
+  .assistant-panel { top: 60px; bottom: 8px; margin: 0; box-shadow: var(--tool-shadow); }
+  .assistant-panel.is-open { width: min(350px,calc(100vw - 16px)); }
+}
+@media(max-width:600px) { .assistant-panel { top: 56px; } }
+@media(prefers-reduced-motion:reduce) { .assistant-panel { transition: none; } }

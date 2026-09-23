@@ -1,0 +1,8 @@
+.post-transcript{margin:22px 0 12px;border-top:1px solid var(--line,#dedbe5);padding-top:16px}
+.post-transcript summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;font-weight:600;list-style:none;border-radius:9px;padding:8px;margin:-8px}
+.post-transcript summary:hover{background:var(--hover,#f3f1f7)}
+.post-transcript summary::-webkit-details-marker{display:none}
+.post-transcript summary svg{width:16px;height:16px;flex:none;transition:transform .2s ease}
+.post-transcript[open] summary svg{transform:rotate(180deg)}
+.post-transcript-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;margin-top:16px;color:var(--ink,#27242e)}
+@media(prefers-reduced-motion:reduce){.post-transcript summary svg{transition:none}}

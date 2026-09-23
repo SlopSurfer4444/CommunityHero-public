@@ -1,0 +1,5240 @@
+{
+  "schemaVersion": 1,
+  "candidateId": "likeavto-rules-2026-09-23-v1",
+  "offsetContract": "UTF-16 slices are JS code-unit offsets; UTF-8 byte ranges are end-exclusive, nonoverlapping and cover every non-whitespace source character.",
+  "clauses": [
+    {
+      "id": "G00:001",
+      "sourceId": "G00",
+      "entryId": "knowledge-3a599d84ae41483f717fab0ca7d00531e9b575fa16340ee6019ab353afe3e56b",
+      "versionId": "knowledge-version-9a6b0c6f3f06d0ac2da7715ff76694f8a0cb99d0af27086862633b5ae0469410",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 63,
+      "startByte": 0,
+      "endByte": 116,
+      "textSha256Utf8": "48b83a89e5c4b4effc38ee87629a9e35e91978d96f9f984bbc06f4c1a3f15a6d",
+      "targetRuleIds": [
+        "LA-S01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G00:002",
+      "sourceId": "G00",
+      "entryId": "knowledge-3a599d84ae41483f717fab0ca7d00531e9b575fa16340ee6019ab353afe3e56b",
+      "versionId": "knowledge-version-9a6b0c6f3f06d0ac2da7715ff76694f8a0cb99d0af27086862633b5ae0469410",
+      "startUtf16": 64,
+      "endUtf16Exclusive": 138,
+      "startByte": 117,
+      "endByte": 255,
+      "textSha256Utf8": "7ac8ae3c7de3868ab5d9117ead54e793c1249574c6db780151fc045cf1a75c71",
+      "targetRuleIds": [
+        "LA-A01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G01:001",
+      "sourceId": "G01",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 68,
+      "startByte": 0,
+      "endByte": 126,
+      "textSha256Utf8": "8fe00b8fc2bfdc7957c936adeab2456651408d6708b6305cd65a9f5cfbd36b8e",
+      "targetRuleIds": [
+        "LA-S01",
+        "LA-A03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G01:002",
+      "sourceId": "G01",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startUtf16": 69,
+      "endUtf16Exclusive": 137,
+      "startByte": 127,
+      "endByte": 252,
+      "textSha256Utf8": "47d0f589df421c3a9c6eb00dd4a9af40014a3654b56fc24b42b9cb86120f47bc",
+      "targetRuleIds": [
+        "LA-A03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G01:003",
+      "sourceId": "G01",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startUtf16": 138,
+      "endUtf16Exclusive": 220,
+      "startByte": 253,
+      "endByte": 408,
+      "textSha256Utf8": "c1b01931be85681ca2abf1a83cc80971410b81159ed55d9dfbda820dc248d158",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G01:004",
+      "sourceId": "G01",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startUtf16": 221,
+      "endUtf16Exclusive": 386,
+      "startByte": 409,
+      "endByte": 714,
+      "textSha256Utf8": "0bfe8b017af968d571136415d66f2b279c87ac198bb4cd655655ef92b67e1cd6",
+      "targetRuleIds": [
+        "LA-F09",
+        "LA-S02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G01:005",
+      "sourceId": "G01",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startUtf16": 387,
+      "endUtf16Exclusive": 440,
+      "startByte": 715,
+      "endByte": 814,
+      "textSha256Utf8": "113462e070841b4c513d4d540b76a4a48334993595a8845942823862fc96fe0b",
+      "targetRuleIds": [
+        "LA-F09"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G02:001",
+      "sourceId": "G02",
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 67,
+      "startByte": 0,
+      "endByte": 125,
+      "textSha256Utf8": "d1955afd74bb9e302b487a9f83845e9dc9097a6853999984fb862efca8218987",
+      "targetRuleIds": [
+        "LA-A07"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G02:002",
+      "sourceId": "G02",
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "startUtf16": 68,
+      "endUtf16Exclusive": 218,
+      "startByte": 126,
+      "endByte": 407,
+      "textSha256Utf8": "bacc851ec88e8b84667b93059c02ae2e2ccc4823fd84d1cec2886cdef5aa5f37",
+      "targetRuleIds": [
+        "LA-A08"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G02:003",
+      "sourceId": "G02",
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "startUtf16": 219,
+      "endUtf16Exclusive": 385,
+      "startByte": 408,
+      "endByte": 716,
+      "textSha256Utf8": "981a9a0ce8e06e1b6ef62df80f1662814de79f26e0c1a4c8edd3a07fd49ec862",
+      "targetRuleIds": [
+        "LA-F05"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G02:004",
+      "sourceId": "G02",
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "startUtf16": 386,
+      "endUtf16Exclusive": 492,
+      "startByte": 717,
+      "endByte": 914,
+      "textSha256Utf8": "f7fa49fb8aef55d3ece9e48bbaa45a34d3086bdc122d901f7b4851afa4414847",
+      "targetRuleIds": [
+        "LA-A07"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G03:001",
+      "sourceId": "G03",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 163,
+      "startByte": 0,
+      "endByte": 300,
+      "textSha256Utf8": "a1f0f54adc8aef1a17f00735d85c3256296f232dede91c8e5c9cf7e9419180c5",
+      "targetRuleIds": [
+        "LA-A09"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G03:002",
+      "sourceId": "G03",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startUtf16": 164,
+      "endUtf16Exclusive": 280,
+      "startByte": 301,
+      "endByte": 516,
+      "textSha256Utf8": "6310d5711d34dc554218f6d7f96585e82e7c1f2f0a4ac2202824b70185d91e04",
+      "targetRuleIds": [
+        "LA-A09",
+        "LA-A16"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G03:003",
+      "sourceId": "G03",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startUtf16": 281,
+      "endUtf16Exclusive": 348,
+      "startByte": 517,
+      "endByte": 643,
+      "textSha256Utf8": "e1e6b92a5e95701f5119b180b486aa40b36a1e3fb5cafa198639f39e4dab9973",
+      "targetRuleIds": [
+        "LA-F06"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G03:004",
+      "sourceId": "G03",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startUtf16": 349,
+      "endUtf16Exclusive": 520,
+      "startByte": 644,
+      "endByte": 956,
+      "textSha256Utf8": "a9c06c17f12ac25e8d5fc36270afe1da34374008673f902e4d536af631e62893",
+      "targetRuleIds": [
+        "LA-A03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G03:005",
+      "sourceId": "G03",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startUtf16": 521,
+      "endUtf16Exclusive": 590,
+      "startByte": 957,
+      "endByte": 1084,
+      "textSha256Utf8": "590fad8f37b00ab616595ea3e4d1101ce51515e801484af6dcd21f309e07d1f6",
+      "targetRuleIds": [
+        "LA-A09"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G03:006",
+      "sourceId": "G03",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startUtf16": 591,
+      "endUtf16Exclusive": 732,
+      "startByte": 1085,
+      "endByte": 1345,
+      "textSha256Utf8": "f289acc950ef3dc3f4d3b54f8687756761cc17cd4f0b4e91d2954e29982aa8ac",
+      "targetRuleIds": [
+        "LA-A03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G04:001",
+      "sourceId": "G04",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 84,
+      "startByte": 0,
+      "endByte": 153,
+      "textSha256Utf8": "08aeb4a928bce356b59151576ed5b51549212dab0e6814aa5539f6635511bc38",
+      "targetRuleIds": [
+        "LA-A10"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G04:002",
+      "sourceId": "G04",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startUtf16": 85,
+      "endUtf16Exclusive": 156,
+      "startByte": 154,
+      "endByte": 285,
+      "textSha256Utf8": "26d89638ed6fd1cfdc6e977a609a22ee865c79d7aaa6495e7901b8124411514d",
+      "targetRuleIds": [
+        "LA-A10",
+        "LA-A05"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G04:003",
+      "sourceId": "G04",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startUtf16": 157,
+      "endUtf16Exclusive": 319,
+      "startByte": 286,
+      "endByte": 588,
+      "textSha256Utf8": "939cc942d496c1ff3b00f216fd53f447712c01cdb4f6c3febe01cc2878d42433",
+      "targetRuleIds": [
+        "LA-A10",
+        "LA-A13"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G04:004",
+      "sourceId": "G04",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startUtf16": 320,
+      "endUtf16Exclusive": 409,
+      "startByte": 589,
+      "endByte": 753,
+      "textSha256Utf8": "2d361453821e8fa96e43612e1b8d219e478c405a9d3f5b7e57a15a1331139acb",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G04:005",
+      "sourceId": "G04",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startUtf16": 410,
+      "endUtf16Exclusive": 530,
+      "startByte": 754,
+      "endByte": 974,
+      "textSha256Utf8": "1340183aeb4478c82581d6230449f3361ae8ff20db14ed47c1a1068e7826852b",
+      "targetRuleIds": [
+        "LA-A10"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G04:006",
+      "sourceId": "G04",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startUtf16": 531,
+      "endUtf16Exclusive": 665,
+      "startByte": 975,
+      "endByte": 1226,
+      "textSha256Utf8": "2d9630b6e70339b8dfd71e81e05e13333a76e1f1dcea004dff33fbc9b8f6061f",
+      "targetRuleIds": [
+        "LA-A11"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G05:001",
+      "sourceId": "G05",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 87,
+      "startByte": 0,
+      "endByte": 160,
+      "textSha256Utf8": "c02dc37f26d974eca6917717ae21e9421600bccc756f50f0603a6933bbb5fafd",
+      "targetRuleIds": [
+        "LA-A12"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G05:002",
+      "sourceId": "G05",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startUtf16": 88,
+      "endUtf16Exclusive": 322,
+      "startByte": 161,
+      "endByte": 595,
+      "textSha256Utf8": "389f6689bc5d43e037ea597118683a46c43fc8a49c511ba8fbde296f560cf859",
+      "targetRuleIds": [
+        "LA-A12"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G05:003",
+      "sourceId": "G05",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startUtf16": 323,
+      "endUtf16Exclusive": 474,
+      "startByte": 596,
+      "endByte": 876,
+      "textSha256Utf8": "024aa513cc2eb3bc0885dbb27a469fc38f4b8c42110d3be448400e5c3f2632ac",
+      "targetRuleIds": [
+        "LA-A12"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G05:004",
+      "sourceId": "G05",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startUtf16": 475,
+      "endUtf16Exclusive": 567,
+      "startByte": 877,
+      "endByte": 1050,
+      "textSha256Utf8": "d18daa2235ba3b209cb5b26b63ef0d12b0387f3a00a190351251d813b79bd357",
+      "targetRuleIds": [
+        "LA-A12"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G05:005",
+      "sourceId": "G05",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startUtf16": 568,
+      "endUtf16Exclusive": 740,
+      "startByte": 1051,
+      "endByte": 1370,
+      "textSha256Utf8": "fce60ff062e6cd9ebce6f931d5edaaa01beff22239c5962783662b56c501218d",
+      "targetRuleIds": [
+        "LA-F07"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G06:001",
+      "sourceId": "G06",
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 125,
+      "startByte": 0,
+      "endByte": 232,
+      "textSha256Utf8": "5215fee8caae55cf0904a95e235c848b9e28896b1d68629830f55d1437862336",
+      "targetRuleIds": [
+        "LA-A05"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G06:002",
+      "sourceId": "G06",
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "startUtf16": 126,
+      "endUtf16Exclusive": 196,
+      "startByte": 233,
+      "endByte": 361,
+      "textSha256Utf8": "7e48e1e936bb8e2cb8c6d4cbe95430a1ace481a97c5cdae3c1c2813f9c5c6136",
+      "targetRuleIds": [
+        "LA-A05"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G06:003",
+      "sourceId": "G06",
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "startUtf16": 197,
+      "endUtf16Exclusive": 265,
+      "startByte": 362,
+      "endByte": 487,
+      "textSha256Utf8": "72510e5459b0065144cfa94e35042f9a90e5d73d08f2bfe53c3278cabae821db",
+      "targetRuleIds": [
+        "LA-A03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G06:004",
+      "sourceId": "G06",
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "startUtf16": 266,
+      "endUtf16Exclusive": 387,
+      "startByte": 488,
+      "endByte": 707,
+      "textSha256Utf8": "b6ce458f8dd65efa012196fe326112ed5263ca2aa785257bb995d79ea23c2ad5",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-F03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G07:001",
+      "sourceId": "G07",
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 113,
+      "startByte": 0,
+      "endByte": 212,
+      "textSha256Utf8": "8c422431b3177725a195814a1a898588214a23808cba6ce9e54bb0ce7719abbc",
+      "targetRuleIds": [
+        "LA-A06"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G07:002",
+      "sourceId": "G07",
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "startUtf16": 114,
+      "endUtf16Exclusive": 176,
+      "startByte": 213,
+      "endByte": 329,
+      "textSha256Utf8": "69a2dd42d0a586680a90afc1a53a6319cd3eedf457522befa4078d6a6a176623",
+      "targetRuleIds": [
+        "LA-A06"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G07:003",
+      "sourceId": "G07",
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "startUtf16": 177,
+      "endUtf16Exclusive": 281,
+      "startByte": 330,
+      "endByte": 519,
+      "textSha256Utf8": "459773540f5847c7b1334249e5bb36f99ffe9081745a7b7528b80d2fe5fb6d88",
+      "targetRuleIds": [
+        "LA-A06"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G07:004",
+      "sourceId": "G07",
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "startUtf16": 282,
+      "endUtf16Exclusive": 394,
+      "startByte": 520,
+      "endByte": 728,
+      "textSha256Utf8": "33a736dd04d08fbd6e26ca0fb6833dcfd04e2bf5181473e952c6b9c1d1bca7bb",
+      "targetRuleIds": [
+        "LA-A06",
+        "LA-F08"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G08:001",
+      "sourceId": "G08",
+      "entryId": "knowledge-65c2eba8c7141bbac3b2fa0057e410e0a6a08dc92f8655ee30a91efa1b9f4ed7",
+      "versionId": "knowledge-version-b540361f7329d24a6164b5f031e4052590a697bd6e3649cc2a7c372e4838b239",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 64,
+      "startByte": 0,
+      "endByte": 116,
+      "textSha256Utf8": "7ad761ab0a3fa472fc15236f5b74a4efd494cb9005a1b0452bd0660880fda609",
+      "targetRuleIds": [
+        "LA-A02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G08:002",
+      "sourceId": "G08",
+      "entryId": "knowledge-65c2eba8c7141bbac3b2fa0057e410e0a6a08dc92f8655ee30a91efa1b9f4ed7",
+      "versionId": "knowledge-version-b540361f7329d24a6164b5f031e4052590a697bd6e3649cc2a7c372e4838b239",
+      "startUtf16": 65,
+      "endUtf16Exclusive": 130,
+      "startByte": 117,
+      "endByte": 235,
+      "textSha256Utf8": "573863ffc4346b8e870debc708798733ea64969dd336d0cad553d21dcce6614b",
+      "targetRuleIds": [
+        "LA-S02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G09:001",
+      "sourceId": "G09",
+      "entryId": "knowledge-f9058312cc772d98357b2032c26f91e7b5b28e17839748351839a1553f5e0d62",
+      "versionId": "knowledge-version-826545e306ed227fadb4e32704e4f8abbc6915667aef75be93465ff1ededfd90",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 138,
+      "startByte": 0,
+      "endByte": 254,
+      "textSha256Utf8": "7fd3c564b3e731b8d43ade08e872ed11ef9044b495aca7ee5d2f776ae22e27c2",
+      "targetRuleIds": [
+        "LA-A04"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G10:001",
+      "sourceId": "G10",
+      "entryId": "knowledge-ccfab24cc9c5363913ab51cf3e9d23a5cc6fecd768c37e32639438356ddeab24",
+      "versionId": "knowledge-version-11685d254268cdcd637b83017d8c9ee2d8c55f318081b0ebd66f5823d2ecc6dd",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 105,
+      "startByte": 0,
+      "endByte": 195,
+      "textSha256Utf8": "d4141dc5c8ed1bdb4ec129fb0ed93853603563e9453bdc824f66298516c804e2",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-S01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G10:002",
+      "sourceId": "G10",
+      "entryId": "knowledge-ccfab24cc9c5363913ab51cf3e9d23a5cc6fecd768c37e32639438356ddeab24",
+      "versionId": "knowledge-version-11685d254268cdcd637b83017d8c9ee2d8c55f318081b0ebd66f5823d2ecc6dd",
+      "startUtf16": 106,
+      "endUtf16Exclusive": 156,
+      "startByte": 196,
+      "endByte": 287,
+      "textSha256Utf8": "6de9d08ceb8a8c897e3b258db31a59b32703e3bea9e928583f1cf88adceffb89",
+      "targetRuleIds": [
+        "LA-A01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G11:001",
+      "sourceId": "G11",
+      "entryId": "knowledge-43199fe687bba0d7e13cd6835dabf9b862eb076dddf7ac2caafd8836f1c45f12",
+      "versionId": "knowledge-version-b910b64fdf6110b86a476da2ae7954f8e9fc0d623b555516a2f8b40d5a793285",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 90,
+      "startByte": 0,
+      "endByte": 166,
+      "textSha256Utf8": "241be0a76d42f86f16aba1f4181a8a7b568986fcad67f78a6a09b7ee8aae03dd",
+      "targetRuleIds": [
+        "LA-S03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G11:002",
+      "sourceId": "G11",
+      "entryId": "knowledge-43199fe687bba0d7e13cd6835dabf9b862eb076dddf7ac2caafd8836f1c45f12",
+      "versionId": "knowledge-version-b910b64fdf6110b86a476da2ae7954f8e9fc0d623b555516a2f8b40d5a793285",
+      "startUtf16": 91,
+      "endUtf16Exclusive": 246,
+      "startByte": 167,
+      "endByte": 453,
+      "textSha256Utf8": "cb3484e7b3e7e3bdd748fbbe1a43dcba167df884fe0162bc7ed5c2d25a89d9cc",
+      "targetRuleIds": [
+        "LA-S03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G12:001",
+      "sourceId": "G12",
+      "entryId": "knowledge-3935c61f166856444970ad3e0c4bcb9c067d55dc2697b2b024c905189c220ecd",
+      "versionId": "knowledge-version-2fe57f6717c30a90a6d811e27ad10ee30d2768811491cf9ce978560cc8811398",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 103,
+      "startByte": 0,
+      "endByte": 187,
+      "textSha256Utf8": "e5a12ac0f9c604bff40c62e55ebf57047cc7ba35e21efae40db1ce033592fecc",
+      "targetRuleIds": [
+        "LA-A02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G12:002",
+      "sourceId": "G12",
+      "entryId": "knowledge-3935c61f166856444970ad3e0c4bcb9c067d55dc2697b2b024c905189c220ecd",
+      "versionId": "knowledge-version-2fe57f6717c30a90a6d811e27ad10ee30d2768811491cf9ce978560cc8811398",
+      "startUtf16": 104,
+      "endUtf16Exclusive": 214,
+      "startByte": 188,
+      "endByte": 392,
+      "textSha256Utf8": "3f5ff6a919d2856321574fca1e5fea4d6b40e568d78157886cf705099a9cf69b",
+      "targetRuleIds": [
+        "LA-A03",
+        "LA-A02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G14:001",
+      "sourceId": "G14",
+      "entryId": "knowledge-0713ad1c49d28888af038ea739d0ab40e38c4018945473e9c881134aa496db22",
+      "versionId": "knowledge-version-465308a135b200164545a239c6977f00077ea401156fc6721533dda6e19f9b29",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 132,
+      "startByte": 0,
+      "endByte": 239,
+      "textSha256Utf8": "57568ca5a5976f03e945083f7416dc7c9cb7396bc9f526fe8d7df192398f0cc8",
+      "targetRuleIds": [
+        "LA-A05"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G14:002",
+      "sourceId": "G14",
+      "entryId": "knowledge-0713ad1c49d28888af038ea739d0ab40e38c4018945473e9c881134aa496db22",
+      "versionId": "knowledge-version-465308a135b200164545a239c6977f00077ea401156fc6721533dda6e19f9b29",
+      "startUtf16": 133,
+      "endUtf16Exclusive": 179,
+      "startByte": 240,
+      "endByte": 327,
+      "textSha256Utf8": "b3b037eeb255b16d0a7add84296ec89e3887f16395ed6b3eb97d2f8cf9d2540b",
+      "targetRuleIds": [
+        "LA-F08"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G15:001",
+      "sourceId": "G15",
+      "entryId": "knowledge-a6f5160be8e96884d9845d6ad52c4b6b25e7a8fa95f70979884a47cc63d0d5ba",
+      "versionId": "knowledge-version-9b26ac8a94f090edf403ab4e758b242b9e766c695ad9fe62f5db9912ac2b25ad",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 99,
+      "startByte": 0,
+      "endByte": 183,
+      "textSha256Utf8": "8e682341c3c18ef10faa37dacee588056ed2812fd586843f912149e966c4ae19",
+      "targetRuleIds": [
+        "LA-F02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G15:002",
+      "sourceId": "G15",
+      "entryId": "knowledge-a6f5160be8e96884d9845d6ad52c4b6b25e7a8fa95f70979884a47cc63d0d5ba",
+      "versionId": "knowledge-version-9b26ac8a94f090edf403ab4e758b242b9e766c695ad9fe62f5db9912ac2b25ad",
+      "startUtf16": 100,
+      "endUtf16Exclusive": 137,
+      "startByte": 184,
+      "endByte": 250,
+      "textSha256Utf8": "a29c5091b9591eb65709544062e76641fe311cb917975119b8e93c77627a84f5",
+      "targetRuleIds": [
+        "LA-F02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G16:001",
+      "sourceId": "G16",
+      "entryId": "knowledge-8ccafb5b3316aad5206b03f84b7a08e6215a33bf7e11ef37797c8849455fbcb5",
+      "versionId": "knowledge-version-e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 197,
+      "startByte": 0,
+      "endByte": 367,
+      "textSha256Utf8": "260bae318adb82d927b51296d9087417ff26076b22594cd49e7fe5ef4f8fab16",
+      "targetRuleIds": [
+        "LA-A13",
+        "LA-F02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G16:002",
+      "sourceId": "G16",
+      "entryId": "knowledge-8ccafb5b3316aad5206b03f84b7a08e6215a33bf7e11ef37797c8849455fbcb5",
+      "versionId": "knowledge-version-e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+      "startUtf16": 198,
+      "endUtf16Exclusive": 372,
+      "startByte": 368,
+      "endByte": 694,
+      "textSha256Utf8": "8fc6a5ef206b65ba34234117ff7d272e176025dd87a629a645de580a252b09f1",
+      "targetRuleIds": [
+        "LA-A13",
+        "LA-A10"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G16:003",
+      "sourceId": "G16",
+      "entryId": "knowledge-8ccafb5b3316aad5206b03f84b7a08e6215a33bf7e11ef37797c8849455fbcb5",
+      "versionId": "knowledge-version-e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+      "startUtf16": 373,
+      "endUtf16Exclusive": 464,
+      "startByte": 695,
+      "endByte": 865,
+      "textSha256Utf8": "95f7330e43eeb2540f84bc44e7ce1cff0f554a4a53c1670e1c43808bc559d077",
+      "targetRuleIds": [
+        "LA-A10"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G17:001",
+      "sourceId": "G17",
+      "entryId": "knowledge-3c197c7d658453d6cff47a93226e5845e75ef11005a0bd1820b8b7ce758efbd3",
+      "versionId": "knowledge-version-14a6aa766168164bddf537522328a945b650a9d3b29f9c82c408501a0c466f49",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 106,
+      "startByte": 0,
+      "endByte": 197,
+      "textSha256Utf8": "ee474d2d015c96e23aebefeff465cc28ca6feff0a566b8fef313cb63b7295c80",
+      "targetRuleIds": [
+        "LA-S01",
+        "LA-O01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G17:002",
+      "sourceId": "G17",
+      "entryId": "knowledge-3c197c7d658453d6cff47a93226e5845e75ef11005a0bd1820b8b7ce758efbd3",
+      "versionId": "knowledge-version-14a6aa766168164bddf537522328a945b650a9d3b29f9c82c408501a0c466f49",
+      "startUtf16": 107,
+      "endUtf16Exclusive": 170,
+      "startByte": 198,
+      "endByte": 315,
+      "textSha256Utf8": "b4d15301d714e82910a4ecaf0b15df99406b3a8f65a7f266e33007918c12fd8b",
+      "targetRuleIds": [
+        "LA-O01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G18:001",
+      "sourceId": "G18",
+      "entryId": "knowledge-e09481db6977e60a02dcd1ae32237cd81f87b7c9abdc4947eea67b0f606aaf41",
+      "versionId": "knowledge-version-c46e7202483015d2bceb1992829d25d43f088826ffa97a980fcdeaf12afc9a83",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 111,
+      "startByte": 0,
+      "endByte": 202,
+      "textSha256Utf8": "cb7dad7f2b04fee72e4ee4e9b073c8d1b98ac1c1e1a04b049b14ffe946099248",
+      "targetRuleIds": [
+        "LA-A16",
+        "LA-O02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G18:002",
+      "sourceId": "G18",
+      "entryId": "knowledge-e09481db6977e60a02dcd1ae32237cd81f87b7c9abdc4947eea67b0f606aaf41",
+      "versionId": "knowledge-version-c46e7202483015d2bceb1992829d25d43f088826ffa97a980fcdeaf12afc9a83",
+      "startUtf16": 112,
+      "endUtf16Exclusive": 143,
+      "startByte": 203,
+      "endByte": 261,
+      "textSha256Utf8": "990a1db507593f96a892b8b3c0fdd419dd7540a6d3434b95c73433266ab4d026",
+      "targetRuleIds": [
+        "LA-O02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G19:001",
+      "sourceId": "G19",
+      "entryId": "knowledge-33c464b58c5ec1c788b4f808183c4d321155fbd8a09319d76f6d20dc2f423a35",
+      "versionId": "knowledge-version-b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 126,
+      "startByte": 0,
+      "endByte": 232,
+      "textSha256Utf8": "47c279cd1d1fbd3eca5b3cfa442d299e3fc1085fe25299de26228d30ee3d3651",
+      "targetRuleIds": [
+        "LA-A01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G19:002",
+      "sourceId": "G19",
+      "entryId": "knowledge-33c464b58c5ec1c788b4f808183c4d321155fbd8a09319d76f6d20dc2f423a35",
+      "versionId": "knowledge-version-b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+      "startUtf16": 127,
+      "endUtf16Exclusive": 208,
+      "startByte": 233,
+      "endByte": 383,
+      "textSha256Utf8": "d18819f3067a7ad00e2b71e097cbd9efedb1f104c2493b03ff7b165a1ddf291f",
+      "targetRuleIds": [
+        "LA-A03",
+        "LA-A04"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "G19:003",
+      "sourceId": "G19",
+      "entryId": "knowledge-33c464b58c5ec1c788b4f808183c4d321155fbd8a09319d76f6d20dc2f423a35",
+      "versionId": "knowledge-version-b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+      "startUtf16": 209,
+      "endUtf16Exclusive": 322,
+      "startByte": 384,
+      "endByte": 591,
+      "textSha256Utf8": "b9d9e340d59e8be6f9062bcf81498a8bca8fd946d3e6cc2d45dce4fa2748e854",
+      "targetRuleIds": [
+        "LA-A01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L00:001",
+      "sourceId": "L00",
+      "entryId": "knowledge-6dee713fb251752af3cdc87cde26efb2426d4921094e0fd827a66d8b0169f5ec",
+      "versionId": "knowledge-version-e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 51,
+      "startByte": 0,
+      "endByte": 86,
+      "textSha256Utf8": "4f7b05e8f1627c1ec01a4830a0799b1f97ba0af617adce6c3ea1b4f2bfedec41",
+      "targetRuleIds": [
+        "LA-S01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L00:002",
+      "sourceId": "L00",
+      "entryId": "knowledge-6dee713fb251752af3cdc87cde26efb2426d4921094e0fd827a66d8b0169f5ec",
+      "versionId": "knowledge-version-e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+      "startUtf16": 52,
+      "endUtf16Exclusive": 112,
+      "startByte": 87,
+      "endByte": 198,
+      "textSha256Utf8": "175d9b5496b91270cc26dbbbfb25cb0f3d6d317c44c930e5daa31e07e946f717",
+      "targetRuleIds": [
+        "LA-A01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L00:003",
+      "sourceId": "L00",
+      "entryId": "knowledge-6dee713fb251752af3cdc87cde26efb2426d4921094e0fd827a66d8b0169f5ec",
+      "versionId": "knowledge-version-e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+      "startUtf16": 113,
+      "endUtf16Exclusive": 197,
+      "startByte": 199,
+      "endByte": 354,
+      "textSha256Utf8": "a06222d5255bfeea89eea9f490f365ae987052303320e21a82dd31c4014c7fa4",
+      "targetRuleIds": [
+        "LA-F01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L01:001",
+      "sourceId": "L01",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 143,
+      "startByte": 0,
+      "endByte": 263,
+      "textSha256Utf8": "9bf68872036d0be00ca0a5da6b9e670b0a86fa5262becf7db2d65397ac3e0a18",
+      "targetRuleIds": [
+        "LA-A17"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L01:002",
+      "sourceId": "L01",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startUtf16": 144,
+      "endUtf16Exclusive": 290,
+      "startByte": 264,
+      "endByte": 530,
+      "textSha256Utf8": "cad4a092f1b08c43c369574a98227d15c811bf91924786a412afaeb0c348c2db",
+      "targetRuleIds": [
+        "LA-A17"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L01:003",
+      "sourceId": "L01",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startUtf16": 291,
+      "endUtf16Exclusive": 405,
+      "startByte": 531,
+      "endByte": 740,
+      "textSha256Utf8": "eccdbb4a61fb97507bef7cb94c18b95eb31c24d49180efea668e00c4e8be9b56",
+      "targetRuleIds": [
+        "LA-A17"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L01:004",
+      "sourceId": "L01",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startUtf16": 406,
+      "endUtf16Exclusive": 542,
+      "startByte": 741,
+      "endByte": 973,
+      "textSha256Utf8": "3fc593d2cd2e25af3cc925c70f83d93aba02c6dc99f2f7a5933f239e488040e3",
+      "targetRuleIds": [
+        "LA-A17"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L01:005",
+      "sourceId": "L01",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startUtf16": 543,
+      "endUtf16Exclusive": 605,
+      "startByte": 974,
+      "endByte": 1089,
+      "textSha256Utf8": "5652b584a387897c792260c3540e00ec8e9b94aa7337ef11caf58241cfd87a86",
+      "targetRuleIds": [
+        "LA-F01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L03:001",
+      "sourceId": "L03",
+      "entryId": "knowledge-234dc0e60ae683ee4eacefd4866aa253c3643579483ac4f6287480a1bf52973e",
+      "versionId": "knowledge-version-67b59b9abf852384c78255ecf908ba690b6e3d8e47b910f85ef4f02f78a68643",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 84,
+      "startByte": 0,
+      "endByte": 155,
+      "textSha256Utf8": "a06222d5255bfeea89eea9f490f365ae987052303320e21a82dd31c4014c7fa4",
+      "targetRuleIds": [
+        "LA-F01"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L04:001",
+      "sourceId": "L04",
+      "entryId": "knowledge-bfa5d819caeba767e015b004d4bd19f5b0e499d91010f15b8e87d34f7fdab09a",
+      "versionId": "knowledge-version-23dad4e5720bd0a40cb23abd88a7cae3458184ef00d2260cd899c7c9cf20f7a1",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 50,
+      "startByte": 0,
+      "endByte": 91,
+      "textSha256Utf8": "1186c10f67849e19b031c250f6fc06c847ce870684dbc81dc957189fafb780a5",
+      "targetRuleIds": [
+        "LA-F03"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L04:002",
+      "sourceId": "L04",
+      "entryId": "knowledge-bfa5d819caeba767e015b004d4bd19f5b0e499d91010f15b8e87d34f7fdab09a",
+      "versionId": "knowledge-version-23dad4e5720bd0a40cb23abd88a7cae3458184ef00d2260cd899c7c9cf20f7a1",
+      "startUtf16": 51,
+      "endUtf16Exclusive": 122,
+      "startByte": 92,
+      "endByte": 216,
+      "textSha256Utf8": "c7764d2c3d2710c8e6b2af52618b9d29ca8665dc7af220852d7a157d1f46269d",
+      "targetRuleIds": [
+        "LA-F04"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L05:001",
+      "sourceId": "L05",
+      "entryId": "knowledge-c3d742ea3ec5325d945ddf74a39ae040d45bb9bce56911fa40bcc7f78b10ee44",
+      "versionId": "knowledge-version-29df948b308a72dfe6b8119d67794587f452974ade1e7254126ae8f5eed86c60",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 83,
+      "startByte": 0,
+      "endByte": 152,
+      "textSha256Utf8": "1e699a7ad2346c808f6c0569602306eed99edab82d4c42fb5121e160d720fdc0",
+      "targetRuleIds": [
+        "LA-A16"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L05:002",
+      "sourceId": "L05",
+      "entryId": "knowledge-c3d742ea3ec5325d945ddf74a39ae040d45bb9bce56911fa40bcc7f78b10ee44",
+      "versionId": "knowledge-version-29df948b308a72dfe6b8119d67794587f452974ade1e7254126ae8f5eed86c60",
+      "startUtf16": 84,
+      "endUtf16Exclusive": 124,
+      "startByte": 153,
+      "endByte": 224,
+      "textSha256Utf8": "5d84da643b7a74a2bd4846df41f694179f66ed6b5f198bd5fcfc801ad49c5fd2",
+      "targetRuleIds": [
+        "LA-A16"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L06:001",
+      "sourceId": "L06",
+      "entryId": "knowledge-f08cf1d6273b5f4e9929cb9787cb4de13e23080b2e27d12d5d5a8b2ec578e07d",
+      "versionId": "knowledge-version-85afee893260a500e4fc27c9e89a3304dede81f0ded23c2e2703d8ec3919f5ec",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 55,
+      "startByte": 0,
+      "endByte": 81,
+      "textSha256Utf8": "f766f93a18f968e9bae173dac096140b9fbd622325455ca489022d28aa7c71c2",
+      "targetRuleIds": [
+        "LA-O02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L06:002",
+      "sourceId": "L06",
+      "entryId": "knowledge-f08cf1d6273b5f4e9929cb9787cb4de13e23080b2e27d12d5d5a8b2ec578e07d",
+      "versionId": "knowledge-version-85afee893260a500e4fc27c9e89a3304dede81f0ded23c2e2703d8ec3919f5ec",
+      "startUtf16": 56,
+      "endUtf16Exclusive": 115,
+      "startByte": 82,
+      "endByte": 190,
+      "textSha256Utf8": "732d63a825412fa452074ff470f88f80d2c43598e1ebb0f7d9959bc05be814a4",
+      "targetRuleIds": [
+        "LA-O02"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L07:001",
+      "sourceId": "L07",
+      "entryId": "knowledge-580c8c0e7444886f46a7c950331995c1ed2ca6f2d83299e6e9b9ee0df2bd5ce5",
+      "versionId": "knowledge-version-b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 107,
+      "startByte": 0,
+      "endByte": 190,
+      "textSha256Utf8": "7f15e75002c62b164f869aae2fd7ce94fe9dad3582478f8f46f6fcf87d275f33",
+      "targetRuleIds": [
+        "LA-A18"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L07:002",
+      "sourceId": "L07",
+      "entryId": "knowledge-580c8c0e7444886f46a7c950331995c1ed2ca6f2d83299e6e9b9ee0df2bd5ce5",
+      "versionId": "knowledge-version-b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+      "startUtf16": 108,
+      "endUtf16Exclusive": 170,
+      "startByte": 191,
+      "endByte": 306,
+      "textSha256Utf8": "1b5ae3e6b060804d1d928b9e4efe3864edafc83e5ef6f97fae6ee9674ac9f782",
+      "targetRuleIds": [
+        "LA-A18"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "L07:003",
+      "sourceId": "L07",
+      "entryId": "knowledge-580c8c0e7444886f46a7c950331995c1ed2ca6f2d83299e6e9b9ee0df2bd5ce5",
+      "versionId": "knowledge-version-b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+      "startUtf16": 171,
+      "endUtf16Exclusive": 277,
+      "startByte": 307,
+      "endByte": 503,
+      "textSha256Utf8": "913176bb1caa5838b9a22bb487d92aeca3feb7f0b4fc720386c785369b65027f",
+      "targetRuleIds": [
+        "LA-A18"
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "REPLY_EDITING:001",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1,
+      "endUtf16Exclusive": 79,
+      "startByte": 1,
+      "endByte": 146,
+      "textSha256Utf8": "c442b7e83c4f677a7a51395e527a5691afefd19e49029f4a1d4e24a7b524edfd",
+      "targetRuleIds": [
+        "LA-A02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:002",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 80,
+      "endUtf16Exclusive": 161,
+      "startByte": 147,
+      "endByte": 298,
+      "textSha256Utf8": "a26c006cde9df4968fa1009d55e9ef5ae2b1b970d8f8323c531d084785b69066",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A02",
+        "LA-A07"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:003",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 162,
+      "endUtf16Exclusive": 235,
+      "startByte": 299,
+      "endByte": 437,
+      "textSha256Utf8": "a20bfe619277ce3a0c2459079997a2e5e42673dfbca148e5c1a28d32e7e2261a",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-E02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:004",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 236,
+      "endUtf16Exclusive": 322,
+      "startByte": 438,
+      "endByte": 599,
+      "textSha256Utf8": "acec6d91664463b56220be76e6e2e6fbc8167bcdb79b2f5bdb939b4c8a7c8861",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:005",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 323,
+      "endUtf16Exclusive": 400,
+      "startByte": 600,
+      "endByte": 744,
+      "textSha256Utf8": "d4da36c8b1c7d8d7beff8a05971c45300b52bf745dbe9fb71a51cce386023d54",
+      "targetRuleIds": [
+        "LA-A03"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:006",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 401,
+      "endUtf16Exclusive": 478,
+      "startByte": 745,
+      "endByte": 887,
+      "textSha256Utf8": "1d8e3d1ea0613b165dfdec2e4b231df024ea7b21b6f6607756f7d75df2f73bc1",
+      "targetRuleIds": [
+        "LA-A03"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:007",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 479,
+      "endUtf16Exclusive": 553,
+      "startByte": 888,
+      "endByte": 1024,
+      "textSha256Utf8": "75e395ad53dd59182d2c6c48bb05f30b6ff3b20a9d31e5c3087932bc07e6ec0a",
+      "targetRuleIds": [
+        "LA-A05"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:008",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 554,
+      "endUtf16Exclusive": 632,
+      "startByte": 1025,
+      "endByte": 1164,
+      "textSha256Utf8": "97701506eb896092d42663d2b665192ee0b2403358607860ee2fb61868937d17",
+      "targetRuleIds": [
+        "LA-A05",
+        "LA-E12",
+        "LA-A03",
+        "LA-F08"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:009",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 633,
+      "endUtf16Exclusive": 710,
+      "startByte": 1165,
+      "endByte": 1301,
+      "textSha256Utf8": "ebaae237f82a916a7928a657315a22f1dc55f102cb69b4207c45738746d83242",
+      "targetRuleIds": [
+        "LA-A05",
+        "LA-E12",
+        "LA-A03",
+        "LA-F08"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:010",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 711,
+      "endUtf16Exclusive": 784,
+      "startByte": 1302,
+      "endByte": 1439,
+      "textSha256Utf8": "4202fc74a6428365a2ead69edc05ec30fdbb211db03503bac0aa268efbe40d17",
+      "targetRuleIds": [
+        "LA-A05",
+        "LA-F08",
+        "LA-E12",
+        "LA-A03"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:011",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 785,
+      "endUtf16Exclusive": 859,
+      "startByte": 1440,
+      "endByte": 1577,
+      "textSha256Utf8": "e6831c19468cc70477f9906754d16f039142f7fdbeb20d8bd33d3a363c264160",
+      "targetRuleIds": [
+        "LA-A05",
+        "LA-F08",
+        "LA-E12",
+        "LA-A03"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:012",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 860,
+      "endUtf16Exclusive": 935,
+      "startByte": 1578,
+      "endByte": 1706,
+      "textSha256Utf8": "d3527a6830a062cf2cde92e424b4c0de8fcd741dceccef4743e5b035e3b2b6f1",
+      "targetRuleIds": [
+        "LA-E04"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:013",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 936,
+      "endUtf16Exclusive": 1007,
+      "startByte": 1707,
+      "endByte": 1827,
+      "textSha256Utf8": "5dbd670d1a5c556ade9f6a2675cf7bfb238042abb9bc0fd9933d4ff6196a9924",
+      "targetRuleIds": [
+        "LA-E04"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:014",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1008,
+      "endUtf16Exclusive": 1085,
+      "startByte": 1828,
+      "endByte": 1970,
+      "textSha256Utf8": "3371d6d05d1dad01c04a2df2e9c16314907e49ce56a6ead5543853d6b948e5b2",
+      "targetRuleIds": [
+        "LA-A18"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:015",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1086,
+      "endUtf16Exclusive": 1161,
+      "startByte": 1971,
+      "endByte": 2102,
+      "textSha256Utf8": "37407d09dd4b5eb85353f1f257399a319f283dff37025c503c406e1cd34c1b78",
+      "targetRuleIds": [
+        "LA-A04",
+        "LA-F02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:016",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1162,
+      "endUtf16Exclusive": 1235,
+      "startByte": 2103,
+      "endByte": 2239,
+      "textSha256Utf8": "21f0816c90db7d8d09234cd1f5262195583ba8f07ae2892eaa0b38ce0c8d132a",
+      "targetRuleIds": [
+        "LA-E07"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:017",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1236,
+      "endUtf16Exclusive": 1305,
+      "startByte": 2240,
+      "endByte": 2368,
+      "textSha256Utf8": "5e03b2127df5a9c915dd12f4033d5822a869acde82a84f9084f08f94c150aecf",
+      "targetRuleIds": [
+        "LA-F02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:018",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1306,
+      "endUtf16Exclusive": 1384,
+      "startByte": 2369,
+      "endByte": 2514,
+      "textSha256Utf8": "413c23d8d9556aab7ee6cd3f2292a691a1e7258259741640a635a866d50891be",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A10",
+        "LA-A18"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:019",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1385,
+      "endUtf16Exclusive": 1464,
+      "startByte": 2515,
+      "endByte": 2662,
+      "textSha256Utf8": "7495bc542fc04e6ba0bd2e7975340a12749c774bdf945cec1dfc6e333eaeb0b6",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A10",
+        "LA-A18"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:020",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1465,
+      "endUtf16Exclusive": 1545,
+      "startByte": 2663,
+      "endByte": 2812,
+      "textSha256Utf8": "427c1f3bfbaf3d033ad14f7cd8053525e0f1de4f155f774d0f6cfa1726e61ad9",
+      "targetRuleIds": [
+        "LA-S02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:021",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1546,
+      "endUtf16Exclusive": 1626,
+      "startByte": 2813,
+      "endByte": 2963,
+      "textSha256Utf8": "c0c7133ff314ae493596be3df75a628bd489af6d133de951862b8aeb84776a60",
+      "targetRuleIds": [
+        "LA-S02",
+        "LA-A16"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:022",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1627,
+      "endUtf16Exclusive": 1701,
+      "startByte": 2964,
+      "endByte": 3097,
+      "textSha256Utf8": "859d148612d9ab90a78fe9a0401d21002e5efab2d6270d4b307be140b8d44703",
+      "targetRuleIds": [
+        "LA-S02",
+        "LA-A16"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:023",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1702,
+      "endUtf16Exclusive": 1781,
+      "startByte": 3098,
+      "endByte": 3245,
+      "textSha256Utf8": "b0af35e0b0558515e8e790206085af245abfeb87e8143f949f4ec3fd5b618bd7",
+      "targetRuleIds": [
+        "LA-A16"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:024",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1782,
+      "endUtf16Exclusive": 1861,
+      "startByte": 3246,
+      "endByte": 3383,
+      "textSha256Utf8": "0bdaa038287170ae871b0ae2e2e605204bbb3427a455b6a834803c0e362b5295",
+      "targetRuleIds": [
+        "LA-E08"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:025",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1862,
+      "endUtf16Exclusive": 1938,
+      "startByte": 3384,
+      "endByte": 3524,
+      "textSha256Utf8": "c521bebf6b6134031302a216a68ec16c8d2143cdd97ee11879b4f2fe720002c6",
+      "targetRuleIds": [
+        "LA-E08",
+        "LA-E09"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:026",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 1939,
+      "endUtf16Exclusive": 2012,
+      "startByte": 3525,
+      "endByte": 3653,
+      "textSha256Utf8": "bf99df106da0f26bec10d977d14f6a8bbd6f1b5857ad3436019a7f519009efb3",
+      "targetRuleIds": [
+        "LA-E09",
+        "LA-E10",
+        "LA-E11"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:027",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2013,
+      "endUtf16Exclusive": 2086,
+      "startByte": 3654,
+      "endByte": 3789,
+      "textSha256Utf8": "a01ea3a280f0c6bbc314babbc34ff97f8f6bd80ac77ab0e0fa70016fc9973bbc",
+      "targetRuleIds": [
+        "LA-E12"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:028",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2087,
+      "endUtf16Exclusive": 2156,
+      "startByte": 3790,
+      "endByte": 3917,
+      "textSha256Utf8": "e565590c79d1907de41ce84ea95788f5a779c5081436413cd6a6cd0281d2db03",
+      "targetRuleIds": [
+        "LA-E13"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:029",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2157,
+      "endUtf16Exclusive": 2233,
+      "startByte": 3918,
+      "endByte": 4057,
+      "textSha256Utf8": "6202079b912229e1d56c9c4879aa41a36e7061cb0a9a68e122953052285ed5a3",
+      "targetRuleIds": [
+        "LA-E13"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:030",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2234,
+      "endUtf16Exclusive": 2305,
+      "startByte": 4058,
+      "endByte": 4188,
+      "textSha256Utf8": "e24f0573ec3ed48265e107a3f6da53a44eec51f0539a055947c04391ccf5a9f6",
+      "targetRuleIds": [
+        "LA-E13",
+        "LA-A01",
+        "LA-A02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:031",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2306,
+      "endUtf16Exclusive": 2381,
+      "startByte": 4189,
+      "endByte": 4327,
+      "textSha256Utf8": "72517cfd26287b416d10b01c7c25524638b2eda0015cc316b245fd72a4979bec",
+      "targetRuleIds": [
+        "LA-E13",
+        "LA-A01",
+        "LA-A02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:032",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2382,
+      "endUtf16Exclusive": 2456,
+      "startByte": 4328,
+      "endByte": 4461,
+      "textSha256Utf8": "6abd38856565f9db8a15e8f197bc53f494e0f8cc75a54331dccea68c7a4eb38c",
+      "targetRuleIds": [
+        "LA-E13",
+        "LA-A01",
+        "LA-A02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:033",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2457,
+      "endUtf16Exclusive": 2537,
+      "startByte": 4462,
+      "endByte": 4607,
+      "textSha256Utf8": "3a00039a3234c65c8862877e97c27eaf8829e39a2850ad68ab120e3724a05308",
+      "targetRuleIds": [
+        "LA-E13",
+        "LA-F01"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:034",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2538,
+      "endUtf16Exclusive": 2620,
+      "startByte": 4608,
+      "endByte": 4758,
+      "textSha256Utf8": "3943d36298c853e887866dcda66871585dc7e2269890cb9be756330926aae909",
+      "targetRuleIds": [
+        "LA-F01",
+        "LA-A02",
+        "LA-S03"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:035",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2621,
+      "endUtf16Exclusive": 2688,
+      "startByte": 4759,
+      "endByte": 4874,
+      "textSha256Utf8": "25837e80d072c468a6e7dce0ac971b8032561e65a64fb71668d44f6622ae5694",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:036",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2689,
+      "endUtf16Exclusive": 2772,
+      "startByte": 4875,
+      "endByte": 5022,
+      "textSha256Utf8": "ff89e1d7b9a04784e33899d533e2b16620f0fbdca5188a9c2ada53d538ce805f",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:037",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2773,
+      "endUtf16Exclusive": 2841,
+      "startByte": 5023,
+      "endByte": 5145,
+      "textSha256Utf8": "b853e229286280ddfe234e3da3ff05376823eb67e6c8993cbb3b045f5797b67b",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:038",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2842,
+      "endUtf16Exclusive": 2919,
+      "startByte": 5146,
+      "endByte": 5285,
+      "textSha256Utf8": "acd17000a8686936a82dae9bf16b55b83d2e4c6fe1338d497e677cbeefb73d7a",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:039",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2920,
+      "endUtf16Exclusive": 2994,
+      "startByte": 5286,
+      "endByte": 5417,
+      "textSha256Utf8": "231cd264507207e97732caadc2477ddb59bbb98a57480e74a40dfeb27e848867",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:040",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 2995,
+      "endUtf16Exclusive": 3041,
+      "startByte": 5418,
+      "endByte": 5499,
+      "textSha256Utf8": "edb9fdc0b42b79d38794239c53ed27079101a0dfe7840e5e18e4cae982a994cd",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:041",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3042,
+      "endUtf16Exclusive": 3083,
+      "startByte": 5500,
+      "endByte": 5573,
+      "textSha256Utf8": "a60820cec269a62ab6d73dd81286e190e6348466210437ca5c95f21ad0a4d18d",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:042",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3084,
+      "endUtf16Exclusive": 3144,
+      "startByte": 5574,
+      "endByte": 5685,
+      "textSha256Utf8": "905878b8cf2dd098167df008e623daa71ce6a46e053cff507bdc15f82ed793a3",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:043",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3145,
+      "endUtf16Exclusive": 3226,
+      "startByte": 5686,
+      "endByte": 5834,
+      "textSha256Utf8": "3fcb28c3c5d7ff64088d15e117834f8fae9b7be807158f513abd3ebeeef908b6",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:044",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3227,
+      "endUtf16Exclusive": 3276,
+      "startByte": 5835,
+      "endByte": 5922,
+      "textSha256Utf8": "d7c18ad1c7b566174a180897d118148516ae5490198243527cc69496a4ce27e2",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:045",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3277,
+      "endUtf16Exclusive": 3326,
+      "startByte": 5923,
+      "endByte": 6010,
+      "textSha256Utf8": "d5930efe9cf475aff6b2babc9aba20d54532fa1942849002cf495623d833ddc9",
+      "targetRuleIds": [
+        "LA-A09",
+        "LA-E12",
+        "LA-F06"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:046",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3327,
+      "endUtf16Exclusive": 3404,
+      "startByte": 6011,
+      "endByte": 6152,
+      "textSha256Utf8": "ee41c222d5888b39f24105c2d25ce0f0b2e9424d272f877206a4b73175adb4cb",
+      "targetRuleIds": [
+        "LA-A09",
+        "LA-E12",
+        "LA-F06"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:047",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3405,
+      "endUtf16Exclusive": 3482,
+      "startByte": 6153,
+      "endByte": 6291,
+      "textSha256Utf8": "5103d18614a44b7e28795fd369a5744785ee09034b4431caa388f60a6a97edab",
+      "targetRuleIds": [
+        "LA-A09",
+        "LA-E12",
+        "LA-F06"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:048",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3483,
+      "endUtf16Exclusive": 3559,
+      "startByte": 6292,
+      "endByte": 6432,
+      "textSha256Utf8": "b4658f17caa77d237a8b21cd50e20687ebc9ae909fbab1fe38355eefa023a926",
+      "targetRuleIds": [
+        "LA-A09",
+        "LA-F06",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:049",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3560,
+      "endUtf16Exclusive": 3596,
+      "startByte": 6433,
+      "endByte": 6498,
+      "textSha256Utf8": "8c50185a7bb7f8399ee13bdf81032526d07cedeb42664560e45cebd5e2a743ce",
+      "targetRuleIds": [
+        "LA-A09",
+        "LA-F06",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:050",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3597,
+      "endUtf16Exclusive": 3650,
+      "startByte": 6499,
+      "endByte": 6595,
+      "textSha256Utf8": "c86f9595efce469e0368ce5cae4a97b7eff0c51063f4c5f03dd0834449d94ddf",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A04",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:051",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3651,
+      "endUtf16Exclusive": 3716,
+      "startByte": 6596,
+      "endByte": 6714,
+      "textSha256Utf8": "9c38754a06f6e590efa6008e721dd419332fc395415dc21c8691f106c443df4b",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A04",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:052",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3717,
+      "endUtf16Exclusive": 3783,
+      "startByte": 6715,
+      "endByte": 6836,
+      "textSha256Utf8": "fcdfd78b89ba66ba2be8ec203c710aa9380a83d040d5c6e3fc34203f1edd3965",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:053",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3784,
+      "endUtf16Exclusive": 3840,
+      "startByte": 6837,
+      "endByte": 6938,
+      "textSha256Utf8": "b7facde212c9a9687b435e16af4611c142554d8084447bb93de12b5c73c26913",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:054",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3841,
+      "endUtf16Exclusive": 3896,
+      "startByte": 6939,
+      "endByte": 7037,
+      "textSha256Utf8": "ba7fb8149d66e50b0f954d05dee0b37f1be3a0d4e7a3eb43136f8aeeebf41cd2",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:055",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3897,
+      "endUtf16Exclusive": 3962,
+      "startByte": 7038,
+      "endByte": 7155,
+      "textSha256Utf8": "8693ebf5707ba2c42571f6e300b099d1be92514d935ab0ece6bcb9c6d1abbc5f",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-E12",
+        "LA-F01"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:056",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 3963,
+      "endUtf16Exclusive": 4033,
+      "startByte": 7156,
+      "endByte": 7285,
+      "textSha256Utf8": "bb505963540f8fe4223c70191e776c255956fe79d847492c3622ec4e5b2e5a1d",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-E12",
+        "LA-F01"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:057",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4034,
+      "endUtf16Exclusive": 4093,
+      "startByte": 7286,
+      "endByte": 7391,
+      "textSha256Utf8": "a865f8a95c787ef5cccf77def69be7135c6a089058bbd29677ee019c71dbfa36",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-E12",
+        "LA-F01"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:058",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4094,
+      "endUtf16Exclusive": 4171,
+      "startByte": 7392,
+      "endByte": 7536,
+      "textSha256Utf8": "835b723ef9f646eae1d99add81734b6e70153c560413e839e3ad313f8043bd9b",
+      "targetRuleIds": [
+        "LA-F01",
+        "LA-E12",
+        "LA-A01",
+        "LA-S01"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:059",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4172,
+      "endUtf16Exclusive": 4249,
+      "startByte": 7537,
+      "endByte": 7676,
+      "textSha256Utf8": "06c94d16de7285ca60fa4e7a071543d5674541f9f06a3dfe50bab4778e1ba22d",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E12",
+        "LA-E14"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:060",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4250,
+      "endUtf16Exclusive": 4306,
+      "startByte": 7677,
+      "endByte": 7779,
+      "textSha256Utf8": "f4b14630c3bd9d50718f4898400ca97aa0adbb44ea377b86e31d10425b9e9b08",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E12",
+        "LA-E14"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:061",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4307,
+      "endUtf16Exclusive": 4377,
+      "startByte": 7780,
+      "endByte": 7905,
+      "textSha256Utf8": "32f1ad1d267091203e38093e08bd89a3b227adeb0fe53fbc0866039e797c8efe",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E12",
+        "LA-E14"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:062",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4378,
+      "endUtf16Exclusive": 4433,
+      "startByte": 7906,
+      "endByte": 8006,
+      "textSha256Utf8": "4a4124c67d7c0d2e733a0e5e20587d06bd6a47eef0ee59969d28474fc02d73d4",
+      "targetRuleIds": [
+        "LA-E14",
+        "LA-E12",
+        "LA-A01",
+        "LA-A03"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:063",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4434,
+      "endUtf16Exclusive": 4476,
+      "startByte": 8007,
+      "endByte": 8083,
+      "textSha256Utf8": "c2ca8aeafd2e5e9874c7585d3825bce922c671d6e2edda9bad3a03b21bbb753b",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-E12",
+        "LA-F01",
+        "LA-F02"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:064",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4477,
+      "endUtf16Exclusive": 4557,
+      "startByte": 8084,
+      "endByte": 8231,
+      "textSha256Utf8": "e037a60a6ff18e27884fcad15eb94b4dc51a1efcc53661ba657fc281e01d41bd",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-E12",
+        "LA-F01",
+        "LA-F02"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:065",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4558,
+      "endUtf16Exclusive": 4633,
+      "startByte": 8232,
+      "endByte": 8366,
+      "textSha256Utf8": "ad39c723964b54dcbd73d64e54c9dfa268c09c7d756448cb809c59c0da6883b8",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-F01",
+        "LA-F02",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:066",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4634,
+      "endUtf16Exclusive": 4701,
+      "startByte": 8367,
+      "endByte": 8489,
+      "textSha256Utf8": "baef5148e7fc318b918eb5e3e1eb0b95a351803c1dbb3c48285f89b2e2abbbff",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A18",
+        "LA-E12",
+        "LA-O02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:067",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4702,
+      "endUtf16Exclusive": 4775,
+      "startByte": 8490,
+      "endByte": 8621,
+      "textSha256Utf8": "18e58f4d0c936e91caffcac6bbb4b336bfc80f5069c0e110bd763b39e0b45678",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A18",
+        "LA-E12",
+        "LA-O02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:068",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4776,
+      "endUtf16Exclusive": 4853,
+      "startByte": 8622,
+      "endByte": 8760,
+      "textSha256Utf8": "f10a873be86f025316d83118a4bf89166362aa6d0329cb07634bc90553969c8a",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A18",
+        "LA-E12",
+        "LA-O02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:069",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4854,
+      "endUtf16Exclusive": 4931,
+      "startByte": 8761,
+      "endByte": 8893,
+      "textSha256Utf8": "a2d33a343571c08aea17593984049c2fb36350226996eae2e6ea92aea422efee",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A18",
+        "LA-E12",
+        "LA-O02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:070",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 4932,
+      "endUtf16Exclusive": 5011,
+      "startByte": 8894,
+      "endByte": 9031,
+      "textSha256Utf8": "e3d252d1a038173acd8fc1cd5f2f0dc5b70d9d3427965be6da6f7a7968d6f6ec",
+      "targetRuleIds": [
+        "LA-A18",
+        "LA-O02",
+        "LA-E12",
+        "LA-A02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:071",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5012,
+      "endUtf16Exclusive": 5091,
+      "startByte": 9032,
+      "endByte": 9174,
+      "textSha256Utf8": "78e181b2e2ac46704f59e5420d97f6f1e6ae158c673f38c0c6dff0c58e852c6e",
+      "targetRuleIds": [
+        "LA-O01",
+        "LA-F02",
+        "LA-A17",
+        "LA-E12",
+        "LA-A02",
+        "LA-A18",
+        "LA-O02"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:072",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5092,
+      "endUtf16Exclusive": 5153,
+      "startByte": 9175,
+      "endByte": 9285,
+      "textSha256Utf8": "beea069a22d376077bbe1b296513b7378c504e347aba1d00ab85f5f544b9c4ba",
+      "targetRuleIds": [
+        "LA-F02",
+        "LA-A17",
+        "LA-E12",
+        "LA-A02",
+        "LA-A18",
+        "LA-O02",
+        "LA-O01"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:073",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5154,
+      "endUtf16Exclusive": 5209,
+      "startByte": 9286,
+      "endByte": 9379,
+      "textSha256Utf8": "e14d3568d9c3bd0efbb6e59b832c40bad75d26784ac4b0af0fe5ad808742597b",
+      "targetRuleIds": [
+        "LA-F02",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:074",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5210,
+      "endUtf16Exclusive": 5285,
+      "startByte": 9380,
+      "endByte": 9517,
+      "textSha256Utf8": "1e6ab24c5c002202e864e4e724125fa4821b5ee69a760a833ff612875e196dc3",
+      "targetRuleIds": [
+        "LA-F02",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:075",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5286,
+      "endUtf16Exclusive": 5358,
+      "startByte": 9518,
+      "endByte": 9652,
+      "textSha256Utf8": "cc83785c18fd722454630268588ebca26428de279fc221610bd33ddcfc738104",
+      "targetRuleIds": [
+        "LA-F02",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:076",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5359,
+      "endUtf16Exclusive": 5431,
+      "startByte": 9653,
+      "endByte": 9785,
+      "textSha256Utf8": "c71f3c01249b29b5e0f0aadd7f87b133a2c6e8bbdef9474549e08c5e816219de",
+      "targetRuleIds": [
+        "LA-F02",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:077",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5432,
+      "endUtf16Exclusive": 5502,
+      "startByte": 9786,
+      "endByte": 9914,
+      "textSha256Utf8": "af602bcb952be80199757da70b86b30b452c11e8eba6416c2c27d91045a258d5",
+      "targetRuleIds": [
+        "LA-A03",
+        "LA-A07",
+        "LA-F03",
+        "LA-E12",
+        "LA-A16"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:078",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5503,
+      "endUtf16Exclusive": 5579,
+      "startByte": 9915,
+      "endByte": 10053,
+      "textSha256Utf8": "25a74491a52c81f5bbf7365bbeef9a4ce1941dd5ab768de56ab787a0a988b73b",
+      "targetRuleIds": [
+        "LA-A03",
+        "LA-A07",
+        "LA-F03",
+        "LA-E12",
+        "LA-A16"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:079",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5580,
+      "endUtf16Exclusive": 5651,
+      "startByte": 10054,
+      "endByte": 10184,
+      "textSha256Utf8": "8a8c107f56589402d6758e377cf9f101a5169e9cd26ae34bb67b59864e13cb09",
+      "targetRuleIds": [
+        "LA-A03",
+        "LA-A07",
+        "LA-F03",
+        "LA-A16",
+        "LA-E12"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:080",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5652,
+      "endUtf16Exclusive": 5730,
+      "startByte": 10185,
+      "endByte": 10327,
+      "textSha256Utf8": "8e2656f4300ba03063f5d00b23c5d74282e5b7ecfa94f693718aa1274e7cbe77",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-A16",
+        "LA-E12",
+        "LA-A03",
+        "LA-F03"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "REPLY_EDITING:081",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5731,
+      "endUtf16Exclusive": 5806,
+      "startByte": 10328,
+      "endByte": 10463,
+      "textSha256Utf8": "5fdb4263565b27af6eeb9d07304764f8019d2ae056108234d27314a38391c3f9",
+      "targetRuleIds": [
+        "LA-E12",
+        "LA-S02",
+        "LA-S03"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "REPLY_EDITING:082",
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startUtf16": 5807,
+      "endUtf16Exclusive": 5885,
+      "startByte": 10464,
+      "endByte": 10607,
+      "textSha256Utf8": "ee1533de6eebe74b1ea744676015ece131cf3d1b57eede349e3130094c7b13fb",
+      "targetRuleIds": [
+        "LA-S02",
+        "LA-S03"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:001",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 1,
+      "endUtf16Exclusive": 73,
+      "startByte": 1,
+      "endByte": 134,
+      "textSha256Utf8": "48f1237551a71d2e4f8289e6a9f641d91cec3b3f54014d811e602c363ff63d44",
+      "targetRuleIds": [
+        "LA-F03"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:002",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 74,
+      "endUtf16Exclusive": 154,
+      "startByte": 135,
+      "endByte": 282,
+      "textSha256Utf8": "e7fdc5936e294a6a1d4cb11f4ddd0c935e415118d90b6be4c3929b3321222034",
+      "targetRuleIds": [
+        "LA-F03"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:003",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 155,
+      "endUtf16Exclusive": 234,
+      "startByte": 283,
+      "endByte": 420,
+      "textSha256Utf8": "cf389b2aa65f463585239e9271ee2dff256333e3ee0256cbc46e4ef9645aee49",
+      "targetRuleIds": [
+        "LA-F03",
+        "LA-E17"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:004",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 235,
+      "endUtf16Exclusive": 305,
+      "startByte": 421,
+      "endByte": 549,
+      "textSha256Utf8": "b99b7c29ff12a8900ddc8a87d915d04d367f7e29341b863eb7c3afa178a8965c",
+      "targetRuleIds": [
+        "LA-E17",
+        "LA-E18"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:005",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 306,
+      "endUtf16Exclusive": 387,
+      "startByte": 550,
+      "endByte": 703,
+      "textSha256Utf8": "faa8078fb6859c9a8ddf65ba60106fbefb4d841e17da94c89f55235129c72e50",
+      "targetRuleIds": [
+        "LA-E19"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:006",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 388,
+      "endUtf16Exclusive": 463,
+      "startByte": 704,
+      "endByte": 839,
+      "textSha256Utf8": "4304d0785367023aa15a280705e0e5682c8119ce6f81c3591f99711c3223621a",
+      "targetRuleIds": [
+        "LA-E19"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:007",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 464,
+      "endUtf16Exclusive": 546,
+      "startByte": 840,
+      "endByte": 984,
+      "textSha256Utf8": "0e53529565d881da5b10a5788a99efb1d7bafb949e6971e67d3b8b07883a31dc",
+      "targetRuleIds": [
+        "LA-E20"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:008",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 547,
+      "endUtf16Exclusive": 629,
+      "startByte": 985,
+      "endByte": 1136,
+      "textSha256Utf8": "2d0c4f2b3c3c704555be5e621a51aca90d70e04e57b1779211aed7bd30bcd7bb",
+      "targetRuleIds": [
+        "LA-E20",
+        "LA-E21"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:009",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 630,
+      "endUtf16Exclusive": 711,
+      "startByte": 1137,
+      "endByte": 1273,
+      "textSha256Utf8": "5093afa55a668b63c0893c96021062b142272c1f0f7499aa3c1250ef039881a6",
+      "targetRuleIds": [
+        "LA-E22"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:010",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 712,
+      "endUtf16Exclusive": 794,
+      "startByte": 1274,
+      "endByte": 1416,
+      "textSha256Utf8": "f791b7db974d768813337633b6137a925cfada0c5715a2ed2d2f7987c8f1c35e",
+      "targetRuleIds": [
+        "LA-E22",
+        "LA-F03"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:011",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 795,
+      "endUtf16Exclusive": 869,
+      "startByte": 1417,
+      "endByte": 1554,
+      "textSha256Utf8": "c1afc36d1ed4e1c446fb8b60af7d171afd866ccab58d633ede897b63d941cdac",
+      "targetRuleIds": [
+        "LA-E02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:012",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 870,
+      "endUtf16Exclusive": 943,
+      "startByte": 1555,
+      "endByte": 1690,
+      "textSha256Utf8": "1917fc31595c50ac93b3cef2c4e9d291aa5b9b6c5efd5ecb7b95939e43fcca14",
+      "targetRuleIds": [
+        "LA-E02"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:013",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 944,
+      "endUtf16Exclusive": 1024,
+      "startByte": 1691,
+      "endByte": 1839,
+      "textSha256Utf8": "e4dcba5ba6fc49e11ab79ca97f2bdbe11d18d11e8fc4bc2ba95e53878ee5cca0",
+      "targetRuleIds": [
+        "LA-E02",
+        "LA-A07"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:014",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 1025,
+      "endUtf16Exclusive": 1103,
+      "startByte": 1840,
+      "endByte": 1972,
+      "textSha256Utf8": "fef532bf10eddbc61ef1be2de7d3468c89be047654324ff18273f771f92df798",
+      "targetRuleIds": [
+        "LA-E02",
+        "LA-A07",
+        "LA-E24",
+        "LA-A10",
+        "LA-E13"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:015",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 1104,
+      "endUtf16Exclusive": 1181,
+      "startByte": 1973,
+      "endByte": 2113,
+      "textSha256Utf8": "67643fb2ed781d40704dd668cbf6186408254d4999fede2a7c763103e83951d6",
+      "targetRuleIds": [
+        "LA-A10",
+        "LA-E13"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:016",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 1182,
+      "endUtf16Exclusive": 1258,
+      "startByte": 2114,
+      "endByte": 2254,
+      "textSha256Utf8": "757e38c4076135844bad6d8bc2d18369def9916c9e28fea51c8bce86af89486b",
+      "targetRuleIds": [
+        "LA-A10"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "FACT_CHECKING:017",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 1259,
+      "endUtf16Exclusive": 1333,
+      "startByte": 2255,
+      "endByte": 2388,
+      "textSha256Utf8": "f0c92428aaa4ec72ffc8ae3a31ef7626a7983327d387903d9dc0c41b33c71d8f",
+      "targetRuleIds": [
+        "LA-E12",
+        "LA-E18"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "FACT_CHECKING:018",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 1334,
+      "endUtf16Exclusive": 1414,
+      "startByte": 2389,
+      "endByte": 2532,
+      "textSha256Utf8": "124e78fd0378c5ce4ec830dd8ad7e5921e6e5ac0d1dd64605c245ad294f9e1f4",
+      "targetRuleIds": [
+        "LA-E12",
+        "LA-E18"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "FACT_CHECKING:019",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 1415,
+      "endUtf16Exclusive": 1494,
+      "startByte": 2533,
+      "endByte": 2677,
+      "textSha256Utf8": "5246c3d29d73ca7a9be78a0527643038c74d230a884593c32156871245f0fe0a",
+      "targetRuleIds": [
+        "LA-E12",
+        "LA-E18"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "FACT_CHECKING:020",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 1495,
+      "endUtf16Exclusive": 1571,
+      "startByte": 2678,
+      "endByte": 2820,
+      "textSha256Utf8": "7f1ddb0031fccec4b1f6ca13ca2cc8ed75c7b346c9885a8268778e29ccc413dd",
+      "targetRuleIds": [
+        "LA-E12",
+        "LA-E18"
+      ],
+      "role": "normative_or_illustrative_line"
+    },
+    {
+      "id": "FACT_CHECKING:021",
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startUtf16": 1572,
+      "endUtf16Exclusive": 1653,
+      "startByte": 2821,
+      "endByte": 2960,
+      "textSha256Utf8": "ae5bbb7f5b82ee187c4abda03cc98c65fd7a28f101e7d325fc0466dd46ef12cf",
+      "targetRuleIds": [
+        "LA-E25"
+      ],
+      "role": "normative_line"
+    },
+    {
+      "id": "C_FORBIDDEN_SUBSTRINGS:all",
+      "sourceId": "C_FORBIDDEN_SUBSTRINGS",
+      "entryId": "knowledge-16d963fe5e4aa4bbf63d7145e21271040c0d8be84bcab18cd03342a5dd551441",
+      "versionId": "knowledge-version-57318cfe0cee15c0fd3b09558a85ba48b2db68ae71af0107b3c961125ec53463",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 165,
+      "startByte": 0,
+      "endByte": 174,
+      "textSha256Utf8": "40f94e976eac87ffe82c728bb4c985a8e3084ceedb960be4b4ae32332508137a",
+      "targetRuleIds": [
+        "LA-C01"
+      ],
+      "role": "literal_constraint"
+    },
+    {
+      "id": "C_ALLOWED_URLS:all",
+      "sourceId": "C_ALLOWED_URLS",
+      "entryId": "knowledge-6eed4715e716260a0e4ade0fa85a025cb6447a49513bab446186573bebb71bd9",
+      "versionId": "knowledge-version-6e66d50f8c24b78649c0fa87522dca8fdadd3cfc99c059815221932a03a6c6d7",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 167,
+      "startByte": 0,
+      "endByte": 167,
+      "textSha256Utf8": "e5e05715f403266c5162b55cede608b5d56254ad83263d8235fb154b258fcf68",
+      "targetRuleIds": [
+        "LA-C02"
+      ],
+      "role": "literal_constraint"
+    },
+    {
+      "id": "C_FORBIDDEN_PREFIXES:all",
+      "sourceId": "C_FORBIDDEN_PREFIXES",
+      "entryId": "knowledge-5cd9d4c9c802e488ed5a3c77df23c11f8c85f1e5be3799e0e7fa8ce9032b3e63",
+      "versionId": "knowledge-version-89ab654ef7fad356014a0a7970420488fd591b9d4b07fa5ed8c96bae2956c891",
+      "startUtf16": 0,
+      "endUtf16Exclusive": 30,
+      "startByte": 0,
+      "endByte": 50,
+      "textSha256Utf8": "f71dcb4a82a5e673c080acf3c42543a799e56986eec34c03c00696dec7f2f2a6",
+      "targetRuleIds": [
+        "LA-C03"
+      ],
+      "role": "literal_constraint"
+    }
+  ],
+  "editorialClauseMap": [
+    {
+      "id": "RE01",
+      "ruleIds": [
+        "LA-A02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1,
+          "endUtf16Exclusive": 80,
+          "fragmentSha256Utf8": "fb13fc02bf2da67623c7a6bfba350a713e95a18e17bf5d5b20958848a41680d6",
+          "sourceLinesZeroBased": [
+            1,
+            1
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE02",
+      "ruleIds": [
+        "LA-A01"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 80,
+          "endUtf16Exclusive": 162,
+          "fragmentSha256Utf8": "3b219dc933ebe2a406d10787b166cc2edb8172991c0877024395cff960b1f566",
+          "sourceLinesZeroBased": [
+            2,
+            2
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE03",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A07"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 80,
+          "endUtf16Exclusive": 162,
+          "fragmentSha256Utf8": "3b219dc933ebe2a406d10787b166cc2edb8172991c0877024395cff960b1f566",
+          "sourceLinesZeroBased": [
+            2,
+            2
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE04",
+      "ruleIds": [
+        "LA-A07",
+        "LA-E02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 162,
+          "endUtf16Exclusive": 323,
+          "fragmentSha256Utf8": "a9b8cf7b1b3a1809a115703efdd55a56c686be484c906f5722a6ecad22f2a220",
+          "sourceLinesZeroBased": [
+            3,
+            4
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE05",
+      "ruleIds": [
+        "LA-S02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 236,
+          "endUtf16Exclusive": 323,
+          "fragmentSha256Utf8": "f4badfe3ee2b766e391681027ddde63a192332798594aa312698ecbfb1ae2a9b",
+          "sourceLinesZeroBased": [
+            4,
+            4
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE06",
+      "ruleIds": [
+        "LA-E02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 236,
+          "endUtf16Exclusive": 323,
+          "fragmentSha256Utf8": "f4badfe3ee2b766e391681027ddde63a192332798594aa312698ecbfb1ae2a9b",
+          "sourceLinesZeroBased": [
+            4,
+            4
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE07",
+      "ruleIds": [
+        "LA-A03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 323,
+          "endUtf16Exclusive": 479,
+          "fragmentSha256Utf8": "d33e10ed93d9bb20242a7e4dce89b080e5fc69e5b18844166f4476d2d16010ba",
+          "sourceLinesZeroBased": [
+            5,
+            6
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE08",
+      "ruleIds": [
+        "LA-A05"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 479,
+          "endUtf16Exclusive": 860,
+          "fragmentSha256Utf8": "432a3393d8f6258b420fd3ad02366b8217db689dc41d09c40391466e5d64fe03",
+          "sourceLinesZeroBased": [
+            7,
+            11
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE09",
+      "ruleIds": [
+        "LA-F08"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 711,
+          "endUtf16Exclusive": 860,
+          "fragmentSha256Utf8": "5182580c60dbea2118763fcda6afc0ea4feb2339fe2c397cc643b02fc99d6171",
+          "sourceLinesZeroBased": [
+            10,
+            11
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE10",
+      "ruleIds": [
+        "LA-E04"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 860,
+          "endUtf16Exclusive": 1008,
+          "fragmentSha256Utf8": "1811e0e466b1da64765eae1dcaf708d209940758c583f7ff802c741994264444",
+          "sourceLinesZeroBased": [
+            12,
+            13
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE11",
+      "ruleIds": [
+        "LA-A18"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1008,
+          "endUtf16Exclusive": 1086,
+          "fragmentSha256Utf8": "dce0075b5d3ed4c4e2e340edcd01e622c602e2f81c6672f6082eea5c6291a0f2",
+          "sourceLinesZeroBased": [
+            14,
+            14
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE12",
+      "ruleIds": [
+        "LA-A04"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1086,
+          "endUtf16Exclusive": 1162,
+          "fragmentSha256Utf8": "6c33ad05cbb9a288d25d821ac4eed4846fc82b1f012744dba8ce49c7795bef4b",
+          "sourceLinesZeroBased": [
+            15,
+            15
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE13",
+      "ruleIds": [
+        "LA-F02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1086,
+          "endUtf16Exclusive": 1162,
+          "fragmentSha256Utf8": "6c33ad05cbb9a288d25d821ac4eed4846fc82b1f012744dba8ce49c7795bef4b",
+          "sourceLinesZeroBased": [
+            15,
+            15
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE14",
+      "ruleIds": [
+        "LA-E07"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1162,
+          "endUtf16Exclusive": 1236,
+          "fragmentSha256Utf8": "3707f47746245efe6025b8e3c8484c945e6495208f321602425d41a88e6b36a4",
+          "sourceLinesZeroBased": [
+            16,
+            16
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE15",
+      "ruleIds": [
+        "LA-F02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1236,
+          "endUtf16Exclusive": 1306,
+          "fragmentSha256Utf8": "8271b440e2a550ef7a11501a01a69ed7b67ae7ec711eefa37cf633c2930e14c4",
+          "sourceLinesZeroBased": [
+            17,
+            17
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE16",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A10",
+        "LA-A18"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1306,
+          "endUtf16Exclusive": 1465,
+          "fragmentSha256Utf8": "c922c46f5227c5ff3ef5d4d21bfd57fafdb437690306e0ad885bcf880ff930dd",
+          "sourceLinesZeroBased": [
+            18,
+            19
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE17",
+      "ruleIds": [
+        "LA-S02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1465,
+          "endUtf16Exclusive": 1546,
+          "fragmentSha256Utf8": "166f542fe0e719ae2ef9d6d3e9dbcd12098703e2b27c9a6aa83b8ed111ef418f",
+          "sourceLinesZeroBased": [
+            20,
+            20
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE18",
+      "ruleIds": [
+        "LA-S02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1546,
+          "endUtf16Exclusive": 1702,
+          "fragmentSha256Utf8": "3b19a8f285ca4906c412e321848b6cd7fb24aba341c3308a68242f042c393e1a",
+          "sourceLinesZeroBased": [
+            21,
+            22
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE19",
+      "ruleIds": [
+        "LA-A16",
+        "LA-A16"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1546,
+          "endUtf16Exclusive": 1782,
+          "fragmentSha256Utf8": "751805ad53f2198187b9ad5c500b955b6cfa099dcd9b5737dc8664741a8a8930",
+          "sourceLinesZeroBased": [
+            21,
+            23
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE20",
+      "ruleIds": [
+        "LA-E08"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1782,
+          "endUtf16Exclusive": 1939,
+          "fragmentSha256Utf8": "37630d6ee79cfe4e2943163d5b98d50de8a22b19a67cb9f61ad60e3f2f2bed85",
+          "sourceLinesZeroBased": [
+            24,
+            25
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE21",
+      "ruleIds": [
+        "LA-E09"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1862,
+          "endUtf16Exclusive": 2013,
+          "fragmentSha256Utf8": "ca08b560220882ce395491d2c31f311a66543c7ef014f0b7eb2219749fb5149f",
+          "sourceLinesZeroBased": [
+            25,
+            26
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE22",
+      "ruleIds": [
+        "LA-E10"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1939,
+          "endUtf16Exclusive": 2013,
+          "fragmentSha256Utf8": "18be81e7d71547a9f26bce4989fdf84ab56a2ea1c11731c1c594b541466648ac",
+          "sourceLinesZeroBased": [
+            26,
+            26
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE23",
+      "ruleIds": [
+        "LA-E11"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1939,
+          "endUtf16Exclusive": 2013,
+          "fragmentSha256Utf8": "18be81e7d71547a9f26bce4989fdf84ab56a2ea1c11731c1c594b541466648ac",
+          "sourceLinesZeroBased": [
+            26,
+            26
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE24",
+      "ruleIds": [
+        "LA-E12"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2013,
+          "endUtf16Exclusive": 2087,
+          "fragmentSha256Utf8": "b9f167e32fa6446417c6da373fd1892114f8e82d54b277cd5342865885de745f",
+          "sourceLinesZeroBased": [
+            27,
+            27
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE25",
+      "ruleIds": [
+        "LA-E13"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2087,
+          "endUtf16Exclusive": 2538,
+          "fragmentSha256Utf8": "858f4bfed1f5e276e267b09f8338d9e033d9026fbd930035b70c0811c9b8a655",
+          "sourceLinesZeroBased": [
+            28,
+            33
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE26",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2234,
+          "endUtf16Exclusive": 2457,
+          "fragmentSha256Utf8": "24677b36c24203663528537867a2e5f0645289076ab2a3cfd3dcedd865250f2a",
+          "sourceLinesZeroBased": [
+            30,
+            32
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE27",
+      "ruleIds": [
+        "LA-F01"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2457,
+          "endUtf16Exclusive": 2621,
+          "fragmentSha256Utf8": "c8912a79482ad9fbcba8b97929dab9ac8d7b2eb941ead06a5675e495e154ef55",
+          "sourceLinesZeroBased": [
+            33,
+            34
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE28",
+      "ruleIds": [
+        "LA-A02",
+        "LA-S03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2538,
+          "endUtf16Exclusive": 2621,
+          "fragmentSha256Utf8": "ffe4febce7a302e4ac9b0806eae5c55edff3b3a77e21691a26bfbfde33655bf4",
+          "sourceLinesZeroBased": [
+            34,
+            34
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE29",
+      "ruleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2621,
+          "endUtf16Exclusive": 2920,
+          "fragmentSha256Utf8": "c649c619a177c7fb2f268bb779584ed55103acc3186aa85c93c11a33f0990c16",
+          "sourceLinesZeroBased": [
+            35,
+            38
+          ]
+        }
+      ],
+      "role": "illustrative"
+    },
+    {
+      "id": "RE30",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2920,
+          "endUtf16Exclusive": 3084,
+          "fragmentSha256Utf8": "35ae4ac36f9c28cb0caa1eccebdc37ca89931c35ae43f8295ff35d253d15adb5",
+          "sourceLinesZeroBased": [
+            39,
+            41
+          ]
+        }
+      ],
+      "role": "illustrative"
+    },
+    {
+      "id": "RE31",
+      "ruleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3084,
+          "endUtf16Exclusive": 3277,
+          "fragmentSha256Utf8": "9a3ee621a26a807630dd21e7f7c74d2d19c07d0d1af2061128e394b9a76fc606",
+          "sourceLinesZeroBased": [
+            42,
+            44
+          ]
+        }
+      ],
+      "role": "illustrative"
+    },
+    {
+      "id": "RE32",
+      "ruleIds": [
+        "LA-A09"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3277,
+          "endUtf16Exclusive": 3597,
+          "fragmentSha256Utf8": "c305f613fd03f961e5765691baf9bc6dbd3033f4d95809357cf110038d7027ba",
+          "sourceLinesZeroBased": [
+            45,
+            49
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE33",
+      "ruleIds": [
+        "LA-F06"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3483,
+          "endUtf16Exclusive": 3597,
+          "fragmentSha256Utf8": "063240e28626338e5800731e22b87c152de5dc762fc7854dbaed543be07dae2a",
+          "sourceLinesZeroBased": [
+            48,
+            49
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE34",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A04"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3597,
+          "endUtf16Exclusive": 3717,
+          "fragmentSha256Utf8": "9a6e58e89bc0373592d2dda86c61070f5f33072dab3c400a85867d7e0c5a1e38",
+          "sourceLinesZeroBased": [
+            50,
+            51
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE35",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3717,
+          "endUtf16Exclusive": 3897,
+          "fragmentSha256Utf8": "adea01dff4b75461b089b78425f456b01a333df594f51b789ec84a27945ab332",
+          "sourceLinesZeroBased": [
+            52,
+            54
+          ]
+        }
+      ],
+      "role": "illustrative"
+    },
+    {
+      "id": "RE36",
+      "ruleIds": [
+        "LA-A01",
+        "LA-S01"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3897,
+          "endUtf16Exclusive": 4094,
+          "fragmentSha256Utf8": "16ffef6b37ce195fab0c91c64d410efcbf24132c53975cc40ddabe25c0f74584",
+          "sourceLinesZeroBased": [
+            55,
+            57
+          ]
+        }
+      ],
+      "role": "illustrative"
+    },
+    {
+      "id": "RE37",
+      "ruleIds": [
+        "LA-F01"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4094,
+          "endUtf16Exclusive": 4172,
+          "fragmentSha256Utf8": "9775d6f097d6104ed4c01cdf68adb78de77ed5b847415d67fc1fb84fa856d1ec",
+          "sourceLinesZeroBased": [
+            58,
+            58
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE38",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4172,
+          "endUtf16Exclusive": 4378,
+          "fragmentSha256Utf8": "9d7782cac54906931f0d80c39aa690b3678d238b923453d375e61c83f1dace15",
+          "sourceLinesZeroBased": [
+            59,
+            61
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE39",
+      "ruleIds": [
+        "LA-E14"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4378,
+          "endUtf16Exclusive": 4434,
+          "fragmentSha256Utf8": "8b0dc7b8cb070c32b4da0aa4b3b9ce950dc29a3ea408944f94e0fc647ac475ad",
+          "sourceLinesZeroBased": [
+            62,
+            62
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE40",
+      "ruleIds": [
+        "LA-A01",
+        "LA-S01"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4434,
+          "endUtf16Exclusive": 4634,
+          "fragmentSha256Utf8": "181a929bcf8e8ecd245fbb1085b6b751e20acc914ec4a49caf17a69c4dca29a3",
+          "sourceLinesZeroBased": [
+            63,
+            65
+          ]
+        }
+      ],
+      "role": "illustrative"
+    },
+    {
+      "id": "RE41",
+      "ruleIds": [
+        "LA-F01",
+        "LA-F02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4558,
+          "endUtf16Exclusive": 4634,
+          "fragmentSha256Utf8": "36c8a469b85fe4e1b43d9b87d265ae39923eb34a5f6df18fb5cd958b62ae3fc0",
+          "sourceLinesZeroBased": [
+            65,
+            65
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE42",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A18"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4634,
+          "endUtf16Exclusive": 4932,
+          "fragmentSha256Utf8": "8404f780a9c1e1dea09736c7932bed8161bd6a28def7810967e065b2c4ddf6ce",
+          "sourceLinesZeroBased": [
+            66,
+            69
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE43",
+      "ruleIds": [
+        "LA-A18"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4854,
+          "endUtf16Exclusive": 5012,
+          "fragmentSha256Utf8": "73932da544563541d0583b757be014f7e51306d4fa0effae79151b326f6ffff9",
+          "sourceLinesZeroBased": [
+            69,
+            70
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE44",
+      "ruleIds": [
+        "LA-O02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4932,
+          "endUtf16Exclusive": 5012,
+          "fragmentSha256Utf8": "445147c60ddd199097a30a2c45e6897947dd786b916aaee251aceb1eb3f8e3c9",
+          "sourceLinesZeroBased": [
+            70,
+            70
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE45",
+      "ruleIds": [
+        "LA-O01"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5012,
+          "endUtf16Exclusive": 5092,
+          "fragmentSha256Utf8": "4db99bfc86d88cd69e40e6367db068d42bf4e2dc02f252f525b93c0449bb3abc",
+          "sourceLinesZeroBased": [
+            71,
+            71
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE46",
+      "ruleIds": [
+        "LA-F02",
+        "LA-A17"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5012,
+          "endUtf16Exclusive": 5154,
+          "fragmentSha256Utf8": "9335e8341354c762bb8b43365b2432ea178773d27592322bfd3c797f5acedf6f",
+          "sourceLinesZeroBased": [
+            71,
+            72
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE47",
+      "ruleIds": [
+        "LA-F02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5154,
+          "endUtf16Exclusive": 5432,
+          "fragmentSha256Utf8": "1d7a03b51ade4cbb229078de83683fec7f66bdc1341b54a9b5a51997fa568115",
+          "sourceLinesZeroBased": [
+            73,
+            76
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE48",
+      "ruleIds": [
+        "LA-A03",
+        "LA-A07",
+        "LA-F03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5432,
+          "endUtf16Exclusive": 5652,
+          "fragmentSha256Utf8": "a4fb125e49442bfa96e0c547bc6321f1335b525f16df555878e68721276eb43f",
+          "sourceLinesZeroBased": [
+            77,
+            79
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE49",
+      "ruleIds": [
+        "LA-A07"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5580,
+          "endUtf16Exclusive": 5731,
+          "fragmentSha256Utf8": "f2b43ba2ba7b1773b28107ffe6898395c8c7372dae377ed138acda2769b13f04",
+          "sourceLinesZeroBased": [
+            79,
+            80
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE50",
+      "ruleIds": [
+        "LA-A07",
+        "LA-A16"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5580,
+          "endUtf16Exclusive": 5731,
+          "fragmentSha256Utf8": "f2b43ba2ba7b1773b28107ffe6898395c8c7372dae377ed138acda2769b13f04",
+          "sourceLinesZeroBased": [
+            79,
+            80
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE51",
+      "ruleIds": [
+        "LA-E12"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5731,
+          "endUtf16Exclusive": 5807,
+          "fragmentSha256Utf8": "94e6a14df3b78ed0e2a9020d45f3ec3356b8bcea5e2099940df801fdbd367b7e",
+          "sourceLinesZeroBased": [
+            81,
+            81
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "RE52",
+      "ruleIds": [
+        "LA-S02",
+        "LA-S03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5731,
+          "endUtf16Exclusive": 5886,
+          "fragmentSha256Utf8": "3bd004bfcafd5f52c9e851a3af8051468b0c6f2fa88e10b1ef7ac00e7e44b0b1",
+          "sourceLinesZeroBased": [
+            81,
+            82
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC01",
+      "ruleIds": [
+        "LA-F03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1,
+          "endUtf16Exclusive": 235,
+          "fragmentSha256Utf8": "7ffe073355e98f0edcf3b38674d848ca6c61cef651d59502fd4970b39d0c5e49",
+          "sourceLinesZeroBased": [
+            1,
+            3
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC02",
+      "ruleIds": [
+        "LA-F03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 155,
+          "endUtf16Exclusive": 235,
+          "fragmentSha256Utf8": "d71f1a42215e6f510fcf5785f46a1ff74414d1b36ee18073055e6307cc16d041",
+          "sourceLinesZeroBased": [
+            3,
+            3
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC03",
+      "ruleIds": [
+        "LA-E17"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 155,
+          "endUtf16Exclusive": 306,
+          "fragmentSha256Utf8": "b87d47cb6ee58b8adc7216dd6109a786f3e17317f92c0de9f0fdaaeb75abbef0",
+          "sourceLinesZeroBased": [
+            3,
+            4
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC04",
+      "ruleIds": [
+        "LA-E18"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 235,
+          "endUtf16Exclusive": 306,
+          "fragmentSha256Utf8": "ba0c961eb90f979be1d0b64a3badd01e56fbce4b59c4e94a882b075a234c24c8",
+          "sourceLinesZeroBased": [
+            4,
+            4
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC05",
+      "ruleIds": [
+        "LA-E19"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 306,
+          "endUtf16Exclusive": 464,
+          "fragmentSha256Utf8": "2791fb51a053642c86f87037563a9f5cc518764269fd2de7181f3075282648e4",
+          "sourceLinesZeroBased": [
+            5,
+            6
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC06",
+      "ruleIds": [
+        "LA-E20"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 464,
+          "endUtf16Exclusive": 630,
+          "fragmentSha256Utf8": "c0c96f05d8928e1c94737502f1b13cd801da28c599295c79e018b5ebbe55611c",
+          "sourceLinesZeroBased": [
+            7,
+            8
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC07",
+      "ruleIds": [
+        "LA-E21"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 547,
+          "endUtf16Exclusive": 630,
+          "fragmentSha256Utf8": "9df8081a6f4859efc373fe28e2519e5dab6bde276707d8aaeceb3bc5bac0c2cf",
+          "sourceLinesZeroBased": [
+            8,
+            8
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC08",
+      "ruleIds": [
+        "LA-E22"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 630,
+          "endUtf16Exclusive": 795,
+          "fragmentSha256Utf8": "55c69d0b6f0a4241466cb23050d5e17709aa01e67061cbfcf3ec9dc9d3ee9a2d",
+          "sourceLinesZeroBased": [
+            9,
+            10
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC09",
+      "ruleIds": [
+        "LA-F03"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 712,
+          "endUtf16Exclusive": 795,
+          "fragmentSha256Utf8": "2a307e3b9d7eacc03da5082f5e2e4d770a534fcdb7fc3a748872b7ef9b582803",
+          "sourceLinesZeroBased": [
+            10,
+            10
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC10",
+      "ruleIds": [
+        "LA-E02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 795,
+          "endUtf16Exclusive": 870,
+          "fragmentSha256Utf8": "d0ea1deea42dcea01ef9c74e1ae601d5c015513784f0fefd5707769161474dff",
+          "sourceLinesZeroBased": [
+            11,
+            11
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC11",
+      "ruleIds": [
+        "LA-E02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 795,
+          "endUtf16Exclusive": 944,
+          "fragmentSha256Utf8": "ba1af433136420202c92c355a79f8abb7a1d7b3c74c07fafbfcc50837c0c9321",
+          "sourceLinesZeroBased": [
+            11,
+            12
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC12",
+      "ruleIds": [
+        "LA-E02"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 944,
+          "endUtf16Exclusive": 1104,
+          "fragmentSha256Utf8": "507904629ebb0d97cfb90cb75abcdcfbdc06b295c21b1c762e9e97993c9c22f6",
+          "sourceLinesZeroBased": [
+            13,
+            14
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC13",
+      "ruleIds": [
+        "LA-A07"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 944,
+          "endUtf16Exclusive": 1104,
+          "fragmentSha256Utf8": "507904629ebb0d97cfb90cb75abcdcfbdc06b295c21b1c762e9e97993c9c22f6",
+          "sourceLinesZeroBased": [
+            13,
+            14
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC14",
+      "ruleIds": [
+        "LA-E24"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1025,
+          "endUtf16Exclusive": 1104,
+          "fragmentSha256Utf8": "02af8355d5b8fbd16d5f7104abde691ab54762d1ecc721a2875f5103d7bd900c",
+          "sourceLinesZeroBased": [
+            14,
+            14
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC15",
+      "ruleIds": [
+        "LA-A10",
+        "LA-E13"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1025,
+          "endUtf16Exclusive": 1182,
+          "fragmentSha256Utf8": "5352b7220d3cae235e4521f8be95666b93051ab66f4dc41430d4a0b45a3467de",
+          "sourceLinesZeroBased": [
+            14,
+            15
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC16",
+      "ruleIds": [
+        "LA-A10"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1104,
+          "endUtf16Exclusive": 1259,
+          "fragmentSha256Utf8": "10a4cb43a099ff296a8a5252ce3691dc83ae406b503caaa44104907ac96780aa",
+          "sourceLinesZeroBased": [
+            15,
+            16
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC17",
+      "ruleIds": [
+        "LA-E12",
+        "LA-E18"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1259,
+          "endUtf16Exclusive": 1572,
+          "fragmentSha256Utf8": "5866b45318f2803bf6394fece96dbd9fb4783e1aa272bd3598d05e82a1aa315f",
+          "sourceLinesZeroBased": [
+            17,
+            20
+          ]
+        }
+      ],
+      "role": "illustrative"
+    },
+    {
+      "id": "FC18",
+      "ruleIds": [
+        "LA-E18"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1495,
+          "endUtf16Exclusive": 1572,
+          "fragmentSha256Utf8": "7de3ea73d4a14e4dd04ae09813e1ceff7672d4d7a450c5d24c7ebe7ffe4c9a4e",
+          "sourceLinesZeroBased": [
+            20,
+            20
+          ]
+        }
+      ],
+      "role": "normative"
+    },
+    {
+      "id": "FC19",
+      "ruleIds": [
+        "LA-E25"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1572,
+          "endUtf16Exclusive": 1654,
+          "fragmentSha256Utf8": "e2471fc9a5f8a10365758681828364543e56b8254c06324cfa55b6c2712a8ce8",
+          "sourceLinesZeroBased": [
+            21,
+            21
+          ]
+        }
+      ],
+      "role": "normative"
+    }
+  ],
+  "examples": [
+    {
+      "id": "EX01",
+      "scenario": "Число в реакции на слова ведущего о ресурсе",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE07",
+        "RE08",
+        "RE09"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 554,
+          "endUtf16Exclusive": 860,
+          "fragmentSha256Utf8": "244d65785d8b184a0455402bc638c9507129eb41f40b93154d10a23d0aee8b3a",
+          "sourceLinesZeroBased": [
+            8,
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX02",
+      "scenario": "Подкол о регистрации тюнингованной машины",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE29",
+        "RE25",
+        "RE27"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2621,
+          "endUtf16Exclusive": 2920,
+          "fragmentSha256Utf8": "c649c619a177c7fb2f268bb779584ed55103acc3186aa85c93c11a33f0990c16",
+          "sourceLinesZeroBased": [
+            35,
+            38
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX03",
+      "scenario": "Личный опыт с отметками в правах",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE30",
+        "RE07"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2920,
+          "endUtf16Exclusive": 3084,
+          "fragmentSha256Utf8": "35ae4ac36f9c28cb0caa1eccebdc37ca89931c35ae43f8295ff35d253d15adb5",
+          "sourceLinesZeroBased": [
+            39,
+            41
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX04",
+      "scenario": "Поправка к неудачному выражению о надёжности",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE31",
+        "RE04",
+        "RE05"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3084,
+          "endUtf16Exclusive": 3277,
+          "fragmentSha256Utf8": "9a3ee621a26a807630dd21e7f7c74d2d19c07d0d1af2061128e394b9a76fc606",
+          "sourceLinesZeroBased": [
+            42,
+            44
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX05",
+      "scenario": "Реплика о выросшей цене под старым роликом",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE32",
+        "RE33"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3277,
+          "endUtf16Exclusive": 3597,
+          "fragmentSha256Utf8": "c305f613fd03f961e5765691baf9bc6dbd3033f4d95809357cf110038d7027ba",
+          "sourceLinesZeroBased": [
+            45,
+            49
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX06",
+      "scenario": "Благодарность после консультации",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE34"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3597,
+          "endUtf16Exclusive": 3717,
+          "fragmentSha256Utf8": "9a6e58e89bc0373592d2dda86c61070f5f33072dab3c400a85867d7e0c5a1e38",
+          "sourceLinesZeroBased": [
+            50,
+            51
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX07",
+      "scenario": "Доброжелательная похвала герою ролика",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE35"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3717,
+          "endUtf16Exclusive": 3897,
+          "fragmentSha256Utf8": "adea01dff4b75461b089b78425f456b01a333df594f51b789ec84a27945ab332",
+          "sourceLinesZeroBased": [
+            52,
+            54
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX08",
+      "scenario": "Ирония о дизайне приборов",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE36",
+        "RE37"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3897,
+          "endUtf16Exclusive": 4172,
+          "fragmentSha256Utf8": "de3960e6e8740ef6a8e1eeaba8f29c0f9ec314d97aa40299587c1b022c8a3cc5",
+          "sourceLinesZeroBased": [
+            55,
+            58
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX09",
+      "scenario": "Предпочтение другой машины",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE38",
+        "RE39"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4172,
+          "endUtf16Exclusive": 4434,
+          "fragmentSha256Utf8": "4ad147fb702cb6336324c7ee8fb59405c1f438b7051b60ea12c691d64303a2a9",
+          "sourceLinesZeroBased": [
+            59,
+            62
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX10",
+      "scenario": "Шутка о высокой цене",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE40",
+        "RE41"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4434,
+          "endUtf16Exclusive": 4634,
+          "fragmentSha256Utf8": "181a929bcf8e8ecd245fbb1085b6b751e20acc914ec4a49caf17a69c4dca29a3",
+          "sourceLinesZeroBased": [
+            63,
+            65
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX11",
+      "scenario": "Жалоба после оплаты без ответа",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE42",
+        "RE43",
+        "RE44",
+        "RE45",
+        "RE46"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4634,
+          "endUtf16Exclusive": 5154,
+          "fragmentSha256Utf8": "64f6f639c41ee1bfba05ff55d951d4cc4fec08d9c2b31116fc4c096f13b40727",
+          "sourceLinesZeroBased": [
+            66,
+            72
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX12",
+      "scenario": "Замечание о манере ответа ИИ",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE47"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5154,
+          "endUtf16Exclusive": 5432,
+          "fragmentSha256Utf8": "1d7a03b51ade4cbb229078de83683fec7f66bdc1341b54a9b5a51997fa568115",
+          "sourceLinesZeroBased": [
+            73,
+            76
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX13",
+      "scenario": "Вопрос о приводе при уже известной модели",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE48",
+        "RE49",
+        "RE50"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5432,
+          "endUtf16Exclusive": 5731,
+          "fragmentSha256Utf8": "2736eae958f8591cf5bc05013bdceba2e79e754418742c2bf823dd08bac445a9",
+          "sourceLinesZeroBased": [
+            77,
+            80
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX14",
+      "scenario": "Таблица объёма для разных версий без положения сидений",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "FC17",
+        "FC18"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1259,
+          "endUtf16Exclusive": 1572,
+          "fragmentSha256Utf8": "5866b45318f2803bf6394fece96dbd9fb4783e1aa272bd3598d05e82a1aa315f",
+          "sourceLinesZeroBased": [
+            17,
+            20
+          ]
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "type": "exact_semantic_duplicate",
+      "sources": [
+        "L00:003",
+        "L03:001"
+      ],
+      "targetRuleIds": [
+        "LA-F01"
+      ],
+      "resolution": "Один запрет выдуманных фактов; две ссылки происхождения."
+    },
+    {
+      "type": "merged_overlap",
+      "sources": [
+        "G00",
+        "L00",
+        "G01",
+        "G08",
+        "G17",
+        "REPLY_EDITING"
+      ],
+      "targetRuleIds": [
+        "LA-S01",
+        "LA-S02",
+        "LA-O01"
+      ],
+      "resolution": "Тон, объём и публичный формат разделены; HOW не подменяет выбор реакции."
+    },
+    {
+      "type": "merged_overlap",
+      "sources": [
+        "G06",
+        "G14",
+        "REPLY_EDITING",
+        "FACT_CHECKING"
+      ],
+      "targetRuleIds": [
+        "LA-A05",
+        "LA-A06",
+        "LA-F03",
+        "LA-E18"
+      ],
+      "resolution": "Контекст, просмотр и применимость факта сохранены как разные условия."
+    },
+    {
+      "type": "merged_overlap",
+      "sources": [
+        "G04",
+        "G16",
+        "FACT_CHECKING"
+      ],
+      "targetRuleIds": [
+        "LA-A10",
+        "LA-A13"
+      ],
+      "resolution": "Недостающий факт не автоматический hold; обязательное внутреннее решение остаётся открытым."
+    },
+    {
+      "type": "refinement_not_duplicate",
+      "sources": [
+        "G03",
+        "L05",
+        "REPLY_EDITING"
+      ],
+      "targetRuleIds": [
+        "LA-A09",
+        "LA-F06"
+      ],
+      "resolution": "Возраст ролика и подтверждение новой суммы — разные проверки; CTA не разрешён."
+    },
+    {
+      "type": "layer_separation",
+      "sources": [
+        "G17",
+        "FACT_CHECKING"
+      ],
+      "targetRuleIds": [
+        "LA-O01",
+        "LA-E22"
+      ],
+      "resolution": "Прямой URL сохраняется в доказательстве, исследовательские источники не переносятся в публичный ответ."
+    },
+    {
+      "type": "compatible_defaults",
+      "sources": [
+        "G08",
+        "REPLY_EDITING"
+      ],
+      "targetRuleIds": [
+        "LA-S02"
+      ],
+      "resolution": "1–3 предложения и предпочтение 1–2 фраз сохранены как ориентиры с исключением для содержательного вопроса, не жёсткий лимит."
+    }
+  ],
+  "coverage": [
+    {
+      "sourceId": "G00",
+      "entryId": "knowledge-3a599d84ae41483f717fab0ca7d00531e9b575fa16340ee6019ab353afe3e56b",
+      "versionId": "knowledge-version-9a6b0c6f3f06d0ac2da7715ff76694f8a0cb99d0af27086862633b5ae0469410",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G01",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "clauseCount": 5,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G02",
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "clauseCount": 4,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G03",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "clauseCount": 6,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G04",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "clauseCount": 6,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G05",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "clauseCount": 5,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G06",
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "clauseCount": 4,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G07",
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "clauseCount": 4,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G08",
+      "entryId": "knowledge-65c2eba8c7141bbac3b2fa0057e410e0a6a08dc92f8655ee30a91efa1b9f4ed7",
+      "versionId": "knowledge-version-b540361f7329d24a6164b5f031e4052590a697bd6e3649cc2a7c372e4838b239",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G09",
+      "entryId": "knowledge-f9058312cc772d98357b2032c26f91e7b5b28e17839748351839a1553f5e0d62",
+      "versionId": "knowledge-version-826545e306ed227fadb4e32704e4f8abbc6915667aef75be93465ff1ededfd90",
+      "clauseCount": 1,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G10",
+      "entryId": "knowledge-ccfab24cc9c5363913ab51cf3e9d23a5cc6fecd768c37e32639438356ddeab24",
+      "versionId": "knowledge-version-11685d254268cdcd637b83017d8c9ee2d8c55f318081b0ebd66f5823d2ecc6dd",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G11",
+      "entryId": "knowledge-43199fe687bba0d7e13cd6835dabf9b862eb076dddf7ac2caafd8836f1c45f12",
+      "versionId": "knowledge-version-b910b64fdf6110b86a476da2ae7954f8e9fc0d623b555516a2f8b40d5a793285",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G12",
+      "entryId": "knowledge-3935c61f166856444970ad3e0c4bcb9c067d55dc2697b2b024c905189c220ecd",
+      "versionId": "knowledge-version-2fe57f6717c30a90a6d811e27ad10ee30d2768811491cf9ce978560cc8811398",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G14",
+      "entryId": "knowledge-0713ad1c49d28888af038ea739d0ab40e38c4018945473e9c881134aa496db22",
+      "versionId": "knowledge-version-465308a135b200164545a239c6977f00077ea401156fc6721533dda6e19f9b29",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G15",
+      "entryId": "knowledge-a6f5160be8e96884d9845d6ad52c4b6b25e7a8fa95f70979884a47cc63d0d5ba",
+      "versionId": "knowledge-version-9b26ac8a94f090edf403ab4e758b242b9e766c695ad9fe62f5db9912ac2b25ad",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G16",
+      "entryId": "knowledge-8ccafb5b3316aad5206b03f84b7a08e6215a33bf7e11ef37797c8849455fbcb5",
+      "versionId": "knowledge-version-e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+      "clauseCount": 3,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G17",
+      "entryId": "knowledge-3c197c7d658453d6cff47a93226e5845e75ef11005a0bd1820b8b7ce758efbd3",
+      "versionId": "knowledge-version-14a6aa766168164bddf537522328a945b650a9d3b29f9c82c408501a0c466f49",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G18",
+      "entryId": "knowledge-e09481db6977e60a02dcd1ae32237cd81f87b7c9abdc4947eea67b0f606aaf41",
+      "versionId": "knowledge-version-c46e7202483015d2bceb1992829d25d43f088826ffa97a980fcdeaf12afc9a83",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "G19",
+      "entryId": "knowledge-33c464b58c5ec1c788b4f808183c4d321155fbd8a09319d76f6d20dc2f423a35",
+      "versionId": "knowledge-version-b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+      "clauseCount": 3,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "L00",
+      "entryId": "knowledge-6dee713fb251752af3cdc87cde26efb2426d4921094e0fd827a66d8b0169f5ec",
+      "versionId": "knowledge-version-e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+      "clauseCount": 3,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "L01",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "clauseCount": 5,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "L03",
+      "entryId": "knowledge-234dc0e60ae683ee4eacefd4866aa253c3643579483ac4f6287480a1bf52973e",
+      "versionId": "knowledge-version-67b59b9abf852384c78255ecf908ba690b6e3d8e47b910f85ef4f02f78a68643",
+      "clauseCount": 1,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "L04",
+      "entryId": "knowledge-bfa5d819caeba767e015b004d4bd19f5b0e499d91010f15b8e87d34f7fdab09a",
+      "versionId": "knowledge-version-23dad4e5720bd0a40cb23abd88a7cae3458184ef00d2260cd899c7c9cf20f7a1",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "L05",
+      "entryId": "knowledge-c3d742ea3ec5325d945ddf74a39ae040d45bb9bce56911fa40bcc7f78b10ee44",
+      "versionId": "knowledge-version-29df948b308a72dfe6b8119d67794587f452974ade1e7254126ae8f5eed86c60",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "L06",
+      "entryId": "knowledge-f08cf1d6273b5f4e9929cb9787cb4de13e23080b2e27d12d5d5a8b2ec578e07d",
+      "versionId": "knowledge-version-85afee893260a500e4fc27c9e89a3304dede81f0ded23c2e2703d8ec3919f5ec",
+      "clauseCount": 2,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "L07",
+      "entryId": "knowledge-580c8c0e7444886f46a7c950331995c1ed2ca6f2d83299e6e9b9ee0df2bd5ce5",
+      "versionId": "knowledge-version-b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+      "clauseCount": 3,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "clauseCount": 82,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "clauseCount": 21,
+      "disposition": "replace"
+    },
+    {
+      "sourceId": "C_FORBIDDEN_SUBSTRINGS",
+      "entryId": "knowledge-16d963fe5e4aa4bbf63d7145e21271040c0d8be84bcab18cd03342a5dd551441",
+      "versionId": "knowledge-version-57318cfe0cee15c0fd3b09558a85ba48b2db68ae71af0107b3c961125ec53463",
+      "clauseCount": 1,
+      "disposition": "retain"
+    },
+    {
+      "sourceId": "C_ALLOWED_URLS",
+      "entryId": "knowledge-6eed4715e716260a0e4ade0fa85a025cb6447a49513bab446186573bebb71bd9",
+      "versionId": "knowledge-version-6e66d50f8c24b78649c0fa87522dca8fdadd3cfc99c059815221932a03a6c6d7",
+      "clauseCount": 1,
+      "disposition": "retain"
+    },
+    {
+      "sourceId": "C_FORBIDDEN_PREFIXES",
+      "entryId": "knowledge-5cd9d4c9c802e488ed5a3c77df23c11f8c85f1e5be3799e0e7fa8ce9032b3e63",
+      "versionId": "knowledge-version-89ab654ef7fad356014a0a7970420488fd591b9d4b07fa5ed8c96bae2956c891",
+      "clauseCount": 1,
+      "disposition": "retain"
+    }
+  ]
+}

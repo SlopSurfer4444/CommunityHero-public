@@ -1,0 +1,23 @@
+{
+  "actorId": "alice",
+  "base": {
+    "workspaceVersion": "fixture:1", "operator": {"id": "alice"}, "csrfToken": "session",
+    "items": [{"id": "a", "revision": 1}, {"id": "b", "revision": 1}],
+    "conversations": [{"id": "chat", "messages": [{"text": "first"}]}],
+    "settings": {"enabled": false}, "oldField": "removed"
+  },
+  "current": {
+    "workspaceVersion": "fixture:2", "operator": {"id": "alice"}, "csrfToken": "session",
+    "items": [{"id": "c", "revision": 1}, {"id": "a", "revision": 2}],
+    "conversations": [{"id": "chat", "messages": [{"text": "first"}, {"text": "second"}]}],
+    "settings": {"enabled": true}
+  },
+  "delta": {
+    "kind": "delta", "baseVersion": "fixture:1", "workspaceVersion": "fixture:2", "actorId": "alice",
+    "collections": {
+      "items": {"upsert": [{"id": "c", "revision": 1}, {"id": "a", "revision": 2}], "remove": ["b"], "order": ["c", "a"]},
+      "conversations": {"upsert": [{"id": "chat", "messages": [{"text": "first"}, {"text": "second"}]}], "remove": []}
+    },
+    "set": {"settings": {"enabled": true}}, "remove": ["oldField"]
+  }
+}

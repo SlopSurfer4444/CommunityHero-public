@@ -1,0 +1,169 @@
+/* Prototype material owner. Load after style.css; layout and message semantics
+   remain in that stylesheet. Only the reply editor samples content behind it. */
+:root {
+  --material-reading: #fff;
+  --material-workbench: #e6e5eb;
+  --material-panel: #ecebf0;
+  --material-input: #fff;
+  --material-editor-solid: #e6e5eb;
+  --material-editor-focus-solid: #e1e0e8;
+  --material-editor-tint: rgb(235 233 243 / 56%);
+  --material-editor-focus-tint: rgb(238 236 247 / 66%);
+  --material-edge: rgb(255 255 255 / 78%);
+  --material-divider: #c9c5d3;
+  --line-soft: #eeecf2;
+  --line-structural: #c9c5d3;
+  --material-panel-shadow: inset 0 1px 0 var(--material-edge), 0 2px 8px rgb(36 33 43 / 6%);
+  --material-editor-shadow: inset 0 1px 0 var(--material-edge), 0 3px 12px rgb(36 33 43 / 7%);
+  --material-input-shadow: inset 0 1px 0 #fff, 0 1px 3px rgb(36 33 43 / 4%);
+  --material-dialog-shadow: 0 12px 40px rgb(36 33 43 / 16%);
+  --material-overlay-scrim: rgb(36 33 43 / 32%);
+  --canvas: var(--material-workbench);
+  --surface: var(--material-reading);
+  --reply: #e4ecf8;
+  --reply-line: #c6d5eb;
+  --composer-bottom: 16px;
+}
+
+/* The reading canvas and the lower composer mask remain fully opaque. */
+.work-surface,
+.detail:has(.editor-surface)::after {
+  background: var(--material-reading);
+}
+
+.assistant-slot .ai {
+  width: calc(var(--assistant-width) - 16px);
+  height: calc(100% - 16px);
+  margin: 8px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--material-panel);
+  box-shadow: var(--material-panel-shadow);
+}
+
+/* The visible card starts 8px inside its slot; centre the grip on that edge. */
+.assistant-slot > .column-resizer {
+  --resize-axis: 50%;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+}
+
+.editor-surface {
+  background: var(--material-editor-solid);
+  box-shadow: var(--material-editor-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.editor-surface:has(textarea:focus-visible) {
+  background: var(--material-editor-focus-solid);
+}
+
+/* Solid colors above are the default when backdrop filtering is unavailable. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .editor-surface, .ai-form {
+    background: linear-gradient(145deg,rgb(255 255 255 / 30%),rgb(255 255 255 / 3%) 45%,rgb(220 216 237 / 15%)),var(--material-editor-tint);
+    -webkit-backdrop-filter: blur(10px) saturate(135%);
+    backdrop-filter: blur(10px) saturate(135%);
+  }
+  .editor-surface:has(textarea:focus-visible), .ai-form:has(textarea:focus-visible) {
+    background: var(--material-editor-focus-tint);
+  }
+}
+
+/* A cheaper material during continuous pointer drag; normal transitions keep the glass. */
+.shell.is-resizing .editor-surface, .shell.is-resizing .ai-form {
+  background: var(--material-editor-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.shell.is-resizing .editor-surface:has(textarea:focus-visible) {
+  background: var(--material-editor-focus-solid);
+}
+
+/* Input floats over the actual scroll content; padding keeps the final message reachable. */
+.assistant-slot .ai { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); }
+.ai-head { grid-column:1; grid-row:1; }
+.ai-scroll { grid-column:1; grid-row:2; padding-bottom:var(--ai-input-cover,160px); scroll-padding-bottom:var(--ai-input-cover,160px); }
+.ai-form { grid-column:1; grid-row:2; align-self:end; z-index:2; }
+.editor-surface,.ai-form {
+  border:1px solid rgb(255 255 255 / 68%);
+  box-shadow:inset 0 1px 0 rgb(255 255 255 / 85%),inset 0 -1px 0 rgb(100 87 130 / 12%),0 8px 28px rgb(50 40 75 / 10%),0 1px 3px rgb(50 40 75 / 6%);
+}
+.editor-surface::after,.ai-form::after {
+  content:''; position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(120deg,rgb(255 255 255 / 42%),transparent 23%,transparent 78%,rgb(255 255 255 / 22%));
+  box-shadow:inset 1px 0 0 rgb(255 255 255 / 45%),inset -1px 0 0 rgb(255 255 255 / 28%);
+}
+.input-surface > :is(textarea,.composer-actions,.decision-copy,.completion-copy,.stale,.save-note) { position:relative; z-index:1; }
+.editor-surface:has(textarea:focus-visible),.ai-form:has(textarea:focus-visible) { border-color:#bcb2ce; }
+
+/* Hierarchy: quiet separators between comments, stronger boundaries between tools. */
+.queue-row { border-bottom-color:var(--line-soft); }
+.thread-node + .thread-node > .message:not(.is-target):not(.brand) { border-top-color:var(--line-soft); }
+.list { border-right-color:var(--line-structural); }
+.detail-head,.overview-head { border-bottom-color:var(--line-structural); }
+.filters { border-bottom-color:var(--line-structural); }
+.nav-group { color:#554575; font-weight:750; }
+.nav-group .comments-glyph::before { content:''; position:absolute; inset:-7px; border-radius:10px; background:#ddd7e9; box-shadow:inset 0 0 0 1px #c9bfdc; }
+.nav-group .comments-glyph > svg { stroke-width:2.1; }
+.nav-group:hover .comments-glyph::before { background:#d3c9e3; }
+.closure-dialog {
+  background: var(--material-reading);
+  border-color: var(--material-divider);
+  box-shadow: var(--material-dialog-shadow);
+}
+.closure-dialog::backdrop {
+  background: var(--material-overlay-scrim);
+}
+.local-result {
+  border-color: var(--material-divider);
+  box-shadow: var(--material-panel-shadow);
+}
+
+@media (max-width: 820px) {
+  .assistant-slot .ai { width: calc(100% - 16px); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --material-edge: #fff;
+    --material-overlay-scrim: #dddae2;
+  }
+  .editor-surface,.ai-form,
+  .editor-surface:has(textarea:focus-visible),.ai-form:has(textarea:focus-visible) {
+    background: var(--material-editor-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --material-reading: Canvas;
+    --material-workbench: Canvas;
+    --material-panel: Canvas;
+    --material-input: Canvas;
+    --material-editor-solid: Canvas;
+    --material-editor-focus-solid: Canvas;
+    --material-divider: CanvasText;
+    --material-overlay-scrim: Canvas;
+  }
+  .editor-surface,.ai-form,
+  .editor-surface:has(textarea:focus-visible),.ai-form:has(textarea:focus-visible) {
+    background: Canvas;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .editor-surface::after,.ai-form::after,.nav-group .comments-glyph::before { display:none; }
+  .assistant-slot .ai,
+  .editor-surface,
+  .ai-form,
+  .ai-form:has(textarea:focus-visible),
+  .closure-dialog,
+  .local-result {
+    box-shadow: none;
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+}

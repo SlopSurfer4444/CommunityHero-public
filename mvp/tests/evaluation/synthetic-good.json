@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "outputs": [
+    {
+      "caseId": "synthetic-example",
+      "caseHash": "b9f6b6c841ea973ad1e01cc3cfc37ad53d62d9f2e3030b396ba1cd6036ffa053",
+      "itemId": "synthetic-item",
+      "action": "reply",
+      "text": "Synthetic test reply",
+      "sourceIds": [
+        "synthetic-source"
+      ],
+      "prepareRunId": "synthetic-run",
+      "feedbackEventId": "synthetic-feedback"
+    }
+  ]
+}

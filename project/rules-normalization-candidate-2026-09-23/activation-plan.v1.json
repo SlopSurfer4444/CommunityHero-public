@@ -1,0 +1,4771 @@
+{
+  "schemaVersion": 1,
+  "requestId": "likeavto-normalize-20260923-v1",
+  "candidateId": "likeavto-rules-2026-09-23-v1",
+  "account": "LikeAvto",
+  "sources": [
+    {
+      "entryId": "knowledge-3a599d84ae41483f717fab0ca7d00531e9b575fa16340ee6019ab353afe3e56b",
+      "versionId": "knowledge-version-9a6b0c6f3f06d0ac2da7715ff76694f8a0cb99d0af27086862633b5ae0469410",
+      "versionHash": "9a6b0c6f3f06d0ac2da7715ff76694f8a0cb99d0af27086862633b5ae0469410",
+      "sourceHash": "0ff5c4555453c83e4c5f57468dd2bf804135f90475df4c0e0faf069be2a6ec80",
+      "textSha256Utf8": "ccc2d14a1b84672dab1298bbe3a2a1f68ca4b4731af69ca4e7bac116f30a4d6e",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "versionHash": "087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "sourceHash": "b53ce407ed889a2b3ab6994528378d7c333578ad9658531fb97d6a5d3a4880d7",
+      "textSha256Utf8": "ba1e181e60a231429f08aece9573e3bea31744d5ef238871102c3921bf937faa",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "versionHash": "b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "sourceHash": "b9ed21869757fe00f240abc3226ccc73ccce28112ea6ae3600eaeb6904b5dbc9",
+      "textSha256Utf8": "e0ab05b95a5bb5992af774bfe63fcda7f289685eefdda327316e67f789fb9a45",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "versionHash": "5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "sourceHash": "7c0eb5b4e1362cb5d53fd209eb0283d594df4bffb56de245d87a44d3674851e1",
+      "textSha256Utf8": "ac143359eb65d1743278f1b18cc7ea4f83e45ff3c6c9bb1cf9b45f9ada49fee1",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "versionHash": "5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "sourceHash": "9d36d83610339b87e93c81b114f1a4b6c6394940ed5f9e9219d0c6acb0c37798",
+      "textSha256Utf8": "cf6986ecb7c8c47b9fa22b1f2def027863fb7ca9b6c20cc37ea0bf8e4a82cd85",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "versionHash": "21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "sourceHash": "f8cabf6ce60a8fcfd9a6e7f45a26df02bb3792261da85029b1e5ca9817a05149",
+      "textSha256Utf8": "35d0a112ab33920394000e7566d59bd697e0c5b45f0f928816828b24dda89089",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "versionHash": "52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "sourceHash": "d66f34da2d3758c5d521f4ffe07d7fd751a1076da21c0a1a3c76e3cd145e80cc",
+      "textSha256Utf8": "7e1903c8259b6919e287df48f63cecf5be1f35a1831d001597d86528c5f6a749",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "versionHash": "f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "sourceHash": "9599592bc7e17d74128e6976b0287d3b633317b3553a505c9507ed99fbcb1ee1",
+      "textSha256Utf8": "5e5725c87d2417282a22ec40a61d4a3c9a311127c19a384ddb5960065beed6e4",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-65c2eba8c7141bbac3b2fa0057e410e0a6a08dc92f8655ee30a91efa1b9f4ed7",
+      "versionId": "knowledge-version-b540361f7329d24a6164b5f031e4052590a697bd6e3649cc2a7c372e4838b239",
+      "versionHash": "b540361f7329d24a6164b5f031e4052590a697bd6e3649cc2a7c372e4838b239",
+      "sourceHash": "6e8df48f335d2d0488f042d827fbe14a86dd3a20c3d4c7e22ad4928916f2304d",
+      "textSha256Utf8": "84f28c77a293e26579b9d1847e324fc941e9f47fac225adba2cfbc84bb125267",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-f9058312cc772d98357b2032c26f91e7b5b28e17839748351839a1553f5e0d62",
+      "versionId": "knowledge-version-826545e306ed227fadb4e32704e4f8abbc6915667aef75be93465ff1ededfd90",
+      "versionHash": "826545e306ed227fadb4e32704e4f8abbc6915667aef75be93465ff1ededfd90",
+      "sourceHash": "50e7327c0565a17846b652b6db665d7360eb723206e8eeba1ea472c53ab0477e",
+      "textSha256Utf8": "7fd3c564b3e731b8d43ade08e872ed11ef9044b495aca7ee5d2f776ae22e27c2",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-ccfab24cc9c5363913ab51cf3e9d23a5cc6fecd768c37e32639438356ddeab24",
+      "versionId": "knowledge-version-11685d254268cdcd637b83017d8c9ee2d8c55f318081b0ebd66f5823d2ecc6dd",
+      "versionHash": "11685d254268cdcd637b83017d8c9ee2d8c55f318081b0ebd66f5823d2ecc6dd",
+      "sourceHash": "9d7b6ac79e0f175a91a3212180bac1d891df9760f4f169bf366eea4e2f8fbcba",
+      "textSha256Utf8": "5bdfb39c1309837e76929e73cc8e5dd253101940b4905627cd7ccf4298568810",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-43199fe687bba0d7e13cd6835dabf9b862eb076dddf7ac2caafd8836f1c45f12",
+      "versionId": "knowledge-version-b910b64fdf6110b86a476da2ae7954f8e9fc0d623b555516a2f8b40d5a793285",
+      "versionHash": "b910b64fdf6110b86a476da2ae7954f8e9fc0d623b555516a2f8b40d5a793285",
+      "sourceHash": "93d319a468b537bbc76cf8806a93328bb18f8ca767e5d0cf348dc230e63e8f70",
+      "textSha256Utf8": "522fbfcaf6e154f504da9d8a700a423a8ad104ee6123dbbe8c326f448084f136",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-3935c61f166856444970ad3e0c4bcb9c067d55dc2697b2b024c905189c220ecd",
+      "versionId": "knowledge-version-2fe57f6717c30a90a6d811e27ad10ee30d2768811491cf9ce978560cc8811398",
+      "versionHash": "2fe57f6717c30a90a6d811e27ad10ee30d2768811491cf9ce978560cc8811398",
+      "sourceHash": "16f6d0348db3b5515c458f1bd83931a08f579618526c6295da36746d69b13917",
+      "textSha256Utf8": "e9e1261647bd70a99ee1127e5e4baef743c09a6af8023a81c388622465883159",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-0713ad1c49d28888af038ea739d0ab40e38c4018945473e9c881134aa496db22",
+      "versionId": "knowledge-version-465308a135b200164545a239c6977f00077ea401156fc6721533dda6e19f9b29",
+      "versionHash": "465308a135b200164545a239c6977f00077ea401156fc6721533dda6e19f9b29",
+      "sourceHash": "96f7e2a780bb213b5e754356ef3787903870d7c113ec01db0710553c0161d972",
+      "textSha256Utf8": "00a119f8f7b96ff8518338304c9b981ede809da16d11ff6e82f19a6d094cdd71",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-a6f5160be8e96884d9845d6ad52c4b6b25e7a8fa95f70979884a47cc63d0d5ba",
+      "versionId": "knowledge-version-9b26ac8a94f090edf403ab4e758b242b9e766c695ad9fe62f5db9912ac2b25ad",
+      "versionHash": "9b26ac8a94f090edf403ab4e758b242b9e766c695ad9fe62f5db9912ac2b25ad",
+      "sourceHash": "fe9ce83409c873182d2eebc7ba6f4bf27025ce98d2dbb801debed60bd599ec40",
+      "textSha256Utf8": "b898068c254720697b3b888b3adb8d97fd6c2cbd2dbfa6ba5b72a4fc25bcaf14",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-8ccafb5b3316aad5206b03f84b7a08e6215a33bf7e11ef37797c8849455fbcb5",
+      "versionId": "knowledge-version-e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+      "versionHash": "e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+      "sourceHash": "562854741787a4c848c502fa226ae89f6599aba5342e7ba31161186ce39611af",
+      "textSha256Utf8": "aa7b3b33d322f658916e4b18e7c8e44cf2f4b469edfa98c3b2d6c1ac75aeccc3",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-3c197c7d658453d6cff47a93226e5845e75ef11005a0bd1820b8b7ce758efbd3",
+      "versionId": "knowledge-version-14a6aa766168164bddf537522328a945b650a9d3b29f9c82c408501a0c466f49",
+      "versionHash": "14a6aa766168164bddf537522328a945b650a9d3b29f9c82c408501a0c466f49",
+      "sourceHash": "738e27bd913c79e2754fd86558ae116eeceb1fc91daff36b7052732b7216d4a5",
+      "textSha256Utf8": "01c495cd834d8da912f93ff1e7e64d8195f6a6b00bd4ddb8a341821f5e1b622c",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-e09481db6977e60a02dcd1ae32237cd81f87b7c9abdc4947eea67b0f606aaf41",
+      "versionId": "knowledge-version-c46e7202483015d2bceb1992829d25d43f088826ffa97a980fcdeaf12afc9a83",
+      "versionHash": "c46e7202483015d2bceb1992829d25d43f088826ffa97a980fcdeaf12afc9a83",
+      "sourceHash": "7f45f391e7f0e5e3aa69b4106f349ea42a6e52c26cc985977588429e88f5efa1",
+      "textSha256Utf8": "270bf1f6021b5de99257e489bf1dcb9838b59da1528dbccf1d6c0e09433b70bc",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-33c464b58c5ec1c788b4f808183c4d321155fbd8a09319d76f6d20dc2f423a35",
+      "versionId": "knowledge-version-b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+      "versionHash": "b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+      "sourceHash": "68619d84a9e8aecf5d27f4a9ecc30a54cbc509a4e0254beabb8c169fafbfca14",
+      "textSha256Utf8": "9a87f7bd13db0be22ceae13b302879dea13aa05f3953c8b8b32a430f1a2cc743",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-6dee713fb251752af3cdc87cde26efb2426d4921094e0fd827a66d8b0169f5ec",
+      "versionId": "knowledge-version-e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+      "versionHash": "e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+      "sourceHash": "66322df6290b0924e6906924b704ac2826846de70f089553a197ec97dfd6217a",
+      "textSha256Utf8": "f828eac255e69d7c9149d83e56b8981e34a1225652c88a110f850ce8df62ea10",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "versionHash": "e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "sourceHash": "c86f67ac3a57c87a4f2512881afc9baf95988dfdbf8ba1a91dc2c366edb10544",
+      "textSha256Utf8": "d0b4e64ba22aaee4fbc600029b5f1144b35d71345447bfc35dfd4c0ab4d7b758",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-234dc0e60ae683ee4eacefd4866aa253c3643579483ac4f6287480a1bf52973e",
+      "versionId": "knowledge-version-67b59b9abf852384c78255ecf908ba690b6e3d8e47b910f85ef4f02f78a68643",
+      "versionHash": "67b59b9abf852384c78255ecf908ba690b6e3d8e47b910f85ef4f02f78a68643",
+      "sourceHash": "f635a18c8a95e787b124473fa8b6e845ba6ac3451b94d00720ecf4c5eb56a388",
+      "textSha256Utf8": "a06222d5255bfeea89eea9f490f365ae987052303320e21a82dd31c4014c7fa4",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-bfa5d819caeba767e015b004d4bd19f5b0e499d91010f15b8e87d34f7fdab09a",
+      "versionId": "knowledge-version-23dad4e5720bd0a40cb23abd88a7cae3458184ef00d2260cd899c7c9cf20f7a1",
+      "versionHash": "23dad4e5720bd0a40cb23abd88a7cae3458184ef00d2260cd899c7c9cf20f7a1",
+      "sourceHash": "b5e43c302bdc30fabb584e60fe862bf4912ea647f29c3eb02336739ba8a58906",
+      "textSha256Utf8": "f49ca4dcb25148cc3de480210ba89474fa41e515dfcaab2a8b90edc48b06dc6d",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-c3d742ea3ec5325d945ddf74a39ae040d45bb9bce56911fa40bcc7f78b10ee44",
+      "versionId": "knowledge-version-29df948b308a72dfe6b8119d67794587f452974ade1e7254126ae8f5eed86c60",
+      "versionHash": "29df948b308a72dfe6b8119d67794587f452974ade1e7254126ae8f5eed86c60",
+      "sourceHash": "e8061fe40596fdbab6cfba80911f83d594ae243616c30e670801f0c201cb1a0c",
+      "textSha256Utf8": "0408347b2006abad7bb6c3c0cc2d8d20f6c8d7ede80ad0a86824174a9ad65676",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-f08cf1d6273b5f4e9929cb9787cb4de13e23080b2e27d12d5d5a8b2ec578e07d",
+      "versionId": "knowledge-version-85afee893260a500e4fc27c9e89a3304dede81f0ded23c2e2703d8ec3919f5ec",
+      "versionHash": "85afee893260a500e4fc27c9e89a3304dede81f0ded23c2e2703d8ec3919f5ec",
+      "sourceHash": "5ae7b90594f3d8084a5f335e5cbbae461e89f648c8f694bd9aa444ce874ec7d8",
+      "textSha256Utf8": "be7993663ba3b2a55c56d6e36d8b9d302c541d4aa1d32c87faf6ac2fde1dc4c1",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-580c8c0e7444886f46a7c950331995c1ed2ca6f2d83299e6e9b9ee0df2bd5ce5",
+      "versionId": "knowledge-version-b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+      "versionHash": "b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+      "sourceHash": "b2f9294faa39d147cd9cf5a138bd007ca88d6e424108e0e298199a98d3fac4dd",
+      "textSha256Utf8": "957926ecc71ca701dbcaf9f34132955dd4fcbb65355aab9c17ef0ebd88820ec4",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "versionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "sourceHash": "27d5ef12cd6ec20bfebe810f4b1c0eb2765e48a1c70422bcf23ae35994e2f600",
+      "textSha256Utf8": "3f1897a03730c0dca8c264dea3c85f4e1d0b658456795d99e0686b5b0bca34df",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "versionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "sourceHash": "305469ac062686b6398c9b80937737d362a8bd86f64bcf4cd838bba9d38a2577",
+      "textSha256Utf8": "0ad4de2c851b82f61d4abd4edc97429ecfa9348b4a393835dfccd545872f4ce6",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "replace"
+    },
+    {
+      "entryId": "knowledge-16d963fe5e4aa4bbf63d7145e21271040c0d8be84bcab18cd03342a5dd551441",
+      "versionId": "knowledge-version-57318cfe0cee15c0fd3b09558a85ba48b2db68ae71af0107b3c961125ec53463",
+      "versionHash": "57318cfe0cee15c0fd3b09558a85ba48b2db68ae71af0107b3c961125ec53463",
+      "sourceHash": "86f2b05728972d467da28ba2563d2804aa2313e621c64674327cf158021520dd",
+      "textSha256Utf8": "40f94e976eac87ffe82c728bb4c985a8e3084ceedb960be4b4ae32332508137a",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "retain"
+    },
+    {
+      "entryId": "knowledge-6eed4715e716260a0e4ade0fa85a025cb6447a49513bab446186573bebb71bd9",
+      "versionId": "knowledge-version-6e66d50f8c24b78649c0fa87522dca8fdadd3cfc99c059815221932a03a6c6d7",
+      "versionHash": "6e66d50f8c24b78649c0fa87522dca8fdadd3cfc99c059815221932a03a6c6d7",
+      "sourceHash": "f40459f79eb1ba6664d1d0d1e1b9a842ec2e19610a006c325215b9d15e791bb1",
+      "textSha256Utf8": "e5e05715f403266c5162b55cede608b5d56254ad83263d8235fb154b258fcf68",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "retain"
+    },
+    {
+      "entryId": "knowledge-5cd9d4c9c802e488ed5a3c77df23c11f8c85f1e5be3799e0e7fa8ce9032b3e63",
+      "versionId": "knowledge-version-89ab654ef7fad356014a0a7970420488fd591b9d4b07fa5ed8c96bae2956c891",
+      "versionHash": "89ab654ef7fad356014a0a7970420488fd591b9d4b07fa5ed8c96bae2956c891",
+      "sourceHash": "4d1943dd98aef01b1c4bdb0d73d55041a46010679e099e71d5725ef12b244091",
+      "textSha256Utf8": "f71dcb4a82a5e673c080acf3c42543a799e56986eec34c03c00696dec7f2f2a6",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "disposition": "retain"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "G00:001",
+      "entryId": "knowledge-3a599d84ae41483f717fab0ca7d00531e9b575fa16340ee6019ab353afe3e56b",
+      "versionId": "knowledge-version-9a6b0c6f3f06d0ac2da7715ff76694f8a0cb99d0af27086862633b5ae0469410",
+      "startByte": 0,
+      "endByte": 116,
+      "textSha256Utf8": "48b83a89e5c4b4effc38ee87629a9e35e91978d96f9f984bbc06f4c1a3f15a6d"
+    },
+    {
+      "id": "G00:002",
+      "entryId": "knowledge-3a599d84ae41483f717fab0ca7d00531e9b575fa16340ee6019ab353afe3e56b",
+      "versionId": "knowledge-version-9a6b0c6f3f06d0ac2da7715ff76694f8a0cb99d0af27086862633b5ae0469410",
+      "startByte": 117,
+      "endByte": 255,
+      "textSha256Utf8": "7ac8ae3c7de3868ab5d9117ead54e793c1249574c6db780151fc045cf1a75c71"
+    },
+    {
+      "id": "G01:001",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startByte": 0,
+      "endByte": 126,
+      "textSha256Utf8": "8fe00b8fc2bfdc7957c936adeab2456651408d6708b6305cd65a9f5cfbd36b8e"
+    },
+    {
+      "id": "G01:002",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startByte": 127,
+      "endByte": 252,
+      "textSha256Utf8": "47d0f589df421c3a9c6eb00dd4a9af40014a3654b56fc24b42b9cb86120f47bc"
+    },
+    {
+      "id": "G01:003",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startByte": 253,
+      "endByte": 408,
+      "textSha256Utf8": "c1b01931be85681ca2abf1a83cc80971410b81159ed55d9dfbda820dc248d158"
+    },
+    {
+      "id": "G01:004",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startByte": 409,
+      "endByte": 714,
+      "textSha256Utf8": "0bfe8b017af968d571136415d66f2b279c87ac198bb4cd655655ef92b67e1cd6"
+    },
+    {
+      "id": "G01:005",
+      "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+      "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+      "startByte": 715,
+      "endByte": 814,
+      "textSha256Utf8": "113462e070841b4c513d4d540b76a4a48334993595a8845942823862fc96fe0b"
+    },
+    {
+      "id": "G02:001",
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "startByte": 0,
+      "endByte": 125,
+      "textSha256Utf8": "d1955afd74bb9e302b487a9f83845e9dc9097a6853999984fb862efca8218987"
+    },
+    {
+      "id": "G02:002",
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "startByte": 126,
+      "endByte": 407,
+      "textSha256Utf8": "bacc851ec88e8b84667b93059c02ae2e2ccc4823fd84d1cec2886cdef5aa5f37"
+    },
+    {
+      "id": "G02:003",
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "startByte": 408,
+      "endByte": 716,
+      "textSha256Utf8": "981a9a0ce8e06e1b6ef62df80f1662814de79f26e0c1a4c8edd3a07fd49ec862"
+    },
+    {
+      "id": "G02:004",
+      "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+      "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+      "startByte": 717,
+      "endByte": 914,
+      "textSha256Utf8": "f7fa49fb8aef55d3ece9e48bbaa45a34d3086bdc122d901f7b4851afa4414847"
+    },
+    {
+      "id": "G03:001",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startByte": 0,
+      "endByte": 300,
+      "textSha256Utf8": "a1f0f54adc8aef1a17f00735d85c3256296f232dede91c8e5c9cf7e9419180c5"
+    },
+    {
+      "id": "G03:002",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startByte": 301,
+      "endByte": 516,
+      "textSha256Utf8": "6310d5711d34dc554218f6d7f96585e82e7c1f2f0a4ac2202824b70185d91e04"
+    },
+    {
+      "id": "G03:003",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startByte": 517,
+      "endByte": 643,
+      "textSha256Utf8": "e1e6b92a5e95701f5119b180b486aa40b36a1e3fb5cafa198639f39e4dab9973"
+    },
+    {
+      "id": "G03:004",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startByte": 644,
+      "endByte": 956,
+      "textSha256Utf8": "a9c06c17f12ac25e8d5fc36270afe1da34374008673f902e4d536af631e62893"
+    },
+    {
+      "id": "G03:005",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startByte": 957,
+      "endByte": 1084,
+      "textSha256Utf8": "590fad8f37b00ab616595ea3e4d1101ce51515e801484af6dcd21f309e07d1f6"
+    },
+    {
+      "id": "G03:006",
+      "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+      "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+      "startByte": 1085,
+      "endByte": 1345,
+      "textSha256Utf8": "f289acc950ef3dc3f4d3b54f8687756761cc17cd4f0b4e91d2954e29982aa8ac"
+    },
+    {
+      "id": "G04:001",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startByte": 0,
+      "endByte": 153,
+      "textSha256Utf8": "08aeb4a928bce356b59151576ed5b51549212dab0e6814aa5539f6635511bc38"
+    },
+    {
+      "id": "G04:002",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startByte": 154,
+      "endByte": 285,
+      "textSha256Utf8": "26d89638ed6fd1cfdc6e977a609a22ee865c79d7aaa6495e7901b8124411514d"
+    },
+    {
+      "id": "G04:003",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startByte": 286,
+      "endByte": 588,
+      "textSha256Utf8": "939cc942d496c1ff3b00f216fd53f447712c01cdb4f6c3febe01cc2878d42433"
+    },
+    {
+      "id": "G04:004",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startByte": 589,
+      "endByte": 753,
+      "textSha256Utf8": "2d361453821e8fa96e43612e1b8d219e478c405a9d3f5b7e57a15a1331139acb"
+    },
+    {
+      "id": "G04:005",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startByte": 754,
+      "endByte": 974,
+      "textSha256Utf8": "1340183aeb4478c82581d6230449f3361ae8ff20db14ed47c1a1068e7826852b"
+    },
+    {
+      "id": "G04:006",
+      "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+      "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+      "startByte": 975,
+      "endByte": 1226,
+      "textSha256Utf8": "2d9630b6e70339b8dfd71e81e05e13333a76e1f1dcea004dff33fbc9b8f6061f"
+    },
+    {
+      "id": "G05:001",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startByte": 0,
+      "endByte": 160,
+      "textSha256Utf8": "c02dc37f26d974eca6917717ae21e9421600bccc756f50f0603a6933bbb5fafd"
+    },
+    {
+      "id": "G05:002",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startByte": 161,
+      "endByte": 595,
+      "textSha256Utf8": "389f6689bc5d43e037ea597118683a46c43fc8a49c511ba8fbde296f560cf859"
+    },
+    {
+      "id": "G05:003",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startByte": 596,
+      "endByte": 876,
+      "textSha256Utf8": "024aa513cc2eb3bc0885dbb27a469fc38f4b8c42110d3be448400e5c3f2632ac"
+    },
+    {
+      "id": "G05:004",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startByte": 877,
+      "endByte": 1050,
+      "textSha256Utf8": "d18daa2235ba3b209cb5b26b63ef0d12b0387f3a00a190351251d813b79bd357"
+    },
+    {
+      "id": "G05:005",
+      "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+      "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+      "startByte": 1051,
+      "endByte": 1370,
+      "textSha256Utf8": "fce60ff062e6cd9ebce6f931d5edaaa01beff22239c5962783662b56c501218d"
+    },
+    {
+      "id": "G06:001",
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "startByte": 0,
+      "endByte": 232,
+      "textSha256Utf8": "5215fee8caae55cf0904a95e235c848b9e28896b1d68629830f55d1437862336"
+    },
+    {
+      "id": "G06:002",
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "startByte": 233,
+      "endByte": 361,
+      "textSha256Utf8": "7e48e1e936bb8e2cb8c6d4cbe95430a1ace481a97c5cdae3c1c2813f9c5c6136"
+    },
+    {
+      "id": "G06:003",
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "startByte": 362,
+      "endByte": 487,
+      "textSha256Utf8": "72510e5459b0065144cfa94e35042f9a90e5d73d08f2bfe53c3278cabae821db"
+    },
+    {
+      "id": "G06:004",
+      "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+      "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+      "startByte": 488,
+      "endByte": 707,
+      "textSha256Utf8": "b6ce458f8dd65efa012196fe326112ed5263ca2aa785257bb995d79ea23c2ad5"
+    },
+    {
+      "id": "G07:001",
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "startByte": 0,
+      "endByte": 212,
+      "textSha256Utf8": "8c422431b3177725a195814a1a898588214a23808cba6ce9e54bb0ce7719abbc"
+    },
+    {
+      "id": "G07:002",
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "startByte": 213,
+      "endByte": 329,
+      "textSha256Utf8": "69a2dd42d0a586680a90afc1a53a6319cd3eedf457522befa4078d6a6a176623"
+    },
+    {
+      "id": "G07:003",
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "startByte": 330,
+      "endByte": 519,
+      "textSha256Utf8": "459773540f5847c7b1334249e5bb36f99ffe9081745a7b7528b80d2fe5fb6d88"
+    },
+    {
+      "id": "G07:004",
+      "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+      "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+      "startByte": 520,
+      "endByte": 728,
+      "textSha256Utf8": "33a736dd04d08fbd6e26ca0fb6833dcfd04e2bf5181473e952c6b9c1d1bca7bb"
+    },
+    {
+      "id": "G08:001",
+      "entryId": "knowledge-65c2eba8c7141bbac3b2fa0057e410e0a6a08dc92f8655ee30a91efa1b9f4ed7",
+      "versionId": "knowledge-version-b540361f7329d24a6164b5f031e4052590a697bd6e3649cc2a7c372e4838b239",
+      "startByte": 0,
+      "endByte": 116,
+      "textSha256Utf8": "7ad761ab0a3fa472fc15236f5b74a4efd494cb9005a1b0452bd0660880fda609"
+    },
+    {
+      "id": "G08:002",
+      "entryId": "knowledge-65c2eba8c7141bbac3b2fa0057e410e0a6a08dc92f8655ee30a91efa1b9f4ed7",
+      "versionId": "knowledge-version-b540361f7329d24a6164b5f031e4052590a697bd6e3649cc2a7c372e4838b239",
+      "startByte": 117,
+      "endByte": 235,
+      "textSha256Utf8": "573863ffc4346b8e870debc708798733ea64969dd336d0cad553d21dcce6614b"
+    },
+    {
+      "id": "G09:001",
+      "entryId": "knowledge-f9058312cc772d98357b2032c26f91e7b5b28e17839748351839a1553f5e0d62",
+      "versionId": "knowledge-version-826545e306ed227fadb4e32704e4f8abbc6915667aef75be93465ff1ededfd90",
+      "startByte": 0,
+      "endByte": 254,
+      "textSha256Utf8": "7fd3c564b3e731b8d43ade08e872ed11ef9044b495aca7ee5d2f776ae22e27c2"
+    },
+    {
+      "id": "G10:001",
+      "entryId": "knowledge-ccfab24cc9c5363913ab51cf3e9d23a5cc6fecd768c37e32639438356ddeab24",
+      "versionId": "knowledge-version-11685d254268cdcd637b83017d8c9ee2d8c55f318081b0ebd66f5823d2ecc6dd",
+      "startByte": 0,
+      "endByte": 195,
+      "textSha256Utf8": "d4141dc5c8ed1bdb4ec129fb0ed93853603563e9453bdc824f66298516c804e2"
+    },
+    {
+      "id": "G10:002",
+      "entryId": "knowledge-ccfab24cc9c5363913ab51cf3e9d23a5cc6fecd768c37e32639438356ddeab24",
+      "versionId": "knowledge-version-11685d254268cdcd637b83017d8c9ee2d8c55f318081b0ebd66f5823d2ecc6dd",
+      "startByte": 196,
+      "endByte": 287,
+      "textSha256Utf8": "6de9d08ceb8a8c897e3b258db31a59b32703e3bea9e928583f1cf88adceffb89"
+    },
+    {
+      "id": "G11:001",
+      "entryId": "knowledge-43199fe687bba0d7e13cd6835dabf9b862eb076dddf7ac2caafd8836f1c45f12",
+      "versionId": "knowledge-version-b910b64fdf6110b86a476da2ae7954f8e9fc0d623b555516a2f8b40d5a793285",
+      "startByte": 0,
+      "endByte": 166,
+      "textSha256Utf8": "241be0a76d42f86f16aba1f4181a8a7b568986fcad67f78a6a09b7ee8aae03dd"
+    },
+    {
+      "id": "G11:002",
+      "entryId": "knowledge-43199fe687bba0d7e13cd6835dabf9b862eb076dddf7ac2caafd8836f1c45f12",
+      "versionId": "knowledge-version-b910b64fdf6110b86a476da2ae7954f8e9fc0d623b555516a2f8b40d5a793285",
+      "startByte": 167,
+      "endByte": 453,
+      "textSha256Utf8": "cb3484e7b3e7e3bdd748fbbe1a43dcba167df884fe0162bc7ed5c2d25a89d9cc"
+    },
+    {
+      "id": "G12:001",
+      "entryId": "knowledge-3935c61f166856444970ad3e0c4bcb9c067d55dc2697b2b024c905189c220ecd",
+      "versionId": "knowledge-version-2fe57f6717c30a90a6d811e27ad10ee30d2768811491cf9ce978560cc8811398",
+      "startByte": 0,
+      "endByte": 187,
+      "textSha256Utf8": "e5a12ac0f9c604bff40c62e55ebf57047cc7ba35e21efae40db1ce033592fecc"
+    },
+    {
+      "id": "G12:002",
+      "entryId": "knowledge-3935c61f166856444970ad3e0c4bcb9c067d55dc2697b2b024c905189c220ecd",
+      "versionId": "knowledge-version-2fe57f6717c30a90a6d811e27ad10ee30d2768811491cf9ce978560cc8811398",
+      "startByte": 188,
+      "endByte": 392,
+      "textSha256Utf8": "3f5ff6a919d2856321574fca1e5fea4d6b40e568d78157886cf705099a9cf69b"
+    },
+    {
+      "id": "G14:001",
+      "entryId": "knowledge-0713ad1c49d28888af038ea739d0ab40e38c4018945473e9c881134aa496db22",
+      "versionId": "knowledge-version-465308a135b200164545a239c6977f00077ea401156fc6721533dda6e19f9b29",
+      "startByte": 0,
+      "endByte": 239,
+      "textSha256Utf8": "57568ca5a5976f03e945083f7416dc7c9cb7396bc9f526fe8d7df192398f0cc8"
+    },
+    {
+      "id": "G14:002",
+      "entryId": "knowledge-0713ad1c49d28888af038ea739d0ab40e38c4018945473e9c881134aa496db22",
+      "versionId": "knowledge-version-465308a135b200164545a239c6977f00077ea401156fc6721533dda6e19f9b29",
+      "startByte": 240,
+      "endByte": 327,
+      "textSha256Utf8": "b3b037eeb255b16d0a7add84296ec89e3887f16395ed6b3eb97d2f8cf9d2540b"
+    },
+    {
+      "id": "G15:001",
+      "entryId": "knowledge-a6f5160be8e96884d9845d6ad52c4b6b25e7a8fa95f70979884a47cc63d0d5ba",
+      "versionId": "knowledge-version-9b26ac8a94f090edf403ab4e758b242b9e766c695ad9fe62f5db9912ac2b25ad",
+      "startByte": 0,
+      "endByte": 183,
+      "textSha256Utf8": "8e682341c3c18ef10faa37dacee588056ed2812fd586843f912149e966c4ae19"
+    },
+    {
+      "id": "G15:002",
+      "entryId": "knowledge-a6f5160be8e96884d9845d6ad52c4b6b25e7a8fa95f70979884a47cc63d0d5ba",
+      "versionId": "knowledge-version-9b26ac8a94f090edf403ab4e758b242b9e766c695ad9fe62f5db9912ac2b25ad",
+      "startByte": 184,
+      "endByte": 250,
+      "textSha256Utf8": "a29c5091b9591eb65709544062e76641fe311cb917975119b8e93c77627a84f5"
+    },
+    {
+      "id": "G16:001",
+      "entryId": "knowledge-8ccafb5b3316aad5206b03f84b7a08e6215a33bf7e11ef37797c8849455fbcb5",
+      "versionId": "knowledge-version-e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+      "startByte": 0,
+      "endByte": 367,
+      "textSha256Utf8": "260bae318adb82d927b51296d9087417ff26076b22594cd49e7fe5ef4f8fab16"
+    },
+    {
+      "id": "G16:002",
+      "entryId": "knowledge-8ccafb5b3316aad5206b03f84b7a08e6215a33bf7e11ef37797c8849455fbcb5",
+      "versionId": "knowledge-version-e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+      "startByte": 368,
+      "endByte": 694,
+      "textSha256Utf8": "8fc6a5ef206b65ba34234117ff7d272e176025dd87a629a645de580a252b09f1"
+    },
+    {
+      "id": "G16:003",
+      "entryId": "knowledge-8ccafb5b3316aad5206b03f84b7a08e6215a33bf7e11ef37797c8849455fbcb5",
+      "versionId": "knowledge-version-e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+      "startByte": 695,
+      "endByte": 865,
+      "textSha256Utf8": "95f7330e43eeb2540f84bc44e7ce1cff0f554a4a53c1670e1c43808bc559d077"
+    },
+    {
+      "id": "G17:001",
+      "entryId": "knowledge-3c197c7d658453d6cff47a93226e5845e75ef11005a0bd1820b8b7ce758efbd3",
+      "versionId": "knowledge-version-14a6aa766168164bddf537522328a945b650a9d3b29f9c82c408501a0c466f49",
+      "startByte": 0,
+      "endByte": 197,
+      "textSha256Utf8": "ee474d2d015c96e23aebefeff465cc28ca6feff0a566b8fef313cb63b7295c80"
+    },
+    {
+      "id": "G17:002",
+      "entryId": "knowledge-3c197c7d658453d6cff47a93226e5845e75ef11005a0bd1820b8b7ce758efbd3",
+      "versionId": "knowledge-version-14a6aa766168164bddf537522328a945b650a9d3b29f9c82c408501a0c466f49",
+      "startByte": 198,
+      "endByte": 315,
+      "textSha256Utf8": "b4d15301d714e82910a4ecaf0b15df99406b3a8f65a7f266e33007918c12fd8b"
+    },
+    {
+      "id": "G18:001",
+      "entryId": "knowledge-e09481db6977e60a02dcd1ae32237cd81f87b7c9abdc4947eea67b0f606aaf41",
+      "versionId": "knowledge-version-c46e7202483015d2bceb1992829d25d43f088826ffa97a980fcdeaf12afc9a83",
+      "startByte": 0,
+      "endByte": 202,
+      "textSha256Utf8": "cb7dad7f2b04fee72e4ee4e9b073c8d1b98ac1c1e1a04b049b14ffe946099248"
+    },
+    {
+      "id": "G18:002",
+      "entryId": "knowledge-e09481db6977e60a02dcd1ae32237cd81f87b7c9abdc4947eea67b0f606aaf41",
+      "versionId": "knowledge-version-c46e7202483015d2bceb1992829d25d43f088826ffa97a980fcdeaf12afc9a83",
+      "startByte": 203,
+      "endByte": 261,
+      "textSha256Utf8": "990a1db507593f96a892b8b3c0fdd419dd7540a6d3434b95c73433266ab4d026"
+    },
+    {
+      "id": "G19:001",
+      "entryId": "knowledge-33c464b58c5ec1c788b4f808183c4d321155fbd8a09319d76f6d20dc2f423a35",
+      "versionId": "knowledge-version-b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+      "startByte": 0,
+      "endByte": 232,
+      "textSha256Utf8": "47c279cd1d1fbd3eca5b3cfa442d299e3fc1085fe25299de26228d30ee3d3651"
+    },
+    {
+      "id": "G19:002",
+      "entryId": "knowledge-33c464b58c5ec1c788b4f808183c4d321155fbd8a09319d76f6d20dc2f423a35",
+      "versionId": "knowledge-version-b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+      "startByte": 233,
+      "endByte": 383,
+      "textSha256Utf8": "d18819f3067a7ad00e2b71e097cbd9efedb1f104c2493b03ff7b165a1ddf291f"
+    },
+    {
+      "id": "G19:003",
+      "entryId": "knowledge-33c464b58c5ec1c788b4f808183c4d321155fbd8a09319d76f6d20dc2f423a35",
+      "versionId": "knowledge-version-b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+      "startByte": 384,
+      "endByte": 591,
+      "textSha256Utf8": "b9d9e340d59e8be6f9062bcf81498a8bca8fd946d3e6cc2d45dce4fa2748e854"
+    },
+    {
+      "id": "L00:001",
+      "entryId": "knowledge-6dee713fb251752af3cdc87cde26efb2426d4921094e0fd827a66d8b0169f5ec",
+      "versionId": "knowledge-version-e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+      "startByte": 0,
+      "endByte": 86,
+      "textSha256Utf8": "4f7b05e8f1627c1ec01a4830a0799b1f97ba0af617adce6c3ea1b4f2bfedec41"
+    },
+    {
+      "id": "L00:002",
+      "entryId": "knowledge-6dee713fb251752af3cdc87cde26efb2426d4921094e0fd827a66d8b0169f5ec",
+      "versionId": "knowledge-version-e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+      "startByte": 87,
+      "endByte": 198,
+      "textSha256Utf8": "175d9b5496b91270cc26dbbbfb25cb0f3d6d317c44c930e5daa31e07e946f717"
+    },
+    {
+      "id": "L00:003",
+      "entryId": "knowledge-6dee713fb251752af3cdc87cde26efb2426d4921094e0fd827a66d8b0169f5ec",
+      "versionId": "knowledge-version-e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+      "startByte": 199,
+      "endByte": 354,
+      "textSha256Utf8": "a06222d5255bfeea89eea9f490f365ae987052303320e21a82dd31c4014c7fa4"
+    },
+    {
+      "id": "L01:001",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startByte": 0,
+      "endByte": 263,
+      "textSha256Utf8": "9bf68872036d0be00ca0a5da6b9e670b0a86fa5262becf7db2d65397ac3e0a18"
+    },
+    {
+      "id": "L01:002",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startByte": 264,
+      "endByte": 530,
+      "textSha256Utf8": "cad4a092f1b08c43c369574a98227d15c811bf91924786a412afaeb0c348c2db"
+    },
+    {
+      "id": "L01:003",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startByte": 531,
+      "endByte": 740,
+      "textSha256Utf8": "eccdbb4a61fb97507bef7cb94c18b95eb31c24d49180efea668e00c4e8be9b56"
+    },
+    {
+      "id": "L01:004",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startByte": 741,
+      "endByte": 973,
+      "textSha256Utf8": "3fc593d2cd2e25af3cc925c70f83d93aba02c6dc99f2f7a5933f239e488040e3"
+    },
+    {
+      "id": "L01:005",
+      "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+      "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+      "startByte": 974,
+      "endByte": 1089,
+      "textSha256Utf8": "5652b584a387897c792260c3540e00ec8e9b94aa7337ef11caf58241cfd87a86"
+    },
+    {
+      "id": "L03:001",
+      "entryId": "knowledge-234dc0e60ae683ee4eacefd4866aa253c3643579483ac4f6287480a1bf52973e",
+      "versionId": "knowledge-version-67b59b9abf852384c78255ecf908ba690b6e3d8e47b910f85ef4f02f78a68643",
+      "startByte": 0,
+      "endByte": 155,
+      "textSha256Utf8": "a06222d5255bfeea89eea9f490f365ae987052303320e21a82dd31c4014c7fa4"
+    },
+    {
+      "id": "L04:001",
+      "entryId": "knowledge-bfa5d819caeba767e015b004d4bd19f5b0e499d91010f15b8e87d34f7fdab09a",
+      "versionId": "knowledge-version-23dad4e5720bd0a40cb23abd88a7cae3458184ef00d2260cd899c7c9cf20f7a1",
+      "startByte": 0,
+      "endByte": 91,
+      "textSha256Utf8": "1186c10f67849e19b031c250f6fc06c847ce870684dbc81dc957189fafb780a5"
+    },
+    {
+      "id": "L04:002",
+      "entryId": "knowledge-bfa5d819caeba767e015b004d4bd19f5b0e499d91010f15b8e87d34f7fdab09a",
+      "versionId": "knowledge-version-23dad4e5720bd0a40cb23abd88a7cae3458184ef00d2260cd899c7c9cf20f7a1",
+      "startByte": 92,
+      "endByte": 216,
+      "textSha256Utf8": "c7764d2c3d2710c8e6b2af52618b9d29ca8665dc7af220852d7a157d1f46269d"
+    },
+    {
+      "id": "L05:001",
+      "entryId": "knowledge-c3d742ea3ec5325d945ddf74a39ae040d45bb9bce56911fa40bcc7f78b10ee44",
+      "versionId": "knowledge-version-29df948b308a72dfe6b8119d67794587f452974ade1e7254126ae8f5eed86c60",
+      "startByte": 0,
+      "endByte": 152,
+      "textSha256Utf8": "1e699a7ad2346c808f6c0569602306eed99edab82d4c42fb5121e160d720fdc0"
+    },
+    {
+      "id": "L05:002",
+      "entryId": "knowledge-c3d742ea3ec5325d945ddf74a39ae040d45bb9bce56911fa40bcc7f78b10ee44",
+      "versionId": "knowledge-version-29df948b308a72dfe6b8119d67794587f452974ade1e7254126ae8f5eed86c60",
+      "startByte": 153,
+      "endByte": 224,
+      "textSha256Utf8": "5d84da643b7a74a2bd4846df41f694179f66ed6b5f198bd5fcfc801ad49c5fd2"
+    },
+    {
+      "id": "L06:001",
+      "entryId": "knowledge-f08cf1d6273b5f4e9929cb9787cb4de13e23080b2e27d12d5d5a8b2ec578e07d",
+      "versionId": "knowledge-version-85afee893260a500e4fc27c9e89a3304dede81f0ded23c2e2703d8ec3919f5ec",
+      "startByte": 0,
+      "endByte": 81,
+      "textSha256Utf8": "f766f93a18f968e9bae173dac096140b9fbd622325455ca489022d28aa7c71c2"
+    },
+    {
+      "id": "L06:002",
+      "entryId": "knowledge-f08cf1d6273b5f4e9929cb9787cb4de13e23080b2e27d12d5d5a8b2ec578e07d",
+      "versionId": "knowledge-version-85afee893260a500e4fc27c9e89a3304dede81f0ded23c2e2703d8ec3919f5ec",
+      "startByte": 82,
+      "endByte": 190,
+      "textSha256Utf8": "732d63a825412fa452074ff470f88f80d2c43598e1ebb0f7d9959bc05be814a4"
+    },
+    {
+      "id": "L07:001",
+      "entryId": "knowledge-580c8c0e7444886f46a7c950331995c1ed2ca6f2d83299e6e9b9ee0df2bd5ce5",
+      "versionId": "knowledge-version-b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+      "startByte": 0,
+      "endByte": 190,
+      "textSha256Utf8": "7f15e75002c62b164f869aae2fd7ce94fe9dad3582478f8f46f6fcf87d275f33"
+    },
+    {
+      "id": "L07:002",
+      "entryId": "knowledge-580c8c0e7444886f46a7c950331995c1ed2ca6f2d83299e6e9b9ee0df2bd5ce5",
+      "versionId": "knowledge-version-b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+      "startByte": 191,
+      "endByte": 306,
+      "textSha256Utf8": "1b5ae3e6b060804d1d928b9e4efe3864edafc83e5ef6f97fae6ee9674ac9f782"
+    },
+    {
+      "id": "L07:003",
+      "entryId": "knowledge-580c8c0e7444886f46a7c950331995c1ed2ca6f2d83299e6e9b9ee0df2bd5ce5",
+      "versionId": "knowledge-version-b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+      "startByte": 307,
+      "endByte": 503,
+      "textSha256Utf8": "913176bb1caa5838b9a22bb487d92aeca3feb7f0b4fc720386c785369b65027f"
+    },
+    {
+      "id": "REPLY_EDITING:001",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 1,
+      "endByte": 146,
+      "textSha256Utf8": "c442b7e83c4f677a7a51395e527a5691afefd19e49029f4a1d4e24a7b524edfd"
+    },
+    {
+      "id": "REPLY_EDITING:002",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 147,
+      "endByte": 298,
+      "textSha256Utf8": "a26c006cde9df4968fa1009d55e9ef5ae2b1b970d8f8323c531d084785b69066"
+    },
+    {
+      "id": "REPLY_EDITING:003",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 299,
+      "endByte": 437,
+      "textSha256Utf8": "a20bfe619277ce3a0c2459079997a2e5e42673dfbca148e5c1a28d32e7e2261a"
+    },
+    {
+      "id": "REPLY_EDITING:004",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 438,
+      "endByte": 599,
+      "textSha256Utf8": "acec6d91664463b56220be76e6e2e6fbc8167bcdb79b2f5bdb939b4c8a7c8861"
+    },
+    {
+      "id": "REPLY_EDITING:005",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 600,
+      "endByte": 744,
+      "textSha256Utf8": "d4da36c8b1c7d8d7beff8a05971c45300b52bf745dbe9fb71a51cce386023d54"
+    },
+    {
+      "id": "REPLY_EDITING:006",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 745,
+      "endByte": 887,
+      "textSha256Utf8": "1d8e3d1ea0613b165dfdec2e4b231df024ea7b21b6f6607756f7d75df2f73bc1"
+    },
+    {
+      "id": "REPLY_EDITING:007",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 888,
+      "endByte": 1024,
+      "textSha256Utf8": "75e395ad53dd59182d2c6c48bb05f30b6ff3b20a9d31e5c3087932bc07e6ec0a"
+    },
+    {
+      "id": "REPLY_EDITING:008",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 1025,
+      "endByte": 1164,
+      "textSha256Utf8": "97701506eb896092d42663d2b665192ee0b2403358607860ee2fb61868937d17"
+    },
+    {
+      "id": "REPLY_EDITING:009",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 1165,
+      "endByte": 1301,
+      "textSha256Utf8": "ebaae237f82a916a7928a657315a22f1dc55f102cb69b4207c45738746d83242"
+    },
+    {
+      "id": "REPLY_EDITING:010",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 1302,
+      "endByte": 1439,
+      "textSha256Utf8": "4202fc74a6428365a2ead69edc05ec30fdbb211db03503bac0aa268efbe40d17"
+    },
+    {
+      "id": "REPLY_EDITING:011",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 1440,
+      "endByte": 1577,
+      "textSha256Utf8": "e6831c19468cc70477f9906754d16f039142f7fdbeb20d8bd33d3a363c264160"
+    },
+    {
+      "id": "REPLY_EDITING:012",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 1578,
+      "endByte": 1706,
+      "textSha256Utf8": "d3527a6830a062cf2cde92e424b4c0de8fcd741dceccef4743e5b035e3b2b6f1"
+    },
+    {
+      "id": "REPLY_EDITING:013",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 1707,
+      "endByte": 1827,
+      "textSha256Utf8": "5dbd670d1a5c556ade9f6a2675cf7bfb238042abb9bc0fd9933d4ff6196a9924"
+    },
+    {
+      "id": "REPLY_EDITING:014",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 1828,
+      "endByte": 1970,
+      "textSha256Utf8": "3371d6d05d1dad01c04a2df2e9c16314907e49ce56a6ead5543853d6b948e5b2"
+    },
+    {
+      "id": "REPLY_EDITING:015",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 1971,
+      "endByte": 2102,
+      "textSha256Utf8": "37407d09dd4b5eb85353f1f257399a319f283dff37025c503c406e1cd34c1b78"
+    },
+    {
+      "id": "REPLY_EDITING:016",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 2103,
+      "endByte": 2239,
+      "textSha256Utf8": "21f0816c90db7d8d09234cd1f5262195583ba8f07ae2892eaa0b38ce0c8d132a"
+    },
+    {
+      "id": "REPLY_EDITING:017",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 2240,
+      "endByte": 2368,
+      "textSha256Utf8": "5e03b2127df5a9c915dd12f4033d5822a869acde82a84f9084f08f94c150aecf"
+    },
+    {
+      "id": "REPLY_EDITING:018",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 2369,
+      "endByte": 2514,
+      "textSha256Utf8": "413c23d8d9556aab7ee6cd3f2292a691a1e7258259741640a635a866d50891be"
+    },
+    {
+      "id": "REPLY_EDITING:019",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 2515,
+      "endByte": 2662,
+      "textSha256Utf8": "7495bc542fc04e6ba0bd2e7975340a12749c774bdf945cec1dfc6e333eaeb0b6"
+    },
+    {
+      "id": "REPLY_EDITING:020",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 2663,
+      "endByte": 2812,
+      "textSha256Utf8": "427c1f3bfbaf3d033ad14f7cd8053525e0f1de4f155f774d0f6cfa1726e61ad9"
+    },
+    {
+      "id": "REPLY_EDITING:021",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 2813,
+      "endByte": 2963,
+      "textSha256Utf8": "c0c7133ff314ae493596be3df75a628bd489af6d133de951862b8aeb84776a60"
+    },
+    {
+      "id": "REPLY_EDITING:022",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 2964,
+      "endByte": 3097,
+      "textSha256Utf8": "859d148612d9ab90a78fe9a0401d21002e5efab2d6270d4b307be140b8d44703"
+    },
+    {
+      "id": "REPLY_EDITING:023",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 3098,
+      "endByte": 3245,
+      "textSha256Utf8": "b0af35e0b0558515e8e790206085af245abfeb87e8143f949f4ec3fd5b618bd7"
+    },
+    {
+      "id": "REPLY_EDITING:024",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 3246,
+      "endByte": 3383,
+      "textSha256Utf8": "0bdaa038287170ae871b0ae2e2e605204bbb3427a455b6a834803c0e362b5295"
+    },
+    {
+      "id": "REPLY_EDITING:025",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 3384,
+      "endByte": 3524,
+      "textSha256Utf8": "c521bebf6b6134031302a216a68ec16c8d2143cdd97ee11879b4f2fe720002c6"
+    },
+    {
+      "id": "REPLY_EDITING:026",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 3525,
+      "endByte": 3653,
+      "textSha256Utf8": "bf99df106da0f26bec10d977d14f6a8bbd6f1b5857ad3436019a7f519009efb3"
+    },
+    {
+      "id": "REPLY_EDITING:027",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 3654,
+      "endByte": 3789,
+      "textSha256Utf8": "a01ea3a280f0c6bbc314babbc34ff97f8f6bd80ac77ab0e0fa70016fc9973bbc"
+    },
+    {
+      "id": "REPLY_EDITING:028",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 3790,
+      "endByte": 3917,
+      "textSha256Utf8": "e565590c79d1907de41ce84ea95788f5a779c5081436413cd6a6cd0281d2db03"
+    },
+    {
+      "id": "REPLY_EDITING:029",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 3918,
+      "endByte": 4057,
+      "textSha256Utf8": "6202079b912229e1d56c9c4879aa41a36e7061cb0a9a68e122953052285ed5a3"
+    },
+    {
+      "id": "REPLY_EDITING:030",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 4058,
+      "endByte": 4188,
+      "textSha256Utf8": "e24f0573ec3ed48265e107a3f6da53a44eec51f0539a055947c04391ccf5a9f6"
+    },
+    {
+      "id": "REPLY_EDITING:031",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 4189,
+      "endByte": 4327,
+      "textSha256Utf8": "72517cfd26287b416d10b01c7c25524638b2eda0015cc316b245fd72a4979bec"
+    },
+    {
+      "id": "REPLY_EDITING:032",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 4328,
+      "endByte": 4461,
+      "textSha256Utf8": "6abd38856565f9db8a15e8f197bc53f494e0f8cc75a54331dccea68c7a4eb38c"
+    },
+    {
+      "id": "REPLY_EDITING:033",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 4462,
+      "endByte": 4607,
+      "textSha256Utf8": "3a00039a3234c65c8862877e97c27eaf8829e39a2850ad68ab120e3724a05308"
+    },
+    {
+      "id": "REPLY_EDITING:034",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 4608,
+      "endByte": 4758,
+      "textSha256Utf8": "3943d36298c853e887866dcda66871585dc7e2269890cb9be756330926aae909"
+    },
+    {
+      "id": "REPLY_EDITING:035",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 4759,
+      "endByte": 4874,
+      "textSha256Utf8": "25837e80d072c468a6e7dce0ac971b8032561e65a64fb71668d44f6622ae5694"
+    },
+    {
+      "id": "REPLY_EDITING:036",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 4875,
+      "endByte": 5022,
+      "textSha256Utf8": "ff89e1d7b9a04784e33899d533e2b16620f0fbdca5188a9c2ada53d538ce805f"
+    },
+    {
+      "id": "REPLY_EDITING:037",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 5023,
+      "endByte": 5145,
+      "textSha256Utf8": "b853e229286280ddfe234e3da3ff05376823eb67e6c8993cbb3b045f5797b67b"
+    },
+    {
+      "id": "REPLY_EDITING:038",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 5146,
+      "endByte": 5285,
+      "textSha256Utf8": "acd17000a8686936a82dae9bf16b55b83d2e4c6fe1338d497e677cbeefb73d7a"
+    },
+    {
+      "id": "REPLY_EDITING:039",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 5286,
+      "endByte": 5417,
+      "textSha256Utf8": "231cd264507207e97732caadc2477ddb59bbb98a57480e74a40dfeb27e848867"
+    },
+    {
+      "id": "REPLY_EDITING:040",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 5418,
+      "endByte": 5499,
+      "textSha256Utf8": "edb9fdc0b42b79d38794239c53ed27079101a0dfe7840e5e18e4cae982a994cd"
+    },
+    {
+      "id": "REPLY_EDITING:041",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 5500,
+      "endByte": 5573,
+      "textSha256Utf8": "a60820cec269a62ab6d73dd81286e190e6348466210437ca5c95f21ad0a4d18d"
+    },
+    {
+      "id": "REPLY_EDITING:042",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 5574,
+      "endByte": 5685,
+      "textSha256Utf8": "905878b8cf2dd098167df008e623daa71ce6a46e053cff507bdc15f82ed793a3"
+    },
+    {
+      "id": "REPLY_EDITING:043",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 5686,
+      "endByte": 5834,
+      "textSha256Utf8": "3fcb28c3c5d7ff64088d15e117834f8fae9b7be807158f513abd3ebeeef908b6"
+    },
+    {
+      "id": "REPLY_EDITING:044",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 5835,
+      "endByte": 5922,
+      "textSha256Utf8": "d7c18ad1c7b566174a180897d118148516ae5490198243527cc69496a4ce27e2"
+    },
+    {
+      "id": "REPLY_EDITING:045",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 5923,
+      "endByte": 6010,
+      "textSha256Utf8": "d5930efe9cf475aff6b2babc9aba20d54532fa1942849002cf495623d833ddc9"
+    },
+    {
+      "id": "REPLY_EDITING:046",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 6011,
+      "endByte": 6152,
+      "textSha256Utf8": "ee41c222d5888b39f24105c2d25ce0f0b2e9424d272f877206a4b73175adb4cb"
+    },
+    {
+      "id": "REPLY_EDITING:047",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 6153,
+      "endByte": 6291,
+      "textSha256Utf8": "5103d18614a44b7e28795fd369a5744785ee09034b4431caa388f60a6a97edab"
+    },
+    {
+      "id": "REPLY_EDITING:048",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 6292,
+      "endByte": 6432,
+      "textSha256Utf8": "b4658f17caa77d237a8b21cd50e20687ebc9ae909fbab1fe38355eefa023a926"
+    },
+    {
+      "id": "REPLY_EDITING:049",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 6433,
+      "endByte": 6498,
+      "textSha256Utf8": "8c50185a7bb7f8399ee13bdf81032526d07cedeb42664560e45cebd5e2a743ce"
+    },
+    {
+      "id": "REPLY_EDITING:050",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 6499,
+      "endByte": 6595,
+      "textSha256Utf8": "c86f9595efce469e0368ce5cae4a97b7eff0c51063f4c5f03dd0834449d94ddf"
+    },
+    {
+      "id": "REPLY_EDITING:051",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 6596,
+      "endByte": 6714,
+      "textSha256Utf8": "9c38754a06f6e590efa6008e721dd419332fc395415dc21c8691f106c443df4b"
+    },
+    {
+      "id": "REPLY_EDITING:052",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 6715,
+      "endByte": 6836,
+      "textSha256Utf8": "fcdfd78b89ba66ba2be8ec203c710aa9380a83d040d5c6e3fc34203f1edd3965"
+    },
+    {
+      "id": "REPLY_EDITING:053",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 6837,
+      "endByte": 6938,
+      "textSha256Utf8": "b7facde212c9a9687b435e16af4611c142554d8084447bb93de12b5c73c26913"
+    },
+    {
+      "id": "REPLY_EDITING:054",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 6939,
+      "endByte": 7037,
+      "textSha256Utf8": "ba7fb8149d66e50b0f954d05dee0b37f1be3a0d4e7a3eb43136f8aeeebf41cd2"
+    },
+    {
+      "id": "REPLY_EDITING:055",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 7038,
+      "endByte": 7155,
+      "textSha256Utf8": "8693ebf5707ba2c42571f6e300b099d1be92514d935ab0ece6bcb9c6d1abbc5f"
+    },
+    {
+      "id": "REPLY_EDITING:056",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 7156,
+      "endByte": 7285,
+      "textSha256Utf8": "bb505963540f8fe4223c70191e776c255956fe79d847492c3622ec4e5b2e5a1d"
+    },
+    {
+      "id": "REPLY_EDITING:057",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 7286,
+      "endByte": 7391,
+      "textSha256Utf8": "a865f8a95c787ef5cccf77def69be7135c6a089058bbd29677ee019c71dbfa36"
+    },
+    {
+      "id": "REPLY_EDITING:058",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 7392,
+      "endByte": 7536,
+      "textSha256Utf8": "835b723ef9f646eae1d99add81734b6e70153c560413e839e3ad313f8043bd9b"
+    },
+    {
+      "id": "REPLY_EDITING:059",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 7537,
+      "endByte": 7676,
+      "textSha256Utf8": "06c94d16de7285ca60fa4e7a071543d5674541f9f06a3dfe50bab4778e1ba22d"
+    },
+    {
+      "id": "REPLY_EDITING:060",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 7677,
+      "endByte": 7779,
+      "textSha256Utf8": "f4b14630c3bd9d50718f4898400ca97aa0adbb44ea377b86e31d10425b9e9b08"
+    },
+    {
+      "id": "REPLY_EDITING:061",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 7780,
+      "endByte": 7905,
+      "textSha256Utf8": "32f1ad1d267091203e38093e08bd89a3b227adeb0fe53fbc0866039e797c8efe"
+    },
+    {
+      "id": "REPLY_EDITING:062",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 7906,
+      "endByte": 8006,
+      "textSha256Utf8": "4a4124c67d7c0d2e733a0e5e20587d06bd6a47eef0ee59969d28474fc02d73d4"
+    },
+    {
+      "id": "REPLY_EDITING:063",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 8007,
+      "endByte": 8083,
+      "textSha256Utf8": "c2ca8aeafd2e5e9874c7585d3825bce922c671d6e2edda9bad3a03b21bbb753b"
+    },
+    {
+      "id": "REPLY_EDITING:064",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 8084,
+      "endByte": 8231,
+      "textSha256Utf8": "e037a60a6ff18e27884fcad15eb94b4dc51a1efcc53661ba657fc281e01d41bd"
+    },
+    {
+      "id": "REPLY_EDITING:065",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 8232,
+      "endByte": 8366,
+      "textSha256Utf8": "ad39c723964b54dcbd73d64e54c9dfa268c09c7d756448cb809c59c0da6883b8"
+    },
+    {
+      "id": "REPLY_EDITING:066",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 8367,
+      "endByte": 8489,
+      "textSha256Utf8": "baef5148e7fc318b918eb5e3e1eb0b95a351803c1dbb3c48285f89b2e2abbbff"
+    },
+    {
+      "id": "REPLY_EDITING:067",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 8490,
+      "endByte": 8621,
+      "textSha256Utf8": "18e58f4d0c936e91caffcac6bbb4b336bfc80f5069c0e110bd763b39e0b45678"
+    },
+    {
+      "id": "REPLY_EDITING:068",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 8622,
+      "endByte": 8760,
+      "textSha256Utf8": "f10a873be86f025316d83118a4bf89166362aa6d0329cb07634bc90553969c8a"
+    },
+    {
+      "id": "REPLY_EDITING:069",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 8761,
+      "endByte": 8893,
+      "textSha256Utf8": "a2d33a343571c08aea17593984049c2fb36350226996eae2e6ea92aea422efee"
+    },
+    {
+      "id": "REPLY_EDITING:070",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 8894,
+      "endByte": 9031,
+      "textSha256Utf8": "e3d252d1a038173acd8fc1cd5f2f0dc5b70d9d3427965be6da6f7a7968d6f6ec"
+    },
+    {
+      "id": "REPLY_EDITING:071",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 9032,
+      "endByte": 9174,
+      "textSha256Utf8": "78e181b2e2ac46704f59e5420d97f6f1e6ae158c673f38c0c6dff0c58e852c6e"
+    },
+    {
+      "id": "REPLY_EDITING:072",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 9175,
+      "endByte": 9285,
+      "textSha256Utf8": "beea069a22d376077bbe1b296513b7378c504e347aba1d00ab85f5f544b9c4ba"
+    },
+    {
+      "id": "REPLY_EDITING:073",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 9286,
+      "endByte": 9379,
+      "textSha256Utf8": "e14d3568d9c3bd0efbb6e59b832c40bad75d26784ac4b0af0fe5ad808742597b"
+    },
+    {
+      "id": "REPLY_EDITING:074",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 9380,
+      "endByte": 9517,
+      "textSha256Utf8": "1e6ab24c5c002202e864e4e724125fa4821b5ee69a760a833ff612875e196dc3"
+    },
+    {
+      "id": "REPLY_EDITING:075",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 9518,
+      "endByte": 9652,
+      "textSha256Utf8": "cc83785c18fd722454630268588ebca26428de279fc221610bd33ddcfc738104"
+    },
+    {
+      "id": "REPLY_EDITING:076",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 9653,
+      "endByte": 9785,
+      "textSha256Utf8": "c71f3c01249b29b5e0f0aadd7f87b133a2c6e8bbdef9474549e08c5e816219de"
+    },
+    {
+      "id": "REPLY_EDITING:077",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 9786,
+      "endByte": 9914,
+      "textSha256Utf8": "af602bcb952be80199757da70b86b30b452c11e8eba6416c2c27d91045a258d5"
+    },
+    {
+      "id": "REPLY_EDITING:078",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 9915,
+      "endByte": 10053,
+      "textSha256Utf8": "25a74491a52c81f5bbf7365bbeef9a4ce1941dd5ab768de56ab787a0a988b73b"
+    },
+    {
+      "id": "REPLY_EDITING:079",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 10054,
+      "endByte": 10184,
+      "textSha256Utf8": "8a8c107f56589402d6758e377cf9f101a5169e9cd26ae34bb67b59864e13cb09"
+    },
+    {
+      "id": "REPLY_EDITING:080",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 10185,
+      "endByte": 10327,
+      "textSha256Utf8": "8e2656f4300ba03063f5d00b23c5d74282e5b7ecfa94f693718aa1274e7cbe77"
+    },
+    {
+      "id": "REPLY_EDITING:081",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 10328,
+      "endByte": 10463,
+      "textSha256Utf8": "5fdb4263565b27af6eeb9d07304764f8019d2ae056108234d27314a38391c3f9"
+    },
+    {
+      "id": "REPLY_EDITING:082",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "startByte": 10464,
+      "endByte": 10607,
+      "textSha256Utf8": "ee1533de6eebe74b1ea744676015ece131cf3d1b57eede349e3130094c7b13fb"
+    },
+    {
+      "id": "FACT_CHECKING:001",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 1,
+      "endByte": 134,
+      "textSha256Utf8": "48f1237551a71d2e4f8289e6a9f641d91cec3b3f54014d811e602c363ff63d44"
+    },
+    {
+      "id": "FACT_CHECKING:002",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 135,
+      "endByte": 282,
+      "textSha256Utf8": "e7fdc5936e294a6a1d4cb11f4ddd0c935e415118d90b6be4c3929b3321222034"
+    },
+    {
+      "id": "FACT_CHECKING:003",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 283,
+      "endByte": 420,
+      "textSha256Utf8": "cf389b2aa65f463585239e9271ee2dff256333e3ee0256cbc46e4ef9645aee49"
+    },
+    {
+      "id": "FACT_CHECKING:004",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 421,
+      "endByte": 549,
+      "textSha256Utf8": "b99b7c29ff12a8900ddc8a87d915d04d367f7e29341b863eb7c3afa178a8965c"
+    },
+    {
+      "id": "FACT_CHECKING:005",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 550,
+      "endByte": 703,
+      "textSha256Utf8": "faa8078fb6859c9a8ddf65ba60106fbefb4d841e17da94c89f55235129c72e50"
+    },
+    {
+      "id": "FACT_CHECKING:006",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 704,
+      "endByte": 839,
+      "textSha256Utf8": "4304d0785367023aa15a280705e0e5682c8119ce6f81c3591f99711c3223621a"
+    },
+    {
+      "id": "FACT_CHECKING:007",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 840,
+      "endByte": 984,
+      "textSha256Utf8": "0e53529565d881da5b10a5788a99efb1d7bafb949e6971e67d3b8b07883a31dc"
+    },
+    {
+      "id": "FACT_CHECKING:008",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 985,
+      "endByte": 1136,
+      "textSha256Utf8": "2d0c4f2b3c3c704555be5e621a51aca90d70e04e57b1779211aed7bd30bcd7bb"
+    },
+    {
+      "id": "FACT_CHECKING:009",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 1137,
+      "endByte": 1273,
+      "textSha256Utf8": "5093afa55a668b63c0893c96021062b142272c1f0f7499aa3c1250ef039881a6"
+    },
+    {
+      "id": "FACT_CHECKING:010",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 1274,
+      "endByte": 1416,
+      "textSha256Utf8": "f791b7db974d768813337633b6137a925cfada0c5715a2ed2d2f7987c8f1c35e"
+    },
+    {
+      "id": "FACT_CHECKING:011",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 1417,
+      "endByte": 1554,
+      "textSha256Utf8": "c1afc36d1ed4e1c446fb8b60af7d171afd866ccab58d633ede897b63d941cdac"
+    },
+    {
+      "id": "FACT_CHECKING:012",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 1555,
+      "endByte": 1690,
+      "textSha256Utf8": "1917fc31595c50ac93b3cef2c4e9d291aa5b9b6c5efd5ecb7b95939e43fcca14"
+    },
+    {
+      "id": "FACT_CHECKING:013",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 1691,
+      "endByte": 1839,
+      "textSha256Utf8": "e4dcba5ba6fc49e11ab79ca97f2bdbe11d18d11e8fc4bc2ba95e53878ee5cca0"
+    },
+    {
+      "id": "FACT_CHECKING:014",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 1840,
+      "endByte": 1972,
+      "textSha256Utf8": "fef532bf10eddbc61ef1be2de7d3468c89be047654324ff18273f771f92df798"
+    },
+    {
+      "id": "FACT_CHECKING:015",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 1973,
+      "endByte": 2113,
+      "textSha256Utf8": "67643fb2ed781d40704dd668cbf6186408254d4999fede2a7c763103e83951d6"
+    },
+    {
+      "id": "FACT_CHECKING:016",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 2114,
+      "endByte": 2254,
+      "textSha256Utf8": "757e38c4076135844bad6d8bc2d18369def9916c9e28fea51c8bce86af89486b"
+    },
+    {
+      "id": "FACT_CHECKING:017",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 2255,
+      "endByte": 2388,
+      "textSha256Utf8": "f0c92428aaa4ec72ffc8ae3a31ef7626a7983327d387903d9dc0c41b33c71d8f"
+    },
+    {
+      "id": "FACT_CHECKING:018",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 2389,
+      "endByte": 2532,
+      "textSha256Utf8": "124e78fd0378c5ce4ec830dd8ad7e5921e6e5ac0d1dd64605c245ad294f9e1f4"
+    },
+    {
+      "id": "FACT_CHECKING:019",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 2533,
+      "endByte": 2677,
+      "textSha256Utf8": "5246c3d29d73ca7a9be78a0527643038c74d230a884593c32156871245f0fe0a"
+    },
+    {
+      "id": "FACT_CHECKING:020",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 2678,
+      "endByte": 2820,
+      "textSha256Utf8": "7f1ddb0031fccec4b1f6ca13ca2cc8ed75c7b346c9885a8268778e29ccc413dd"
+    },
+    {
+      "id": "FACT_CHECKING:021",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "startByte": 2821,
+      "endByte": 2960,
+      "textSha256Utf8": "ae5bbb7f5b82ee187c4abda03cc98c65fd7a28f101e7d325fc0466dd46ef12cf"
+    },
+    {
+      "id": "C_FORBIDDEN_SUBSTRINGS:all",
+      "entryId": "knowledge-16d963fe5e4aa4bbf63d7145e21271040c0d8be84bcab18cd03342a5dd551441",
+      "versionId": "knowledge-version-57318cfe0cee15c0fd3b09558a85ba48b2db68ae71af0107b3c961125ec53463",
+      "startByte": 0,
+      "endByte": 174,
+      "textSha256Utf8": "40f94e976eac87ffe82c728bb4c985a8e3084ceedb960be4b4ae32332508137a"
+    },
+    {
+      "id": "C_ALLOWED_URLS:all",
+      "entryId": "knowledge-6eed4715e716260a0e4ade0fa85a025cb6447a49513bab446186573bebb71bd9",
+      "versionId": "knowledge-version-6e66d50f8c24b78649c0fa87522dca8fdadd3cfc99c059815221932a03a6c6d7",
+      "startByte": 0,
+      "endByte": 167,
+      "textSha256Utf8": "e5e05715f403266c5162b55cede608b5d56254ad83263d8235fb154b258fcf68"
+    },
+    {
+      "id": "C_FORBIDDEN_PREFIXES:all",
+      "entryId": "knowledge-5cd9d4c9c802e488ed5a3c77df23c11f8c85f1e5be3799e0e7fa8ce9032b3e63",
+      "versionId": "knowledge-version-89ab654ef7fad356014a0a7970420488fd591b9d4b07fa5ed8c96bae2956c891",
+      "startByte": 0,
+      "endByte": 50,
+      "textSha256Utf8": "f71dcb4a82a5e673c080acf3c42543a799e56986eec34c03c00696dec7f2f2a6"
+    }
+  ],
+  "rules": [
+    {
+      "id": "LA-A01",
+      "title": "Живая реакция",
+      "text": "Когда: Новая реплика содержит вопрос, мысль, эмоцию, опыт, позитив, добрую шутку, пожелание или безобидный оффтоп.\nЧто: Активно ищи уместный короткий ответ: тёплую реакцию, шутку, полезную конкретику или следующий шаг.\nОговорки: Оставляй без ответа, только когда он действительно пустой, повторяет уже сказанное или возобновляет исчерпанный разговор. Не задавай механический вопрос ради ответа.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G00:002",
+        "G01:003",
+        "G04:004",
+        "G10:001",
+        "G10:002",
+        "G19:001",
+        "G19:003",
+        "L00:002",
+        "REPLY_EDITING:002",
+        "REPLY_EDITING:030",
+        "REPLY_EDITING:031",
+        "REPLY_EDITING:032",
+        "REPLY_EDITING:035",
+        "REPLY_EDITING:036",
+        "REPLY_EDITING:037",
+        "REPLY_EDITING:038",
+        "REPLY_EDITING:039",
+        "REPLY_EDITING:040",
+        "REPLY_EDITING:041",
+        "REPLY_EDITING:050",
+        "REPLY_EDITING:051",
+        "REPLY_EDITING:052",
+        "REPLY_EDITING:053",
+        "REPLY_EDITING:054",
+        "REPLY_EDITING:055",
+        "REPLY_EDITING:056",
+        "REPLY_EDITING:057",
+        "REPLY_EDITING:058",
+        "REPLY_EDITING:059",
+        "REPLY_EDITING:060",
+        "REPLY_EDITING:061",
+        "REPLY_EDITING:062",
+        "REPLY_EDITING:063",
+        "REPLY_EDITING:064",
+        "REPLY_EDITING:065"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy",
+      "ownerDecisionIds": [
+        "OWNER-REACTION-20260923"
+      ]
+    },
+    {
+      "id": "LA-A02",
+      "title": "Ответ по существу",
+      "text": "Когда: Выбираешь реакцию, в том числе на резкую критику.\nЧто: Сначала выбери реакцию на точную мысль, затем слова. Ответь на заданный вопрос и содержательную претензию, не на соседнюю тему или эмоциональную оболочку.\nОговорки: Не приписывай человеку опыт или мотив.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G04:004",
+        "G08:001",
+        "G12:001",
+        "G12:002",
+        "REPLY_EDITING:001",
+        "REPLY_EDITING:002",
+        "REPLY_EDITING:018",
+        "REPLY_EDITING:019",
+        "REPLY_EDITING:030",
+        "REPLY_EDITING:031",
+        "REPLY_EDITING:032",
+        "REPLY_EDITING:034",
+        "REPLY_EDITING:066",
+        "REPLY_EDITING:067",
+        "REPLY_EDITING:068",
+        "REPLY_EDITING:069",
+        "REPLY_EDITING:070",
+        "REPLY_EDITING:071",
+        "REPLY_EDITING:072"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A03",
+      "title": "Полезное уточнение",
+      "text": "Когда: Для ответа недостаёт информации.\nЧто: Сначала проверь пост и ветку. Спрашивай только то, что действительно меняет ответ; понятно укажи, что уточнить и зачем.\nОговорки: Не спрашивай известные модель, год или комплектацию. При неконкретной критике допустим один полезный вопрос. Не требуй обоснования цены и не спрашивай «на какой расчёт ориентируетесь?» или «уже под ключ?» ради разговора. Не спрашивай, как человек заметил очевидное; механические вопросы ради вовлечения не нужны. Личное предпочтение другой машины без запроса консультации не превращай в опрос бюджета и критериев.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G01:001",
+        "G01:002",
+        "G01:003",
+        "G03:004",
+        "G03:006",
+        "G06:003",
+        "G12:002",
+        "G19:002",
+        "REPLY_EDITING:005",
+        "REPLY_EDITING:006",
+        "REPLY_EDITING:008",
+        "REPLY_EDITING:009",
+        "REPLY_EDITING:010",
+        "REPLY_EDITING:011",
+        "REPLY_EDITING:039",
+        "REPLY_EDITING:040",
+        "REPLY_EDITING:041",
+        "REPLY_EDITING:052",
+        "REPLY_EDITING:053",
+        "REPLY_EDITING:054",
+        "REPLY_EDITING:059",
+        "REPLY_EDITING:060",
+        "REPLY_EDITING:061",
+        "REPLY_EDITING:062",
+        "REPLY_EDITING:077",
+        "REPLY_EDITING:078",
+        "REPLY_EDITING:079",
+        "REPLY_EDITING:080"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A04",
+      "title": "Продолжение без повторов",
+      "text": "Когда: Выбираешь следующий ответ с учётом истории.\nЧто: Учти опубликованные и подготовленные ready-ответы; не повторяй ответ, признание, обещание или консультацию со ссылками и не возобновляй исчерпанный спор.\nОговорки: Новая содержательная реплика может требовать нового ответа. После благодарности за уже данный ответ достаточно краткой вежливой реакции.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G09:001",
+        "G19:002",
+        "REPLY_EDITING:015",
+        "REPLY_EDITING:050",
+        "REPLY_EDITING:051"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A05",
+      "title": "Связь реплики с постом",
+      "text": "Когда: Реплика отсылает к автомобилю, словам, сцене, характеристике, шутке или числу в ролике.\nЧто: Свяжи её с названием поста и видео, подписью, веткой, очищенным транскриптом, OCR, кадрами и проверенными фактами.\nОговорки: Без явного переключения ветки вопрос о машине относится к родительскому посту. Недостающий доступный контекст сначала получи сам; не перекладывай чтение поста на автора.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G04:002",
+        "G06:001",
+        "G06:002",
+        "G14:001",
+        "REPLY_EDITING:007",
+        "REPLY_EDITING:008",
+        "REPLY_EDITING:009",
+        "REPLY_EDITING:010",
+        "REPLY_EDITING:011"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A06",
+      "title": "Просмотр перед уточнением",
+      "text": "Когда: Человек описал визуальный объект или нужен таймкод.\nЧто: Сначала посмотри доступные кадры; проси уточнение только при оставшейся реальной неоднозначности.\nОговорки: Описание объекта само по себе может быть достаточным. Техническую недоступность просмотра назови недоступностью, не выдумывай неоднозначность или риск перепутать.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G07:001",
+        "G07:002",
+        "G07:003",
+        "G07:004"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A07",
+      "title": "Проверка доступного факта",
+      "text": "Когда: Нужен доступный факт либо оспаривается характеристика или наша формулировка.\nЧто: Исследуй именно спорный тезис; ответ начинай с результата проверки и нужной границы применимости.\nОговорки: «Не можем обещать» и одно признание незнания не заменяют исследование. Контакт продаж не заменяет доступный ответ о характеристике.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G02:001",
+        "G02:004",
+        "G06:004",
+        "REPLY_EDITING:002",
+        "REPLY_EDITING:003",
+        "REPLY_EDITING:004",
+        "REPLY_EDITING:042",
+        "REPLY_EDITING:043",
+        "REPLY_EDITING:044",
+        "REPLY_EDITING:077",
+        "REPLY_EDITING:078",
+        "REPLY_EDITING:079",
+        "REPLY_EDITING:080",
+        "FACT_CHECKING:013",
+        "FACT_CHECKING:014"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A08",
+      "title": "Запчасти после смены модели",
+      "text": "Когда: Спрашивают о запчастях после обновления или снятия модели с производства.\nЧто: Проверь нормы соответствующего рынка и подтверждённую политику производителя.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G02:002"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A09",
+      "title": "Цена на дату публикации",
+      "text": "Когда: Под роликом с ценой пишут «уже дороже» или «сейчас другая цена».\nЧто: Проверь дату публикации. Если возраст установлен, кратко поясни, что цена относилась к моменту публикации и могла измениться.\nОговорки: При неизвестной дате не называй ролик старым. Нынешняя сумма из комментария требует проверки.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G03:001",
+        "G03:002",
+        "G03:005",
+        "REPLY_EDITING:045",
+        "REPLY_EDITING:046",
+        "REPLY_EDITING:047",
+        "REPLY_EDITING:048",
+        "REPLY_EDITING:049"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy",
+      "ownerDecisionIds": [
+        "OWNER-CTA-20260923"
+      ]
+    },
+    {
+      "id": "LA-A10",
+      "title": "Основание оставить вопрос открытым",
+      "text": "Когда: Не хватает факта или требуется внутреннее решение.\nЧто: Сначала используй пост, сохранённые факты, доступные источники и медиа. Оставь вопрос открытым только если после этого нет полезного честного ответа или обязательно решение команды.\nОговорки: Недостаток точной характеристики сам по себе не требует hold. Можно признать установленную оговорку, поддержать пожелание без обещания выпуска, сообщить границу знания или подходящий маршрут расчёта/наличия. Пустая реакция не заменяет ответ; спор по договору и подтверждение заводской доработки нельзя считать решёнными общей реакцией. При повторной жалобе отвечай на новое содержание; при нехватке сведений команды оставь конкретный вопрос открытым вместо повторного запроса договора.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G04:001",
+        "G04:002",
+        "G04:003",
+        "G04:005",
+        "G16:002",
+        "G16:003",
+        "REPLY_EDITING:018",
+        "REPLY_EDITING:019",
+        "FACT_CHECKING:014",
+        "FACT_CHECKING:015",
+        "FACT_CHECKING:016"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A11",
+      "title": "Альтернативный поиск при сбое",
+      "text": "Когда: Исследовательский инструмент не сработал.\nЧто: Передай оператору задачу альтернативного поиска; сам сбой не является основанием считать вопрос окончательно неразрешимым.\nОговорки: Не утверждай, что передача уже состоялась, без подтверждения фактического действия.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G04:006"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A12",
+      "title": "Ответ об оцинковке",
+      "text": "Когда: Спрашивают об оцинковке.\nЧто: Используй проверенные данные нужной версии. Если их нет, честно назови заводское покрытие неподтверждённым и предложи рассмотреть дополнительный антикор для эксплуатации в России.\nОговорки: Не оставляй вопрос без ответа только из-за отсутствия подтверждения. При подтверждённой оцинковке дополнительный антикор тоже можно упомянуть как вариант защиты.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G05:001",
+        "G05:002",
+        "G05:003",
+        "G05:004"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A13",
+      "title": "Обсуждение пожелания",
+      "text": "Когда: Человек предлагает изменение или желает другую комплектацию, а результат обещать нельзя.\nЧто: Можно признать предложение, обсудить пожелание, задать полезное уточнение или дать проверенный маршрут аккаунта.\nОговорки: Не обещай выпуск, результат или действие команды; если ответ требует внутреннего решения, вопрос остаётся открытым.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G04:003",
+        "G16:001",
+        "G16:002"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A16",
+      "title": "Расчёт через отдел продаж",
+      "text": "Когда: Вопрос или неясность касаются стоимости, расчёта, наличия, подбора или конкретных вариантов.\nЧто: Дай известную полезную информацию и направь за расчётом конкретного варианта в отдел продаж по проверенному маршруту аккаунта и площадки.\nОговорки: Не выдумывай цену, наличие или смету. Если конкретный ответ уже подтверждён и неясности нет, дополнительный CTA не обязателен. Продажи не заменяют ответ на доступную характеристику или содержательное исследование возражения.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G03:002",
+        "G18:001",
+        "L05:001",
+        "L05:002",
+        "REPLY_EDITING:021",
+        "REPLY_EDITING:022",
+        "REPLY_EDITING:023",
+        "REPLY_EDITING:077",
+        "REPLY_EDITING:078",
+        "REPLY_EDITING:079",
+        "REPLY_EDITING:080"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy",
+      "ownerDecisionIds": [
+        "OWNER-CTA-20260923"
+      ]
+    },
+    {
+      "id": "LA-A17",
+      "title": "Обращение по официальному маршруту",
+      "text": "Когда: Нужно продолжить общение приватно, в том числе после просьбы «напишите мне».\nЧто: Предложи человеку самому написать через официальный профиль/сообщество или проверенный маршрут. При необходимости объясни риск мошенников, пишущих от имени бренда.\nОговорки: Бренд не пишет первым в личку; нельзя обещать «напишем вам», «уже отправили в личку» или исходящий контакт менеджера. Instagram Direct в исходнике — пример для Instagram, а не маршрут всех площадок.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "L01:001",
+        "L01:002",
+        "L01:003",
+        "L01:004",
+        "REPLY_EDITING:066",
+        "REPLY_EDITING:067",
+        "REPLY_EDITING:068",
+        "REPLY_EDITING:069",
+        "REPLY_EDITING:070",
+        "REPLY_EDITING:071",
+        "REPLY_EDITING:072"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-A18",
+      "title": "Номер договора для разбора",
+      "text": "Когда: Для разбора заказа или претензии LikeAvto нужен номер договора.\nЧто: Номер можно и принято запросить прямо в комментариях; не отправляй в личку только ради номера.\nОговорки: Не спрашивай снова, если номер уже сообщили или бренд уже запросил его, включая подготовленные ответы. Разрешение относится только к номеру, не к фото договора, паспорту, телефону и другим персональным данным. Жалоба после оплаты требует одного конкретного шага разбора; общая благодарность не заменяет его.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "L07:001",
+        "L07:002",
+        "L07:003",
+        "REPLY_EDITING:014",
+        "REPLY_EDITING:018",
+        "REPLY_EDITING:019",
+        "REPLY_EDITING:066",
+        "REPLY_EDITING:067",
+        "REPLY_EDITING:068",
+        "REPLY_EDITING:069",
+        "REPLY_EDITING:070",
+        "REPLY_EDITING:071",
+        "REPLY_EDITING:072"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-F01",
+      "title": "Без выдуманных сведений",
+      "text": "Когда: Формулируешь фактическое утверждение.\nЧто: Не выдумывай характеристики, цену, наличие, возможность поставки или содержание поста; цена и продажа отдельной детали тоже требуют подтверждения.\nОговорки: Не выдумывай подтверждение и наличие документов, преимущества аналоговых приборов, скидку или обоснование цены.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "L00:003",
+        "L01:005",
+        "L03:001",
+        "REPLY_EDITING:033",
+        "REPLY_EDITING:034",
+        "REPLY_EDITING:035",
+        "REPLY_EDITING:036",
+        "REPLY_EDITING:037",
+        "REPLY_EDITING:038",
+        "REPLY_EDITING:055",
+        "REPLY_EDITING:056",
+        "REPLY_EDITING:057",
+        "REPLY_EDITING:058",
+        "REPLY_EDITING:063",
+        "REPLY_EDITING:064",
+        "REPLY_EDITING:065"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-F02",
+      "title": "Сведения о действиях команды",
+      "text": "Когда: Говоришь о работе бренда или состоянии обращения.\nЧто: Не выдумывай проверку, передачу коллегам, звонок, будущую публикацию, срок решения, закрытие претензии или другое действие команды. Подготовленный ready-ответ не является отправленным.\nОговорки: Участие ИИ признавай только при подтверждённом контексте бренда; иначе можно признать неудачный тон, не выдумывая внутренний процесс.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G15:001",
+        "G15:002",
+        "G16:001",
+        "REPLY_EDITING:015",
+        "REPLY_EDITING:017",
+        "REPLY_EDITING:063",
+        "REPLY_EDITING:064",
+        "REPLY_EDITING:065",
+        "REPLY_EDITING:066",
+        "REPLY_EDITING:067",
+        "REPLY_EDITING:068",
+        "REPLY_EDITING:069",
+        "REPLY_EDITING:070",
+        "REPLY_EDITING:071",
+        "REPLY_EDITING:072",
+        "REPLY_EDITING:073",
+        "REPLY_EDITING:074",
+        "REPLY_EDITING:075",
+        "REPLY_EDITING:076"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-F03",
+      "title": "Соответствие версии автомобиля",
+      "text": "Когда: Проверяешь или переиспользуешь сведения об автомобиле, включая полный привод.\nЧто: Сопоставь модель, модельный год, рынок, поколение, гибридность и комплектацию; не переноси цифры между версиями. Для спорных характеристик сначала установи также число мест, затем положение сидений, методику и единицы измерения. Переиспользуй только подходящий факт.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G06:004",
+        "L04:001",
+        "REPLY_EDITING:077",
+        "REPLY_EDITING:078",
+        "REPLY_EDITING:079",
+        "REPLY_EDITING:080",
+        "FACT_CHECKING:001",
+        "FACT_CHECKING:002",
+        "FACT_CHECKING:003",
+        "FACT_CHECKING:010"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-F04",
+      "title": "Подтверждение возможности поставки",
+      "text": "Когда: Версия существует на каком-либо рынке.\nЧто: Не считай это доказательством возможности её поставки LikeAvto.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "L04:002"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-F05",
+      "title": "Границы доступности запчастей",
+      "text": "Когда: Объясняешь обязательства и доступность запчастей.\nЧто: Разделяй нормативную обязанность поставщика, реальное исполнение, складское наличие и доставку в Россию; иностранная норма не является обещанием российского дилера.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G02:003"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-F06",
+      "title": "Проверка названной цены",
+      "text": "Когда: Комментатор называет текущую цену.\nЧто: Не подтверждай сумму без проверки.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G03:003",
+        "REPLY_EDITING:045",
+        "REPLY_EDITING:046",
+        "REPLY_EDITING:047",
+        "REPLY_EDITING:048",
+        "REPLY_EDITING:049"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-F07",
+      "title": "Границы защиты от коррозии",
+      "text": "Когда: Обсуждаешь заводское покрытие или антикор.\nЧто: Не заявляй без источника, что производители перестали оцинковывать кузова; не обещай полную защиту от ржавчины и не считай антикор доказательством заводской оцинковки.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G05:005"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-F08",
+      "title": "Границы выводов из медиа",
+      "text": "Когда: Опираешься на медиа или слова ведущего.\nЧто: Непросмотренное содержание не угадывай. Высказывание ведущего о характеристике или ресурсе не становится гарантией, даже после просмотра ролика.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G07:004",
+        "G14:002",
+        "REPLY_EDITING:008",
+        "REPLY_EDITING:009",
+        "REPLY_EDITING:010",
+        "REPLY_EDITING:011"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-F09",
+      "title": "Исправление технической ошибки",
+      "text": "Когда: Обнаружена техническая ошибка, в том числе опасное утверждение.\nЧто: Исправь её одним существенным проверенным фактом; не соглашайся ради дружелюбия.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G01:004",
+        "G01:005"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-S01",
+      "title": "Естественный тон на равных",
+      "text": "Когда: Пишешь ответ от LikeAvto.\nКак: Пиши коротко, дружелюбно, естественно, по-человечески и на равных, без снисходительности и канцелярита.",
+      "category": "style_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G00:001",
+        "G01:001",
+        "G10:001",
+        "G17:001",
+        "L00:001",
+        "REPLY_EDITING:055",
+        "REPLY_EDITING:056",
+        "REPLY_EDITING:057",
+        "REPLY_EDITING:058",
+        "REPLY_EDITING:063",
+        "REPLY_EDITING:064",
+        "REPLY_EDITING:065"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-S02",
+      "title": "Краткость с сохранением смысла",
+      "text": "Когда: Определяешь объём ответа.\nКак: Сохрани одну главную мысль. Обычно 1–3 коротких предложения; старайся уложиться в 1–2, если смысл сохранён.\nОговорки: Для содержательного вопроса можно больше. Не пересказывай реплику и не добавляй лекцию, нравоучение, назидание или оправдание, которое ничего не решает.",
+      "category": "style_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G01:004",
+        "G08:002",
+        "REPLY_EDITING:004",
+        "REPLY_EDITING:020",
+        "REPLY_EDITING:021",
+        "REPLY_EDITING:022",
+        "REPLY_EDITING:042",
+        "REPLY_EDITING:043",
+        "REPLY_EDITING:044",
+        "REPLY_EDITING:081",
+        "REPLY_EDITING:082"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-S03",
+      "title": "Уместные эмодзи и юмор",
+      "text": "Когда: Тон ответа дружелюбный и эмодзи уместен.\nКак: Чаще используй один эмодзи, иногда два; юмор и эмодзи выбирай по ситуации.\nОговорки: Нет обязанности ставить смайлик в каждом ответе; без цепочек. В жалобах, конфликтах и серьёзных пояснениях не обесценивай проблему весёлой реакцией.",
+      "category": "style_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G11:001",
+        "G11:002",
+        "REPLY_EDITING:034",
+        "REPLY_EDITING:081",
+        "REPLY_EDITING:082"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-O01",
+      "title": "Чистый публичный текст",
+      "text": "Когда: Готовишь публичный ответ.\nЧто: Не используй длинное тире, текстовые смайлы и декоративный мусор; не выноси источники и внутреннее рассуждение в ответ.\nОговорки: Разрешённые контактные ссылки регулируются отдельно; не смешивать их с публикацией исследовательских источников. Поясняющие скобки из редакторских примеров в публичный текст не переносятся.",
+      "category": "output_constraint",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G17:001",
+        "G17:002",
+        "REPLY_EDITING:066",
+        "REPLY_EDITING:067",
+        "REPLY_EDITING:068",
+        "REPLY_EDITING:069",
+        "REPLY_EDITING:070",
+        "REPLY_EDITING:071",
+        "REPLY_EDITING:072"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-O02",
+      "title": "Проверенные контакты",
+      "text": "Когда: Указываешь контакт или маршрут продолжения.\nЧто: Бери его только из routes и contact_identity активного аккаунта для площадки; не придумывай логины, короткие ссылки, телефоны и каналы и не смешивай аккаунты.\nОговорки: Список разрешённых URL не подтверждает, что каждый URL подходит каждой площадке или задаче.",
+      "category": "output_constraint",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "G18:001",
+        "G18:002",
+        "L06:001",
+        "L06:002",
+        "REPLY_EDITING:066",
+        "REPLY_EDITING:067",
+        "REPLY_EDITING:068",
+        "REPLY_EDITING:069",
+        "REPLY_EDITING:070",
+        "REPLY_EDITING:071",
+        "REPLY_EDITING:072"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E02",
+      "title": "Проверка перед согласием или опровержением",
+      "text": "Когда: Автор возражает, исправляет нас или доказательств пока нет.\nЧто: Проверь именно спорный тезис до согласия или опровержения; признавай только установленную неточность. Уверенный тон не доказательство; отсутствие подтверждения не опровержение.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "REPLY_EDITING:003",
+        "REPLY_EDITING:004",
+        "REPLY_EDITING:042",
+        "REPLY_EDITING:043",
+        "REPLY_EDITING:044",
+        "FACT_CHECKING:011",
+        "FACT_CHECKING:012",
+        "FACT_CHECKING:013",
+        "FACT_CHECKING:014"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E04",
+      "title": "История по точному автору",
+      "text": "Когда: Используешь customer_cases или межпостовую историю.\nЧто: Разделяй аккаунты и площадки; связывай автора только по author_id, никогда по имени.",
+      "category": "identity_constraint",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "REPLY_EDITING:012",
+        "REPLY_EDITING:013"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E07",
+      "title": "Сведения клиента о заказе",
+      "text": "Когда: Клиент описывает состояние заказа.\nЧто: Считай это сообщением клиента, а не установленным внутренним статусом.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "REPLY_EDITING:016"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E13",
+      "title": "Оговорка без отписки",
+      "text": "Когда: Формулируешь ответ при неполном подтверждении.\nКак: Не заканчивай каждый ответ шаблонным «не можем проверить» или синонимом.\nОговорки: Прямая оговорка нужна в крайнем случае, когда без неё ответ вводит в заблуждение; можно сообщить установленное и конкретное ограничение.",
+      "category": "style_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "REPLY_EDITING:028",
+        "REPLY_EDITING:029",
+        "REPLY_EDITING:030",
+        "REPLY_EDITING:031",
+        "REPLY_EDITING:032",
+        "REPLY_EDITING:033",
+        "REPLY_EDITING:035",
+        "REPLY_EDITING:036",
+        "REPLY_EDITING:037",
+        "REPLY_EDITING:038",
+        "FACT_CHECKING:014",
+        "FACT_CHECKING:015"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E14",
+      "title": "Уважение чужого выбора",
+      "text": "Когда: Человек предпочитает другую машину.\nКак: Не обесценивай его выбор ради продажи своей.",
+      "category": "style_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "REPLY_EDITING:059",
+        "REPLY_EDITING:060",
+        "REPLY_EDITING:061",
+        "REPLY_EDITING:062"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E17",
+      "title": "Явное расхождение чисел",
+      "text": "Когда: В источниках или реплике расходятся числа.\nЧто: Заметь расхождение; не исправляй число молча.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "FACT_CHECKING:003",
+        "FACT_CHECKING:004"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E18",
+      "title": "Подтверждённые условия измерения",
+      "text": "Когда: Источник не указал методику или положение сидений.\nЧто: Не выводи их из величины числа, отсутствия слэша или соседней иллюстрации; не утверждай ни сложенный, ни поднятый ряд без данных.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "FACT_CHECKING:004",
+        "FACT_CHECKING:017",
+        "FACT_CHECKING:018",
+        "FACT_CHECKING:019",
+        "FACT_CHECKING:020"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E19",
+      "title": "Приоритет источников характеристик",
+      "text": "Когда: Ищешь характеристики.\nЧто: Сначала ищи официальную спецификацию или руководство производителя нужного рынка, затем таблицу точной комплектации AutoHome или другого каталога.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "FACT_CHECKING:005",
+        "FACT_CHECKING:006"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E20",
+      "title": "Проверка раздела источника",
+      "text": "Когда: Источник размещён на домене каталога, включая AutoHome.\nЧто: Отличай таблицу параметров от блога, форума и вопросов-ответов; домен не делает последние первоисточниками.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "FACT_CHECKING:007",
+        "FACT_CHECKING:008"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E21",
+      "title": "Колонки и сноски таблицы",
+      "text": "Когда: Изучаешь таблицу характеристик.\nЧто: Проверь заголовки колонок и сноски.",
+      "category": "action_policy",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "FACT_CHECKING:008"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    },
+    {
+      "id": "LA-E22",
+      "title": "Полное содержание сохраняемого факта",
+      "text": "Когда: Сохраняешь результат проверки для повторного использования.\nЧто: Сохрани версию, единицу, условия и ограничения источника вместе с прямой ссылкой, а не голое число.",
+      "category": "factual_boundary",
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceClauseIds": [
+        "FACT_CHECKING:009",
+        "FACT_CHECKING:010"
+      ],
+      "kind": "rule",
+      "trust": "imported_policy"
+    }
+  ],
+  "coverage": [
+    {
+      "clauseId": "G00:001",
+      "ruleIds": [
+        "LA-S01"
+      ]
+    },
+    {
+      "clauseId": "G00:002",
+      "ruleIds": [
+        "LA-A01"
+      ]
+    },
+    {
+      "clauseId": "G01:001",
+      "ruleIds": [
+        "LA-S01",
+        "LA-A03"
+      ]
+    },
+    {
+      "clauseId": "G01:002",
+      "ruleIds": [
+        "LA-A03"
+      ]
+    },
+    {
+      "clauseId": "G01:003",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ]
+    },
+    {
+      "clauseId": "G01:004",
+      "ruleIds": [
+        "LA-F09",
+        "LA-S02"
+      ]
+    },
+    {
+      "clauseId": "G01:005",
+      "ruleIds": [
+        "LA-F09"
+      ]
+    },
+    {
+      "clauseId": "G02:001",
+      "ruleIds": [
+        "LA-A07"
+      ]
+    },
+    {
+      "clauseId": "G02:002",
+      "ruleIds": [
+        "LA-A08"
+      ]
+    },
+    {
+      "clauseId": "G02:003",
+      "ruleIds": [
+        "LA-F05"
+      ]
+    },
+    {
+      "clauseId": "G02:004",
+      "ruleIds": [
+        "LA-A07"
+      ]
+    },
+    {
+      "clauseId": "G03:001",
+      "ruleIds": [
+        "LA-A09"
+      ]
+    },
+    {
+      "clauseId": "G03:002",
+      "ruleIds": [
+        "LA-A09",
+        "LA-A16"
+      ]
+    },
+    {
+      "clauseId": "G03:003",
+      "ruleIds": [
+        "LA-F06"
+      ]
+    },
+    {
+      "clauseId": "G03:004",
+      "ruleIds": [
+        "LA-A03"
+      ]
+    },
+    {
+      "clauseId": "G03:005",
+      "ruleIds": [
+        "LA-A09"
+      ]
+    },
+    {
+      "clauseId": "G03:006",
+      "ruleIds": [
+        "LA-A03"
+      ]
+    },
+    {
+      "clauseId": "G04:001",
+      "ruleIds": [
+        "LA-A10"
+      ]
+    },
+    {
+      "clauseId": "G04:002",
+      "ruleIds": [
+        "LA-A10",
+        "LA-A05"
+      ]
+    },
+    {
+      "clauseId": "G04:003",
+      "ruleIds": [
+        "LA-A10",
+        "LA-A13"
+      ]
+    },
+    {
+      "clauseId": "G04:004",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A01"
+      ]
+    },
+    {
+      "clauseId": "G04:005",
+      "ruleIds": [
+        "LA-A10"
+      ]
+    },
+    {
+      "clauseId": "G04:006",
+      "ruleIds": [
+        "LA-A11"
+      ]
+    },
+    {
+      "clauseId": "G05:001",
+      "ruleIds": [
+        "LA-A12"
+      ]
+    },
+    {
+      "clauseId": "G05:002",
+      "ruleIds": [
+        "LA-A12"
+      ]
+    },
+    {
+      "clauseId": "G05:003",
+      "ruleIds": [
+        "LA-A12"
+      ]
+    },
+    {
+      "clauseId": "G05:004",
+      "ruleIds": [
+        "LA-A12"
+      ]
+    },
+    {
+      "clauseId": "G05:005",
+      "ruleIds": [
+        "LA-F07"
+      ]
+    },
+    {
+      "clauseId": "G06:001",
+      "ruleIds": [
+        "LA-A05"
+      ]
+    },
+    {
+      "clauseId": "G06:002",
+      "ruleIds": [
+        "LA-A05"
+      ]
+    },
+    {
+      "clauseId": "G06:003",
+      "ruleIds": [
+        "LA-A03"
+      ]
+    },
+    {
+      "clauseId": "G06:004",
+      "ruleIds": [
+        "LA-A07",
+        "LA-F03"
+      ]
+    },
+    {
+      "clauseId": "G07:001",
+      "ruleIds": [
+        "LA-A06"
+      ]
+    },
+    {
+      "clauseId": "G07:002",
+      "ruleIds": [
+        "LA-A06"
+      ]
+    },
+    {
+      "clauseId": "G07:003",
+      "ruleIds": [
+        "LA-A06"
+      ]
+    },
+    {
+      "clauseId": "G07:004",
+      "ruleIds": [
+        "LA-A06",
+        "LA-F08"
+      ]
+    },
+    {
+      "clauseId": "G08:001",
+      "ruleIds": [
+        "LA-A02"
+      ]
+    },
+    {
+      "clauseId": "G08:002",
+      "ruleIds": [
+        "LA-S02"
+      ]
+    },
+    {
+      "clauseId": "G09:001",
+      "ruleIds": [
+        "LA-A04"
+      ]
+    },
+    {
+      "clauseId": "G10:001",
+      "ruleIds": [
+        "LA-A01",
+        "LA-S01"
+      ]
+    },
+    {
+      "clauseId": "G10:002",
+      "ruleIds": [
+        "LA-A01"
+      ]
+    },
+    {
+      "clauseId": "G11:001",
+      "ruleIds": [
+        "LA-S03"
+      ]
+    },
+    {
+      "clauseId": "G11:002",
+      "ruleIds": [
+        "LA-S03"
+      ]
+    },
+    {
+      "clauseId": "G12:001",
+      "ruleIds": [
+        "LA-A02"
+      ]
+    },
+    {
+      "clauseId": "G12:002",
+      "ruleIds": [
+        "LA-A03",
+        "LA-A02"
+      ]
+    },
+    {
+      "clauseId": "G14:001",
+      "ruleIds": [
+        "LA-A05"
+      ]
+    },
+    {
+      "clauseId": "G14:002",
+      "ruleIds": [
+        "LA-F08"
+      ]
+    },
+    {
+      "clauseId": "G15:001",
+      "ruleIds": [
+        "LA-F02"
+      ]
+    },
+    {
+      "clauseId": "G15:002",
+      "ruleIds": [
+        "LA-F02"
+      ]
+    },
+    {
+      "clauseId": "G16:001",
+      "ruleIds": [
+        "LA-A13",
+        "LA-F02"
+      ]
+    },
+    {
+      "clauseId": "G16:002",
+      "ruleIds": [
+        "LA-A13",
+        "LA-A10"
+      ]
+    },
+    {
+      "clauseId": "G16:003",
+      "ruleIds": [
+        "LA-A10"
+      ]
+    },
+    {
+      "clauseId": "G17:001",
+      "ruleIds": [
+        "LA-S01",
+        "LA-O01"
+      ]
+    },
+    {
+      "clauseId": "G17:002",
+      "ruleIds": [
+        "LA-O01"
+      ]
+    },
+    {
+      "clauseId": "G18:001",
+      "ruleIds": [
+        "LA-A16",
+        "LA-O02"
+      ]
+    },
+    {
+      "clauseId": "G18:002",
+      "ruleIds": [
+        "LA-O02"
+      ]
+    },
+    {
+      "clauseId": "G19:001",
+      "ruleIds": [
+        "LA-A01"
+      ]
+    },
+    {
+      "clauseId": "G19:002",
+      "ruleIds": [
+        "LA-A03",
+        "LA-A04"
+      ]
+    },
+    {
+      "clauseId": "G19:003",
+      "ruleIds": [
+        "LA-A01"
+      ]
+    },
+    {
+      "clauseId": "L00:001",
+      "ruleIds": [
+        "LA-S01"
+      ]
+    },
+    {
+      "clauseId": "L00:002",
+      "ruleIds": [
+        "LA-A01"
+      ]
+    },
+    {
+      "clauseId": "L00:003",
+      "ruleIds": [
+        "LA-F01"
+      ]
+    },
+    {
+      "clauseId": "L01:001",
+      "ruleIds": [
+        "LA-A17"
+      ]
+    },
+    {
+      "clauseId": "L01:002",
+      "ruleIds": [
+        "LA-A17"
+      ]
+    },
+    {
+      "clauseId": "L01:003",
+      "ruleIds": [
+        "LA-A17"
+      ]
+    },
+    {
+      "clauseId": "L01:004",
+      "ruleIds": [
+        "LA-A17"
+      ]
+    },
+    {
+      "clauseId": "L01:005",
+      "ruleIds": [
+        "LA-F01"
+      ]
+    },
+    {
+      "clauseId": "L03:001",
+      "ruleIds": [
+        "LA-F01"
+      ]
+    },
+    {
+      "clauseId": "L04:001",
+      "ruleIds": [
+        "LA-F03"
+      ]
+    },
+    {
+      "clauseId": "L04:002",
+      "ruleIds": [
+        "LA-F04"
+      ]
+    },
+    {
+      "clauseId": "L05:001",
+      "ruleIds": [
+        "LA-A16"
+      ]
+    },
+    {
+      "clauseId": "L05:002",
+      "ruleIds": [
+        "LA-A16"
+      ]
+    },
+    {
+      "clauseId": "L06:001",
+      "ruleIds": [
+        "LA-O02"
+      ]
+    },
+    {
+      "clauseId": "L06:002",
+      "ruleIds": [
+        "LA-O02"
+      ]
+    },
+    {
+      "clauseId": "L07:001",
+      "ruleIds": [
+        "LA-A18"
+      ]
+    },
+    {
+      "clauseId": "L07:002",
+      "ruleIds": [
+        "LA-A18"
+      ]
+    },
+    {
+      "clauseId": "L07:003",
+      "ruleIds": [
+        "LA-A18"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:001",
+      "ruleIds": [
+        "LA-A02"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:002",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A02",
+        "LA-A07"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:003",
+      "ruleIds": [
+        "LA-A07",
+        "LA-E02"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:004",
+      "ruleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:005",
+      "ruleIds": [
+        "LA-A03"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:006",
+      "ruleIds": [
+        "LA-A03"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:007",
+      "ruleIds": [
+        "LA-A05"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:008",
+      "ruleIds": [
+        "LA-A05",
+        "LA-A03",
+        "LA-F08"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:009",
+      "ruleIds": [
+        "LA-A05",
+        "LA-A03",
+        "LA-F08"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:010",
+      "ruleIds": [
+        "LA-A05",
+        "LA-F08",
+        "LA-A03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:011",
+      "ruleIds": [
+        "LA-A05",
+        "LA-F08",
+        "LA-A03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:012",
+      "ruleIds": [
+        "LA-E04"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:013",
+      "ruleIds": [
+        "LA-E04"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:014",
+      "ruleIds": [
+        "LA-A18"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:015",
+      "ruleIds": [
+        "LA-A04",
+        "LA-F02"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:016",
+      "ruleIds": [
+        "LA-E07"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:017",
+      "ruleIds": [
+        "LA-F02"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:018",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A10",
+        "LA-A18"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:019",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A10",
+        "LA-A18"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:020",
+      "ruleIds": [
+        "LA-S02"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:021",
+      "ruleIds": [
+        "LA-S02",
+        "LA-A16"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:022",
+      "ruleIds": [
+        "LA-S02",
+        "LA-A16"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:023",
+      "ruleIds": [
+        "LA-A16"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:024",
+      "archivedLegacy": {
+        "reason": "Пересмотр реакции принадлежит текущему second-pass протоколу, не политике бренда; он уже разрешает close→reply.",
+        "sourceContractIds": [
+          "LA-E08"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:025",
+      "archivedLegacy": {
+        "reason": "Пересмотр реакции принадлежит текущему second-pass протоколу, не политике бренда; он уже разрешает close→reply. Сохранение фактов, оговорок и контактов обеспечивается LA-F01/LA-F03/LA-O02 и текущим review; старый контракт не становится отдельной политикой.",
+        "sourceContractIds": [
+          "LA-E08",
+          "LA-E09"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:026",
+      "archivedLegacy": {
+        "reason": "Сохранение фактов, оговорок и контактов обеспечивается LA-F01/LA-F03/LA-O02 и текущим review; старый контракт не становится отдельной политикой. Текущий review уже запрещает менять уместный ответ ради стилистического разнообразия. Неопределённая прежняя JSON-схема устарела; текущий review возвращает triage JSON + evidence.",
+        "sourceContractIds": [
+          "LA-E09",
+          "LA-E10",
+          "LA-E11"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:027",
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:028",
+      "ruleIds": [
+        "LA-E13"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:029",
+      "ruleIds": [
+        "LA-E13"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:030",
+      "ruleIds": [
+        "LA-E13",
+        "LA-A01",
+        "LA-A02"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:031",
+      "ruleIds": [
+        "LA-E13",
+        "LA-A01",
+        "LA-A02"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:032",
+      "ruleIds": [
+        "LA-E13",
+        "LA-A01",
+        "LA-A02"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:033",
+      "ruleIds": [
+        "LA-E13",
+        "LA-F01"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:034",
+      "ruleIds": [
+        "LA-F01",
+        "LA-A02",
+        "LA-S03"
+      ]
+    },
+    {
+      "clauseId": "REPLY_EDITING:035",
+      "ruleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:036",
+      "ruleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:037",
+      "ruleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:038",
+      "ruleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:039",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:040",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:041",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:042",
+      "ruleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:043",
+      "ruleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:044",
+      "ruleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:045",
+      "ruleIds": [
+        "LA-A09",
+        "LA-F06"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:046",
+      "ruleIds": [
+        "LA-A09",
+        "LA-F06"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:047",
+      "ruleIds": [
+        "LA-A09",
+        "LA-F06"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:048",
+      "ruleIds": [
+        "LA-A09",
+        "LA-F06"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:049",
+      "ruleIds": [
+        "LA-A09",
+        "LA-F06"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:050",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A04"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:051",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A04"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:052",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:053",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:054",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:055",
+      "ruleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-F01"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:056",
+      "ruleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-F01"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:057",
+      "ruleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-F01"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:058",
+      "ruleIds": [
+        "LA-F01",
+        "LA-A01",
+        "LA-S01"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:059",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E14"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:060",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E14"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:061",
+      "ruleIds": [
+        "LA-A01",
+        "LA-A03",
+        "LA-E14"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:062",
+      "ruleIds": [
+        "LA-E14",
+        "LA-A01",
+        "LA-A03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:063",
+      "ruleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-F01",
+        "LA-F02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:064",
+      "ruleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-F01",
+        "LA-F02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:065",
+      "ruleIds": [
+        "LA-A01",
+        "LA-S01",
+        "LA-F01",
+        "LA-F02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:066",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A18",
+        "LA-O02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:067",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A18",
+        "LA-O02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:068",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A18",
+        "LA-O02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:069",
+      "ruleIds": [
+        "LA-A02",
+        "LA-A18",
+        "LA-O02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:070",
+      "ruleIds": [
+        "LA-A18",
+        "LA-O02",
+        "LA-A02",
+        "LA-O01",
+        "LA-F02",
+        "LA-A17"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:071",
+      "ruleIds": [
+        "LA-O01",
+        "LA-F02",
+        "LA-A17",
+        "LA-A02",
+        "LA-A18",
+        "LA-O02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:072",
+      "ruleIds": [
+        "LA-F02",
+        "LA-A17",
+        "LA-A02",
+        "LA-A18",
+        "LA-O02",
+        "LA-O01"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:073",
+      "ruleIds": [
+        "LA-F02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:074",
+      "ruleIds": [
+        "LA-F02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:075",
+      "ruleIds": [
+        "LA-F02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:076",
+      "ruleIds": [
+        "LA-F02"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:077",
+      "ruleIds": [
+        "LA-A03",
+        "LA-A07",
+        "LA-F03",
+        "LA-A16"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:078",
+      "ruleIds": [
+        "LA-A03",
+        "LA-A07",
+        "LA-F03",
+        "LA-A16"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:079",
+      "ruleIds": [
+        "LA-A03",
+        "LA-A07",
+        "LA-F03",
+        "LA-A16"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:080",
+      "ruleIds": [
+        "LA-A07",
+        "LA-A16",
+        "LA-A03",
+        "LA-F03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:081",
+      "ruleIds": [
+        "LA-S02",
+        "LA-S03"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "REPLY_EDITING:082",
+      "ruleIds": [
+        "LA-S02",
+        "LA-S03"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:001",
+      "ruleIds": [
+        "LA-F03"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:002",
+      "ruleIds": [
+        "LA-F03"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:003",
+      "ruleIds": [
+        "LA-F03",
+        "LA-E17"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:004",
+      "ruleIds": [
+        "LA-E17",
+        "LA-E18"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:005",
+      "ruleIds": [
+        "LA-E19"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:006",
+      "ruleIds": [
+        "LA-E19"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:007",
+      "ruleIds": [
+        "LA-E20"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:008",
+      "ruleIds": [
+        "LA-E20",
+        "LA-E21"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:009",
+      "ruleIds": [
+        "LA-E22"
+      ],
+      "archivedLegacy": {
+        "reason": "Прежние facts.claim/source_url не совпадают с текущим evidence[{itemId,url,title,claim}]; содержательное требование сохранено в LA-E22.",
+        "sourceContractIds": [
+          "LEGACY-E22-FIELDS"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "FACT_CHECKING:010",
+      "ruleIds": [
+        "LA-E22",
+        "LA-F03"
+      ],
+      "archivedLegacy": {
+        "reason": "Прежние facts.claim/source_url не совпадают с текущим evidence[{itemId,url,title,claim}]; содержательное требование сохранено в LA-E22.",
+        "sourceContractIds": [
+          "LEGACY-E22-FIELDS"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "FACT_CHECKING:011",
+      "ruleIds": [
+        "LA-E02"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:012",
+      "ruleIds": [
+        "LA-E02"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:013",
+      "ruleIds": [
+        "LA-E02",
+        "LA-A07"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:014",
+      "ruleIds": [
+        "LA-E02",
+        "LA-A07",
+        "LA-A10",
+        "LA-E13"
+      ],
+      "archivedLegacy": {
+        "reason": "needs_research — прежнее имя механизма; текущий движок сам выбирает исследовательский проход.",
+        "sourceContractIds": [
+          "LA-E24"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "FACT_CHECKING:015",
+      "ruleIds": [
+        "LA-A10",
+        "LA-E13"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:016",
+      "ruleIds": [
+        "LA-A10"
+      ]
+    },
+    {
+      "clauseId": "FACT_CHECKING:017",
+      "ruleIds": [
+        "LA-E18"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "FACT_CHECKING:018",
+      "ruleIds": [
+        "LA-E18"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "FACT_CHECKING:019",
+      "ruleIds": [
+        "LA-E18"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "FACT_CHECKING:020",
+      "ruleIds": [
+        "LA-E18"
+      ],
+      "archivedLegacy": {
+        "reason": "Примеры сохранены только как иллюстративная трассировка/сценарии; сами примеры не поступают как новые факты или шаблоны.",
+        "sourceContractIds": [
+          "LA-E12"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "FACT_CHECKING:021",
+      "archivedLegacy": {
+        "reason": "Необоснованное согласие уже запрещено активными LA-E02/LA-F01; отдельная команда прежнему second_pass не нужна.",
+        "sourceContractIds": [
+          "LA-E25"
+        ],
+        "evidenceRefs": [
+          "mvp/adapters/assistant.mjs:52",
+          "mvp/adapters/assistant.mjs:728",
+          "mvp/adapters/assistant.mjs:733",
+          "mvp/adapters/assistant.mjs:747"
+        ]
+      }
+    },
+    {
+      "clauseId": "C_FORBIDDEN_SUBSTRINGS:all",
+      "retainedEntryId": "knowledge-16d963fe5e4aa4bbf63d7145e21271040c0d8be84bcab18cd03342a5dd551441"
+    },
+    {
+      "clauseId": "C_ALLOWED_URLS:all",
+      "retainedEntryId": "knowledge-6eed4715e716260a0e4ade0fa85a025cb6447a49513bab446186573bebb71bd9"
+    },
+    {
+      "clauseId": "C_FORBIDDEN_PREFIXES:all",
+      "retainedEntryId": "knowledge-5cd9d4c9c802e488ed5a3c77df23c11f8c85f1e5be3799e0e7fa8ce9032b3e63"
+    }
+  ],
+  "unresolvedAmbiguityIds": [],
+  "ownerDecisions": [
+    {
+      "id": "OWNER-REACTION-20260923",
+      "sha256": "f76d7987633cb5ba71bc23bbc57fdbff08637481ebdb6e73e6b68f241270b54b",
+      "resolvedAmbiguityIds": [
+        "AMB-REACTION"
+      ]
+    },
+    {
+      "id": "OWNER-CTA-20260923",
+      "sha256": "92e676991c51785ad5699494002a1ea23350dcc9dc0a7516beac85df0d38a0de",
+      "resolvedAmbiguityIds": [
+        "AMB-CTA"
+      ]
+    }
+  ]
+}

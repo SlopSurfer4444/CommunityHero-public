@@ -1,0 +1,14 @@
+{
+  "cases": [
+    {
+      "id": "synthetic-example",
+      "account": "offline-test",
+      "platform": "test",
+      "postKey": "synthetic-post",
+      "itemId": "synthetic-item",
+      "sourceIds": [
+        "synthetic-source"
+      ]
+    }
+  ]
+}

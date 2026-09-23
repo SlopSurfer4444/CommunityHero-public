@@ -1,0 +1,3769 @@
+{
+  "schemaVersion": 1,
+  "status": "analysis_candidate_not_activated",
+  "observedAtUtc": "2026-09-23T09:46:52.811479+00:00",
+  "owner": "/root/reply_quality_wave/editorial_rule_clauses",
+  "consumer": "/root/reply_quality_wave",
+  "scope": "LikeAvto active current rule heads; exactly REPLY_EDITING and FACT_CHECKING normalized",
+  "retention": "Keep as version-bound review evidence; regenerate rather than overwrite source provenance if source versions change. Raw sources remain in canonical knowledge versions.",
+  "offsetContract": {
+    "unit": "UTF-16 code units",
+    "origin": 0,
+    "end": "exclusive",
+    "hash": "SHA-256 over exact UTF-8 fragment without normalization",
+    "spanGranularity": "Exact source line-bounded clause/context spans; a span can support multiple separately testable atoms. Source text is not embedded.",
+    "versionHashMeaning": "Canonical knowledge version.hash is separate from raw textSha256Utf8."
+  },
+  "sources": [
+    {
+      "symbol": "REPLY_EDITING",
+      "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+      "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "versionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+      "sourceHash": "27d5ef12cd6ec20bfebe810f4b1c0eb2765e48a1c70422bcf23ae35994e2f600",
+      "sourceMaterialId": "company-knowledge-75cfa0d9242319ad267437a4762bb89bd13a5dcd04cb47b777c1c93b2e6b6b50",
+      "textSha256Utf8": "3f1897a03730c0dca8c264dea3c85f4e1d0b658456795d99e0686b5b0bca34df",
+      "textLengthUtf16": 5886,
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "status": "active",
+      "trust": "imported_policy",
+      "source": {
+        "origin": "commentops-fast.editorial-guidance",
+        "originalIds": {
+          "path": "commentops_fast/decision.py",
+          "symbol": "REPLY_EDITING"
+        },
+        "sha256": "3f1897a03730c0dca8c264dea3c85f4e1d0b658456795d99e0686b5b0bca34df"
+      },
+      "examplesAreVerifiedFacts": false,
+      "grantsExecutionAuthority": false
+    },
+    {
+      "symbol": "FACT_CHECKING",
+      "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+      "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "versionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+      "sourceHash": "305469ac062686b6398c9b80937737d362a8bd86f64bcf4cd838bba9d38a2577",
+      "sourceMaterialId": "company-knowledge-d46ce98feaa4d47ff7032ad2d39b7c201b70a9abe68f36a8bd16fe11daf02282",
+      "textSha256Utf8": "0ad4de2c851b82f61d4abd4edc97429ecfa9348b4a393835dfccd545872f4ce6",
+      "textLengthUtf16": 1654,
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "status": "active",
+      "trust": "imported_policy",
+      "source": {
+        "origin": "commentops-fast.editorial-guidance",
+        "originalIds": {
+          "path": "commentops_fast/decision.py",
+          "symbol": "FACT_CHECKING"
+        },
+        "sha256": "0ad4de2c851b82f61d4abd4edc97429ecfa9348b4a393835dfccd545872f4ce6"
+      },
+      "examplesAreVerifiedFacts": false,
+      "grantsExecutionAuthority": false
+    }
+  ],
+  "clauses": [
+    {
+      "id": "RE01",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Перед составлением ответа",
+      "obligation": "Сначала выбрать реакцию на конкретную реплику, затем её формулировку.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1,
+          "endUtf16Exclusive": 80,
+          "fragmentSha256Utf8": "fb13fc02bf2da67623c7a6bfba350a713e95a18e17bf5d5b20958848a41680d6",
+          "sourceLinesZeroBased": [
+            1,
+            1
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE02",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Человек делится наблюдением",
+      "obligation": "Кратко отреагировать на наблюдение.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 80,
+          "endUtf16Exclusive": 162,
+          "fragmentSha256Utf8": "3b219dc933ebe2a406d10787b166cc2edb8172991c0877024395cff960b1f566",
+          "sourceLinesZeroBased": [
+            2,
+            2
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE03",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Человек задаёт вопрос",
+      "obligation": "Ответить на заданный вопрос.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 80,
+          "endUtf16Exclusive": 162,
+          "fragmentSha256Utf8": "3b219dc933ebe2a406d10787b166cc2edb8172991c0877024395cff960b1f566",
+          "sourceLinesZeroBased": [
+            2,
+            2
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE04",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Автор исправляет формулировку бренда",
+      "obligation": "Сначала проверить возражение; признавать только установленную неточность.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 162,
+          "endUtf16Exclusive": 323,
+          "fragmentSha256Utf8": "a9b8cf7b1b3a1809a115703efdd55a56c686be484c906f5722a6ecad22f2a220",
+          "sourceLinesZeroBased": [
+            3,
+            4
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "FC11",
+        "FC12"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE05",
+      "dimension": "how",
+      "modality": "required",
+      "when": "Признаётся установленная неточность",
+      "obligation": "Признать её без мини-лекции.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 236,
+          "endUtf16Exclusive": 323,
+          "fragmentSha256Utf8": "f4badfe3ee2b766e391681027ddde63a192332798594aa312698ecbfb1ae2a9b",
+          "sourceLinesZeroBased": [
+            4,
+            4
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE06",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Оценивается возражение",
+      "obligation": "Не считать уверенный тон автора доказательством.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 236,
+          "endUtf16Exclusive": 323,
+          "fragmentSha256Utf8": "f4badfe3ee2b766e391681027ddde63a192332798594aa312698ecbfb1ae2a9b",
+          "sourceLinesZeroBased": [
+            4,
+            4
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE07",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Решается, нужно ли уточнение",
+      "obligation": "Уточнять только отсутствующее в посте и ветке, если это действительно меняет ответ; не выдумывать вопрос ради продолжения.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 323,
+          "endUtf16Exclusive": 479,
+          "fragmentSha256Utf8": "d33e10ed93d9bb20242a7e4dce89b080e5fc69e5b18844166f4476d2d16010ba",
+          "sourceLinesZeroBased": [
+            5,
+            6
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE08",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Короткая реплика или число",
+      "obligation": "Связать её с постом, транскриптом и веткой; при незагруженном контексте получить его, не требовать от автора пересказа собственного поста.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 479,
+          "endUtf16Exclusive": 860,
+          "fragmentSha256Utf8": "432a3393d8f6258b420fd3ad02366b8217db689dc41d09c40391466e5d64fe03",
+          "sourceLinesZeroBased": [
+            7,
+            11
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "RE07"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE09",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Ведущий сообщает ресурс двигателя",
+      "obligation": "Не превращать слова ведущего в гарантию ресурса.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 711,
+          "endUtf16Exclusive": 860,
+          "fragmentSha256Utf8": "5182580c60dbea2118763fcda6afc0ea4feb2339fe2c397cc643b02fc99d6171",
+          "sourceLinesZeroBased": [
+            10,
+            11
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE10",
+      "dimension": "identity_scope",
+      "modality": "required",
+      "when": "Используется межпостовая история customer_cases",
+      "obligation": "Сохранять разделение по аккаунту и площадке; связывать автора только по author_id, никогда по имени.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 860,
+          "endUtf16Exclusive": 1008,
+          "fragmentSha256Utf8": "1811e0e466b1da64765eae1dcaf708d209940758c583f7ff802c741994264444",
+          "sourceLinesZeroBased": [
+            12,
+            13
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE11",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Номер договора уже сообщён или бренд уже запросил его",
+      "obligation": "Не спрашивать номер повторно.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1008,
+          "endUtf16Exclusive": 1086,
+          "fragmentSha256Utf8": "dce0075b5d3ed4c4e2e340edcd01e622c602e2f81c6672f6082eea5c6291a0f2",
+          "sourceLinesZeroBased": [
+            14,
+            14
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE12",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "В истории есть подготовленный ответ ready",
+      "obligation": "Учитывать его при выборе следующего ответа.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1086,
+          "endUtf16Exclusive": 1162,
+          "fragmentSha256Utf8": "6c33ad05cbb9a288d25d821ac4eed4846fc82b1f012744dba8ce49c7795bef4b",
+          "sourceLinesZeroBased": [
+            15,
+            15
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE13",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Учитывается ready-ответ",
+      "obligation": "Не представлять подготовленный ответ как уже отправленный.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1086,
+          "endUtf16Exclusive": 1162,
+          "fragmentSha256Utf8": "6c33ad05cbb9a288d25d821ac4eed4846fc82b1f012744dba8ce49c7795bef4b",
+          "sourceLinesZeroBased": [
+            15,
+            15
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE14",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Клиент описывает заказ",
+      "obligation": "Считать это сообщением клиента, а не установленным внутренним статусом заказа.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1162,
+          "endUtf16Exclusive": 1236,
+          "fragmentSha256Utf8": "3707f47746245efe6025b8e3c8484c945e6495208f321602425d41a88e6b36a4",
+          "sourceLinesZeroBased": [
+            16,
+            16
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE15",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Ответ касается разрешения претензии",
+      "obligation": "Не выдумывать передачу менеджеру, срок решения или закрытие претензии.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1236,
+          "endUtf16Exclusive": 1306,
+          "fragmentSha256Utf8": "8271b440e2a550ef7a11501a01a69ed7b67ae7ec711eefa37cf633c2930e14c4",
+          "sourceLinesZeroBased": [
+            17,
+            17
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE16",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Повторная жалоба",
+      "obligation": "Ответить по существу нового сообщения.",
+      "exceptions": [
+        "Если нужны сведения команды, оставить конкретный вопрос открытым вместо повторного запроса договора."
+      ],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1306,
+          "endUtf16Exclusive": 1465,
+          "fragmentSha256Utf8": "c922c46f5227c5ff3ef5d4d21bfd57fafdb437690306e0ad885bcf880ff930dd",
+          "sourceLinesZeroBased": [
+            18,
+            19
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "RE11",
+        "RE14",
+        "RE15"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE17",
+      "dimension": "how",
+      "modality": "default",
+      "when": "Обычный ответ",
+      "obligation": "Ориентироваться на одну-две фразы.",
+      "exceptions": [
+        "Содержательный вопрос может требовать большего объёма."
+      ],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1465,
+          "endUtf16Exclusive": 1546,
+          "fragmentSha256Utf8": "166f542fe0e719ae2ef9d6d3e9dbcd12098703e2b27c9a6aa83b8ed111ef418f",
+          "sourceLinesZeroBased": [
+            20,
+            20
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE18",
+      "dimension": "how",
+      "modality": "required",
+      "when": "Добавление пересказа, поучения или оправдания ничего не решает",
+      "obligation": "Не добавлять их в ответ.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1546,
+          "endUtf16Exclusive": 1702,
+          "fragmentSha256Utf8": "3b19a8f285ca4906c412e321848b6cd7fb24aba341c3308a68242f042c393e1a",
+          "sourceLinesZeroBased": [
+            21,
+            22
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE19",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Обдумывается направление в продажи",
+      "obligation": "Не добавлять бесполезный призыв обратиться в продажи.",
+      "exceptions": [
+        "Цена и подбор допускают конкретный маршрут из карточки аккаунта, без выдуманной сметы."
+      ],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1546,
+          "endUtf16Exclusive": 1782,
+          "fragmentSha256Utf8": "751805ad53f2198187b9ad5c500b955b6cfa099dcd9b5737dc8664741a8a8930",
+          "sourceLinesZeroBased": [
+            21,
+            23
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "RE50"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE20",
+      "dimension": "output_contract",
+      "modality": "permitted",
+      "when": "Выполняется second_pass",
+      "obligation": "Можно заменить выбранную реакцию целиком, а не только её слова.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1782,
+          "endUtf16Exclusive": 1939,
+          "fragmentSha256Utf8": "37630d6ee79cfe4e2943163d5b98d50de8a22b19a67cb9f61ad60e3f2f2bed85",
+          "sourceLinesZeroBased": [
+            24,
+            25
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE21",
+      "dimension": "output_contract",
+      "modality": "required",
+      "when": "Переработка в second_pass",
+      "obligation": "Сохранить необходимые факты, оговорки и контакты.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1862,
+          "endUtf16Exclusive": 2013,
+          "fragmentSha256Utf8": "ca08b560220882ce395491d2c31f311a66543c7ef014f0b7eb2219749fb5149f",
+          "sourceLinesZeroBased": [
+            25,
+            26
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE22",
+      "dimension": "output_contract",
+      "modality": "required",
+      "when": "Исходная реакция уже уместна",
+      "obligation": "Оставить исходную реакцию.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1939,
+          "endUtf16Exclusive": 2013,
+          "fragmentSha256Utf8": "18be81e7d71547a9f26bce4989fdf84ab56a2ea1c11731c1c594b541466648ac",
+          "sourceLinesZeroBased": [
+            26,
+            26
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE23",
+      "dimension": "output_contract",
+      "modality": "required",
+      "when": "Возврат результата second_pass",
+      "obligation": "Вернуть итог в прежней JSON-схеме; конкретная схема в данном источнике не определена.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 1939,
+          "endUtf16Exclusive": 2013,
+          "fragmentSha256Utf8": "18be81e7d71547a9f26bce4989fdf84ab56a2ea1c11731c1c594b541466648ac",
+          "sourceLinesZeroBased": [
+            26,
+            26
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE24",
+      "dimension": "example_guard",
+      "modality": "required",
+      "when": "Используются примеры из руководства",
+      "obligation": "Считать их примерами выбора реакции, а не универсальными заготовками или источниками фактов.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2013,
+          "endUtf16Exclusive": 2087,
+          "fragmentSha256Utf8": "b9f167e32fa6446417c6da373fd1892114f8e82d54b277cd5342865885de745f",
+          "sourceLinesZeroBased": [
+            27,
+            27
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE25",
+      "dimension": "how",
+      "modality": "required",
+      "when": "Формулируется публичный ответ",
+      "obligation": "Не завершать каждый ответ шаблонной оговоркой о невозможности проверки; её синоним не устраняет отписку.",
+      "exceptions": [
+        "Прямая оговорка нужна в крайнем случае, если без неё ответ вводит в заблуждение."
+      ],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2087,
+          "endUtf16Exclusive": 2538,
+          "fragmentSha256Utf8": "858f4bfed1f5e276e267b09f8338d9e033d9026fbd930035b70c0811c9b8a655",
+          "sourceLinesZeroBased": [
+            28,
+            33
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "RE27",
+        "RE28",
+        "FC15",
+        "FC16"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE26",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Намерение автора понятно",
+      "obligation": "Сначала ответить на намерение: поддержать шутку, отреагировать на предпочтение или сообщить известное по сути.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2234,
+          "endUtf16Exclusive": 2457,
+          "fragmentSha256Utf8": "24677b36c24203663528537867a2e5f0645289076ab2a3cfd3dcedd865250f2a",
+          "sourceLinesZeroBased": [
+            30,
+            32
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE27",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Не хватает подтверждения",
+      "obligation": "Не выдумывать подтверждение и не намекать на наличие документов.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2457,
+          "endUtf16Exclusive": 2621,
+          "fragmentSha256Utf8": "c8912a79482ad9fbcba8b97929dab9ac8d7b2eb941ead06a5675e495e154ef55",
+          "sourceLinesZeroBased": [
+            33,
+            34
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE28",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Конкретная жалоба или важный вопрос",
+      "obligation": "Не заменять содержательный ответ отшучиванием.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2538,
+          "endUtf16Exclusive": 2621,
+          "fragmentSha256Utf8": "ffe4febce7a302e4ac9b0806eae5c55edff3b3a77e21691a26bfbfde33655bf4",
+          "sourceLinesZeroBased": [
+            34,
+            34
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE29",
+      "dimension": "example_guard",
+      "modality": "required",
+      "when": "Иллюстративный подкол о ГАИ под тюнингованной машиной",
+      "obligation": "Пример допускает шутливую реакцию без юридической лекции и заявления о регистрации; не утверждает законность конкретной машины.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2621,
+          "endUtf16Exclusive": 2920,
+          "fragmentSha256Utf8": "c649c619a177c7fb2f268bb779584ed55103acc3186aa85c93c11a33f0990c16",
+          "sourceLinesZeroBased": [
+            35,
+            38
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE30",
+      "dimension": "example_guard",
+      "modality": "required",
+      "when": "Иллюстративное личное наблюдение об отметках в правах",
+      "obligation": "Пример показывает краткую реакцию на опыт без искусственного уточнения.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2920,
+          "endUtf16Exclusive": 3084,
+          "fragmentSha256Utf8": "35ae4ac36f9c28cb0caa1eccebdc37ca89931c35ae43f8295ff35d253d15adb5",
+          "sourceLinesZeroBased": [
+            39,
+            41
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE31",
+      "dimension": "example_guard",
+      "modality": "required",
+      "when": "Иллюстративная поправка к выражению о надёжности",
+      "obligation": "Пример показывает краткое признание неудачной формулировки без морализаторства; само согласие по фактам требует RE04.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3084,
+          "endUtf16Exclusive": 3277,
+          "fragmentSha256Utf8": "9a3ee621a26a807630dd21e7f7c74d2d19c07d0d1af2061128e394b9a76fc606",
+          "sourceLinesZeroBased": [
+            42,
+            44
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE32",
+      "dimension": "when_what",
+      "modality": "permitted",
+      "when": "Комментарий об изменении цены под действительно старым роликом",
+      "obligation": "Можно объяснить, что цена могла измениться, без искусственного вопроса об условиях сравнения.",
+      "exceptions": [
+        "Полезен актуальный расчёт — допустим конкретный контакт из карточки аккаунта."
+      ],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3277,
+          "endUtf16Exclusive": 3597,
+          "fragmentSha256Utf8": "c305f613fd03f961e5765691baf9bc6dbd3033f4d95809357cf110038d7027ba",
+          "sourceLinesZeroBased": [
+            45,
+            49
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "RE33"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE33",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "В комментарии названа новая цена",
+      "obligation": "Не подтверждать её без проверки.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3483,
+          "endUtf16Exclusive": 3597,
+          "fragmentSha256Utf8": "063240e28626338e5800731e22b87c152de5dc762fc7854dbaed543be07dae2a",
+          "sourceLinesZeroBased": [
+            48,
+            49
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE34",
+      "dimension": "when_what",
+      "modality": "permitted",
+      "when": "Благодарность после уже данного ответа",
+      "obligation": "Достаточно краткой вежливой реакции; не повторять консультацию и ссылки.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3597,
+          "endUtf16Exclusive": 3717,
+          "fragmentSha256Utf8": "9a6e58e89bc0373592d2dda86c61070f5f33072dab3c400a85867d7e0c5a1e38",
+          "sourceLinesZeroBased": [
+            50,
+            51
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE35",
+      "dimension": "example_guard",
+      "modality": "required",
+      "when": "Иллюстративная доброжелательная похвала герою",
+      "obligation": "Пример показывает уместное подыгрывание без механического вопроса о том, что понравилось.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3717,
+          "endUtf16Exclusive": 3897,
+          "fragmentSha256Utf8": "adea01dff4b75461b089b78425f456b01a333df594f51b789ec84a27945ab332",
+          "sourceLinesZeroBased": [
+            52,
+            54
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE36",
+      "dimension": "example_guard",
+      "modality": "required",
+      "when": "Иллюстративная ирония о дизайне аналоговых приборов",
+      "obligation": "Пример допускает лёгкую реакцию вместо общей лекции о различиях предпочтений.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3897,
+          "endUtf16Exclusive": 4094,
+          "fragmentSha256Utf8": "16ffef6b37ce195fab0c91c64d410efcbf24132c53975cc40ddabe25c0f74584",
+          "sourceLinesZeroBased": [
+            55,
+            57
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE37",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Реакция на аналоговые приборы",
+      "obligation": "Не приписывать им недоказанную надёжность или преимущества.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4094,
+          "endUtf16Exclusive": 4172,
+          "fragmentSha256Utf8": "9775d6f097d6104ed4c01cdf68adb78de77ed5b847415d67fc1fb84fa856d1ec",
+          "sourceLinesZeroBased": [
+            58,
+            58
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE38",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Автор выражает выбор в пользу другой машины без запроса консультации",
+      "obligation": "Реагировать на предпочтение; не превращать его в запрос бюджета и критериев подбора.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4172,
+          "endUtf16Exclusive": 4378,
+          "fragmentSha256Utf8": "9d7782cac54906931f0d80c39aa690b3678d238b923453d375e61c83f1dace15",
+          "sourceLinesZeroBased": [
+            59,
+            61
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE39",
+      "dimension": "how",
+      "modality": "required",
+      "when": "Автор предпочитает другую машину",
+      "obligation": "Не обесценивать его выбор ради продажи своей машины.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4378,
+          "endUtf16Exclusive": 4434,
+          "fragmentSha256Utf8": "8b0dc7b8cb070c32b4da0aa4b3b9ce950dc29a3ea408944f94e0fc647ac475ad",
+          "sourceLinesZeroBased": [
+            62,
+            62
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE40",
+      "dimension": "example_guard",
+      "modality": "required",
+      "when": "Иллюстративная шутка о цене",
+      "obligation": "Пример показывает краткое подыгрывание без канцелярского объяснения ценообразования.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4434,
+          "endUtf16Exclusive": 4634,
+          "fragmentSha256Utf8": "181a929bcf8e8ecd245fbb1085b6b751e20acc914ec4a49caf17a69c4dca29a3",
+          "sourceLinesZeroBased": [
+            63,
+            65
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE41",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Ответ на шутку о цене",
+      "obligation": "Не обещать скидку и не выдумывать обоснование цены.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4558,
+          "endUtf16Exclusive": 4634,
+          "fragmentSha256Utf8": "36c8a469b85fe4e1b43d9b87d265ae39923eb34a5f6df18fb5cd958b62ae3fc0",
+          "sourceLinesZeroBased": [
+            65,
+            65
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE42",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Жалоба на отсутствие ответа после оплаты",
+      "obligation": "Признать содержание жалобы и предложить один конкретный шаг разбора по правилам аккаунта; общая благодарность не решает жалобу.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4634,
+          "endUtf16Exclusive": 4932,
+          "fragmentSha256Utf8": "8404f780a9c1e1dea09736c7932bed8161bd6a28def7810967e065b2c4ddf6ce",
+          "sourceLinesZeroBased": [
+            66,
+            69
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE43",
+      "dimension": "when_what",
+      "modality": "permitted",
+      "when": "Для разбора жалобы LikeAvto нужен номер договора",
+      "obligation": "Допустимо запросить номер в комментарии, если его нет в ветке.",
+      "exceptions": [
+        "Также действует RE11: не повторять уже сделанный запрос."
+      ],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4854,
+          "endUtf16Exclusive": 5012,
+          "fragmentSha256Utf8": "73932da544563541d0583b757be014f7e51306d4fa0effae79151b326f6ffff9",
+          "sourceLinesZeroBased": [
+            69,
+            70
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "RE11",
+        "RE10"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE44",
+      "dimension": "identity_scope",
+      "modality": "required",
+      "when": "В исходном примере упомянут BAW",
+      "obligation": "Ссылка на отдельную карточку BAW не переносит правила LikeAvto на другой аккаунт; руководство этой ветки ограничено LikeAvto.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4932,
+          "endUtf16Exclusive": 5012,
+          "fragmentSha256Utf8": "445147c60ddd199097a30a2c45e6897947dd786b916aaee251aceb1eb3f8e3c9",
+          "sourceLinesZeroBased": [
+            70,
+            70
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE45",
+      "dimension": "output_contract",
+      "modality": "required",
+      "when": "Используется пример с пояснением в квадратных скобках",
+      "obligation": "Не включать поясняющие скобки примера в отправляемый текст.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5012,
+          "endUtf16Exclusive": 5092,
+          "fragmentSha256Utf8": "4db99bfc86d88cd69e40e6367db068d42bf4e2dc02f252f525b93c0449bb3abc",
+          "sourceLinesZeroBased": [
+            71,
+            71
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE46",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Ответ на жалобу",
+      "obligation": "Не утверждать, что вопрос уже передан или менеджер свяжется, пока это не подтверждено.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5012,
+          "endUtf16Exclusive": 5154,
+          "fragmentSha256Utf8": "9335e8341354c762bb8b43365b2432ea178773d27592322bfd3c797f5acedf6f",
+          "sourceLinesZeroBased": [
+            71,
+            72
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE47",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Автор замечает манеру ответа, похожую на ИИ",
+      "obligation": "Признать участие ИИ можно только при подтверждении контекстом бренда.",
+      "exceptions": [
+        "Без подтверждения допустимо признать лишь неудачный тон, не выдумывая внутренний процесс."
+      ],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5154,
+          "endUtf16Exclusive": 5432,
+          "fragmentSha256Utf8": "1d7a03b51ade4cbb229078de83683fec7f66bdc1341b54a9b5a51997fa568115",
+          "sourceLinesZeroBased": [
+            73,
+            76
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "RE27"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE48",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Вопрос о характеристике под постом с названной моделью",
+      "obligation": "Сначала использовать известные данные поста и проверить версии нужного рынка; не просить повторно известные модель и год.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5432,
+          "endUtf16Exclusive": 5652,
+          "fragmentSha256Utf8": "a4fb125e49442bfa96e0c547bc6321f1335b525f16df555878e68721276eb43f",
+          "sourceLinesZeroBased": [
+            77,
+            79
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "FC01",
+        "FC05"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE49",
+      "dimension": "how",
+      "modality": "required",
+      "when": "Характеристика проверена",
+      "obligation": "Начать ответ с результата проверки.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5580,
+          "endUtf16Exclusive": 5731,
+          "fragmentSha256Utf8": "f2b43ba2ba7b1773b28107ffe6898395c8c7372dae377ed138acda2769b13f04",
+          "sourceLinesZeroBased": [
+            79,
+            80
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE50",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Есть доступный ответ о характеристике",
+      "obligation": "Контакт продаж добавлять для расчёта, а не вместо содержательного ответа.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5580,
+          "endUtf16Exclusive": 5731,
+          "fragmentSha256Utf8": "f2b43ba2ba7b1773b28107ffe6898395c8c7372dae377ed138acda2769b13f04",
+          "sourceLinesZeroBased": [
+            79,
+            80
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE51",
+      "dimension": "example_guard",
+      "modality": "required",
+      "when": "Используются готовые примеры",
+      "obligation": "Не копировать примеры во все ответы.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5731,
+          "endUtf16Exclusive": 5807,
+          "fragmentSha256Utf8": "94e6a14df3b78ed0e2a9020d45f3ec3356b8bcea5e2099940df801fdbd367b7e",
+          "sourceLinesZeroBased": [
+            81,
+            81
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "RE52",
+      "dimension": "how",
+      "modality": "required",
+      "when": "Выбираются юмор, длина и эмодзи",
+      "obligation": "Адаптировать их к ситуации.",
+      "exceptions": [
+        "Претензия по оплаченному заказу требует внимания к сути, а не весёлой отписки."
+      ],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5731,
+          "endUtf16Exclusive": 5886,
+          "fragmentSha256Utf8": "3bd004bfcafd5f52c9e851a3af8051468b0c6f2fa88e10b1ef7ac00e7e44b0b1",
+          "sourceLinesZeroBased": [
+            81,
+            82
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC01",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Спор о характеристиках",
+      "obligation": "Сначала установить модель, модельный год, рынок, комплектацию и число мест, затем условия измерения: положение сидений, методику и единицы.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1,
+          "endUtf16Exclusive": 235,
+          "fragmentSha256Utf8": "7ffe073355e98f0edcf3b38674d848ca6c61cef651d59502fd4970b39d0c5e49",
+          "sourceLinesZeroBased": [
+            1,
+            3
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "RE07",
+        "RE48"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC02",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Используются числовые характеристики",
+      "obligation": "Не переносить цифры между версиями.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 155,
+          "endUtf16Exclusive": 235,
+          "fragmentSha256Utf8": "d71f1a42215e6f510fcf5785f46a1ff74414d1b36ee18073055e6307cc16d041",
+          "sourceLinesZeroBased": [
+            3,
+            3
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC03",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Обнаружены расходящиеся числа",
+      "obligation": "Заметить расхождение и не исправлять его молча; приведённые числа иллюстративны.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 155,
+          "endUtf16Exclusive": 306,
+          "fragmentSha256Utf8": "b87d47cb6ee58b8adc7216dd6109a786f3e17317f92c0de9f0fdaaeb75abbef0",
+          "sourceLinesZeroBased": [
+            3,
+            4
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC04",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Условия измерения неизвестны",
+      "obligation": "Не выводить их из величины числа.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 235,
+          "endUtf16Exclusive": 306,
+          "fragmentSha256Utf8": "ba0c961eb90f979be1d0b64a3badd01e56fbce4b59c4e94a882b075a234c24c8",
+          "sourceLinesZeroBased": [
+            4,
+            4
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC05",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Поиск характеристик",
+      "obligation": "Сначала искать официальную спецификацию или руководство производителя нужного рынка, затем таблицу конкретной комплектации в AutoHome или другом каталоге.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 306,
+          "endUtf16Exclusive": 464,
+          "fragmentSha256Utf8": "2791fb51a053642c86f87037563a9f5cc518764269fd2de7181f3075282648e4",
+          "sourceLinesZeroBased": [
+            5,
+            6
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC06",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Источник находится на домене AutoHome",
+      "obligation": "Отличать таблицу параметров от блога, форума и раздела вопросов; домен не делает последние первоисточниками.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 464,
+          "endUtf16Exclusive": 630,
+          "fragmentSha256Utf8": "c0c96f05d8928e1c94737502f1b13cd801da28c599295c79e018b5ebbe55611c",
+          "sourceLinesZeroBased": [
+            7,
+            8
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC07",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Изучается таблица характеристик",
+      "obligation": "Проверять заголовки колонок и сноски.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 547,
+          "endUtf16Exclusive": 630,
+          "fragmentSha256Utf8": "9df8081a6f4859efc373fe28e2519e5dab6bde276707d8aaeceb3bc5bac0c2cf",
+          "sourceLinesZeroBased": [
+            8,
+            8
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC08",
+      "dimension": "output_contract",
+      "modality": "required",
+      "when": "Сохраняется факт в facts",
+      "obligation": "В claim сохранять не голое число, а версию, единицу, условия и ограничения источника; прилагать прямой source_url.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 630,
+          "endUtf16Exclusive": 795,
+          "fragmentSha256Utf8": "55c69d0b6f0a4241466cb23050d5e17709aa01e67061cbfcf3ec9dc9d3ee9a2d",
+          "sourceLinesZeroBased": [
+            9,
+            10
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC09",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Переиспользуется найденный факт",
+      "obligation": "Использовать только факт подходящей версии.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 712,
+          "endUtf16Exclusive": 795,
+          "fragmentSha256Utf8": "2a307e3b9d7eacc03da5082f5e2e4d770a534fcdb7fc3a748872b7ef9b582803",
+          "sourceLinesZeroBased": [
+            10,
+            10
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC10",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Подтверждение не найдено",
+      "obligation": "Не считать отсутствие подтверждения опровержением утверждения.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 795,
+          "endUtf16Exclusive": 870,
+          "fragmentSha256Utf8": "d0ea1deea42dcea01ef9c74e1ae601d5c015513784f0fefd5707769161474dff",
+          "sourceLinesZeroBased": [
+            11,
+            11
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC11",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Ответ признаёт правоту возражения или ошибку ролика",
+      "obligation": "Сначала проверить именно оспариваемый тезис.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 795,
+          "endUtf16Exclusive": 944,
+          "fragmentSha256Utf8": "ba1af433136420202c92c355a79f8abb7a1d7b3c74c07fafbfcc50837c0c9321",
+          "sourceLinesZeroBased": [
+            11,
+            12
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC12",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Доказательств нет",
+      "obligation": "Не соглашаться с тезисом и не опровергать его.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 944,
+          "endUtf16Exclusive": 1104,
+          "fragmentSha256Utf8": "507904629ebb0d97cfb90cb75abcdcfbdc06b295c21b1c762e9e97993c9c22f6",
+          "sourceLinesZeroBased": [
+            13,
+            14
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC13",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Доказательств нет",
+      "obligation": "Получить публичные сведения через исследование или поиск.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 944,
+          "endUtf16Exclusive": 1104,
+          "fragmentSha256Utf8": "507904629ebb0d97cfb90cb75abcdcfbdc06b295c21b1c762e9e97993c9c22f6",
+          "sourceLinesZeroBased": [
+            13,
+            14
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "FC14"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC14",
+      "dimension": "output_contract",
+      "modality": "required",
+      "when": "В legacy-контуре требуется исследование",
+      "obligation": "Источник называет needs_research как механизм запроса исследования; это контракт адаптера, а не стиль бренда.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1025,
+          "endUtf16Exclusive": 1104,
+          "fragmentSha256Utf8": "02af8355d5b8fbd16d5f7104abde691ab54762d1ecc721a2875f5103d7bd900c",
+          "sourceLinesZeroBased": [
+            14,
+            14
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC15",
+      "dimension": "when_what",
+      "modality": "permitted",
+      "when": "После исследования вопрос остаётся неразрешённым",
+      "obligation": "Можно сообщить точно установленное и конкретное ограничение.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1025,
+          "endUtf16Exclusive": 1182,
+          "fragmentSha256Utf8": "5352b7220d3cae235e4521f8be95666b93051ab66f4dc41430d4a0b45a3467de",
+          "sourceLinesZeroBased": [
+            14,
+            15
+          ]
+        }
+      ],
+      "linkedClauses": [
+        "FC16",
+        "RE25"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC16",
+      "dimension": "when_what",
+      "modality": "required",
+      "when": "Решается, нужен ли hold",
+      "obligation": "Оставлять на удержании только если без недостающего факта нет полезного ответа; не останавливать работу из-за каждого сомнения.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1104,
+          "endUtf16Exclusive": 1259,
+          "fragmentSha256Utf8": "10a4cb43a099ff296a8a5252ce3691dc83ae406b503caaa44104907ac96780aa",
+          "sourceLinesZeroBased": [
+            15,
+            16
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC17",
+      "dimension": "example_guard",
+      "modality": "required",
+      "when": "Иллюстративная таблица объёма для двух вариантов числа мест",
+      "obligation": "Пример не справочник характеристик: без указанного положения сидений нельзя заключать ни сложенный, ни поднятый ряд.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1259,
+          "endUtf16Exclusive": 1572,
+          "fragmentSha256Utf8": "5866b45318f2803bf6394fece96dbd9fb4783e1aa272bd3598d05e82a1aa315f",
+          "sourceLinesZeroBased": [
+            17,
+            20
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC18",
+      "dimension": "facts_guard",
+      "modality": "required",
+      "when": "Методика измерения не указана",
+      "obligation": "Отсутствие слэша и соседняя иллюстрация не доказывают методику.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1495,
+          "endUtf16Exclusive": 1572,
+          "fragmentSha256Utf8": "7de3ea73d4a14e4dd04ae09813e1ceff7672d4d7a450c5d24c7ebe7ffe4c9a4e",
+          "sourceLinesZeroBased": [
+            20,
+            20
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "FC19",
+      "dimension": "output_contract",
+      "modality": "required",
+      "when": "Выполняется second_pass",
+      "obligation": "Проверять необоснованное согласие с возражением так же, как выдуманные факты.",
+      "exceptions": [],
+      "scope": {
+        "account": "LikeAvto",
+        "postKeys": []
+      },
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1572,
+          "endUtf16Exclusive": 1654,
+          "fragmentSha256Utf8": "e2471fc9a5f8a10365758681828364543e56b8254c06324cfa55b6c2712a8ce8",
+          "sourceLinesZeroBased": [
+            21,
+            21
+          ]
+        }
+      ],
+      "linkedClauses": [],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    }
+  ],
+  "examples": [
+    {
+      "id": "EX01",
+      "scenario": "Число в реакции на слова ведущего о ресурсе",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE07",
+        "RE08",
+        "RE09"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 554,
+          "endUtf16Exclusive": 860,
+          "fragmentSha256Utf8": "244d65785d8b184a0455402bc638c9507129eb41f40b93154d10a23d0aee8b3a",
+          "sourceLinesZeroBased": [
+            8,
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX02",
+      "scenario": "Подкол о регистрации тюнингованной машины",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE29",
+        "RE25",
+        "RE27"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2621,
+          "endUtf16Exclusive": 2920,
+          "fragmentSha256Utf8": "c649c619a177c7fb2f268bb779584ed55103acc3186aa85c93c11a33f0990c16",
+          "sourceLinesZeroBased": [
+            35,
+            38
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX03",
+      "scenario": "Личный опыт с отметками в правах",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE30",
+        "RE07"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 2920,
+          "endUtf16Exclusive": 3084,
+          "fragmentSha256Utf8": "35ae4ac36f9c28cb0caa1eccebdc37ca89931c35ae43f8295ff35d253d15adb5",
+          "sourceLinesZeroBased": [
+            39,
+            41
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX04",
+      "scenario": "Поправка к неудачному выражению о надёжности",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE31",
+        "RE04",
+        "RE05"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3084,
+          "endUtf16Exclusive": 3277,
+          "fragmentSha256Utf8": "9a3ee621a26a807630dd21e7f7c74d2d19c07d0d1af2061128e394b9a76fc606",
+          "sourceLinesZeroBased": [
+            42,
+            44
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX05",
+      "scenario": "Реплика о выросшей цене под старым роликом",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE32",
+        "RE33"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3277,
+          "endUtf16Exclusive": 3597,
+          "fragmentSha256Utf8": "c305f613fd03f961e5765691baf9bc6dbd3033f4d95809357cf110038d7027ba",
+          "sourceLinesZeroBased": [
+            45,
+            49
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX06",
+      "scenario": "Благодарность после консультации",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE34"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3597,
+          "endUtf16Exclusive": 3717,
+          "fragmentSha256Utf8": "9a6e58e89bc0373592d2dda86c61070f5f33072dab3c400a85867d7e0c5a1e38",
+          "sourceLinesZeroBased": [
+            50,
+            51
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX07",
+      "scenario": "Доброжелательная похвала герою ролика",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE35"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3717,
+          "endUtf16Exclusive": 3897,
+          "fragmentSha256Utf8": "adea01dff4b75461b089b78425f456b01a333df594f51b789ec84a27945ab332",
+          "sourceLinesZeroBased": [
+            52,
+            54
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX08",
+      "scenario": "Ирония о дизайне приборов",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE36",
+        "RE37"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 3897,
+          "endUtf16Exclusive": 4172,
+          "fragmentSha256Utf8": "de3960e6e8740ef6a8e1eeaba8f29c0f9ec314d97aa40299587c1b022c8a3cc5",
+          "sourceLinesZeroBased": [
+            55,
+            58
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX09",
+      "scenario": "Предпочтение другой машины",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE38",
+        "RE39"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4172,
+          "endUtf16Exclusive": 4434,
+          "fragmentSha256Utf8": "4ad147fb702cb6336324c7ee8fb59405c1f438b7051b60ea12c691d64303a2a9",
+          "sourceLinesZeroBased": [
+            59,
+            62
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX10",
+      "scenario": "Шутка о высокой цене",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE40",
+        "RE41"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4434,
+          "endUtf16Exclusive": 4634,
+          "fragmentSha256Utf8": "181a929bcf8e8ecd245fbb1085b6b751e20acc914ec4a49caf17a69c4dca29a3",
+          "sourceLinesZeroBased": [
+            63,
+            65
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX11",
+      "scenario": "Жалоба после оплаты без ответа",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE42",
+        "RE43",
+        "RE44",
+        "RE45",
+        "RE46"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 4634,
+          "endUtf16Exclusive": 5154,
+          "fragmentSha256Utf8": "64f6f639c41ee1bfba05ff55d951d4cc4fec08d9c2b31116fc4c096f13b40727",
+          "sourceLinesZeroBased": [
+            66,
+            72
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX12",
+      "scenario": "Замечание о манере ответа ИИ",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE47"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5154,
+          "endUtf16Exclusive": 5432,
+          "fragmentSha256Utf8": "1d7a03b51ade4cbb229078de83683fec7f66bdc1341b54a9b5a51997fa568115",
+          "sourceLinesZeroBased": [
+            73,
+            76
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX13",
+      "scenario": "Вопрос о приводе при уже известной модели",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "RE48",
+        "RE49",
+        "RE50"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "REPLY_EDITING",
+          "entryId": "knowledge-ca032d010aaa4724beef296919dfed153eb4b65a5d345ac825118acc2d52a374",
+          "versionId": "knowledge-version-1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "sourceVersionHash": "1b7b588e1c1689d034facb20457f2e73699e9fb0e175c13b823a81af97dd53e9",
+          "startUtf16": 5432,
+          "endUtf16Exclusive": 5731,
+          "fragmentSha256Utf8": "2736eae958f8591cf5bc05013bdceba2e79e754418742c2bf823dd08bac445a9",
+          "sourceLinesZeroBased": [
+            77,
+            80
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EX14",
+      "scenario": "Таблица объёма для разных версий без положения сидений",
+      "illustrativeOnly": true,
+      "verifiedFacts": false,
+      "templateForCopying": false,
+      "linkedClauses": [
+        "FC17",
+        "FC18"
+      ],
+      "sourceRefs": [
+        {
+          "sourceSymbol": "FACT_CHECKING",
+          "entryId": "knowledge-f298942a12c5b88f2afe9782f932c7f216d3872a130324c4a8cd263de4440ed4",
+          "versionId": "knowledge-version-123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "sourceVersionHash": "123f1f1aca967377e56cf7bc2ef83c2e0c2f365c95076072a0dac000834447e0",
+          "startUtf16": 1259,
+          "endUtf16Exclusive": 1572,
+          "fragmentSha256Utf8": "5866b45318f2803bf6394fece96dbd9fb4783e1aa272bd3598d05e82a1aa315f",
+          "sourceLinesZeroBased": [
+            17,
+            20
+          ]
+        }
+      ]
+    }
+  ],
+  "crossSourceRelations": [
+    {
+      "id": "O01",
+      "clauseIds": [
+        "RE01",
+        "RE02",
+        "RE03",
+        "RE07",
+        "RE26",
+        "RE52"
+      ],
+      "otherActiveRuleVersions": [
+        {
+          "entryId": "knowledge-3a599d84ae41483f717fab0ca7d00531e9b575fa16340ee6019ab353afe3e56b",
+          "versionId": "knowledge-version-9a6b0c6f3f06d0ac2da7715ff76694f8a0cb99d0af27086862633b5ae0469410",
+          "versionHash": "9a6b0c6f3f06d0ac2da7715ff76694f8a0cb99d0af27086862633b5ae0469410",
+          "title": "Общий стиль: стиль"
+        },
+        {
+          "entryId": "knowledge-003d76e1980ca892066063f1f622e32f13a37d0ba2cf7c054b5b1a87ca4fb8a3",
+          "versionId": "knowledge-version-087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+          "versionHash": "087ad43bfd37b80120ed688c5c829ffa975385d443d3b99546f99beb5ed3ad4c",
+          "title": "Общий стиль: правило 1"
+        },
+        {
+          "entryId": "knowledge-ccfab24cc9c5363913ab51cf3e9d23a5cc6fecd768c37e32639438356ddeab24",
+          "versionId": "knowledge-version-11685d254268cdcd637b83017d8c9ee2d8c55f318081b0ebd66f5823d2ecc6dd",
+          "versionHash": "11685d254268cdcd637b83017d8c9ee2d8c55f318081b0ebd66f5823d2ecc6dd",
+          "title": "Общий стиль: правило 10"
+        },
+        {
+          "entryId": "knowledge-33c464b58c5ec1c788b4f808183c4d321155fbd8a09319d76f6d20dc2f423a35",
+          "versionId": "knowledge-version-b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+          "versionHash": "b2c2f9f0dcb9f29fbdef609ab3e8d9dfb6c038dd0c9b7711137d5756679ce3c4",
+          "title": "Общий стиль: правило 19"
+        },
+        {
+          "entryId": "knowledge-6dee713fb251752af3cdc87cde26efb2426d4921094e0fd827a66d8b0169f5ec",
+          "versionId": "knowledge-version-e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+          "versionHash": "e86d9b789f5f56d8d1ecaea28090b23a6ac6725f35991204d4b377421558ef40",
+          "title": "LikeAvto: стиль"
+        }
+      ],
+      "relation": "overlap",
+      "analysis": "Реакция и живой тон пересекаются, но запрет искусственных вопросов и условия полезности нельзя заменить одним параметром тона.",
+      "resolution": "Candidate integration judgment required; no source priority or activation changed."
+    },
+    {
+      "id": "O02",
+      "clauseIds": [
+        "RE08",
+        "RE48",
+        "FC01"
+      ],
+      "otherActiveRuleVersions": [
+        {
+          "entryId": "knowledge-5c9b8aabcd4a43770ad6a13d4f5403b13d5143ad4aa8d8bd2e9f897e078f0797",
+          "versionId": "knowledge-version-52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+          "versionHash": "52fd2462821770fc57bbde45217c497717b84b2ae97431a744c7301eb5f1ef9d",
+          "title": "Общий стиль: правило 6"
+        },
+        {
+          "entryId": "knowledge-6d30747a4c4f9f0c7e687cab55e71e88f8a94e32f49fef49b06743bf0b3fa60c",
+          "versionId": "knowledge-version-f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+          "versionHash": "f2737e786c008f056e627d55b5a02abad070db6f55e0fdf6ed2e39ec59605eab",
+          "title": "Общий стиль: правило 7"
+        },
+        {
+          "entryId": "knowledge-0713ad1c49d28888af038ea739d0ab40e38c4018945473e9c881134aa496db22",
+          "versionId": "knowledge-version-465308a135b200164545a239c6977f00077ea401156fc6721533dda6e19f9b29",
+          "versionHash": "465308a135b200164545a239c6977f00077ea401156fc6721533dda6e19f9b29",
+          "title": "Общий стиль: правило 14"
+        }
+      ],
+      "relation": "conditional_tension",
+      "analysis": "Установить модель и условия сначала из доступного контекста; требование установить не равно обязательному вопросу пользователю.",
+      "resolution": "Candidate integration judgment required; no source priority or activation changed."
+    },
+    {
+      "id": "O03",
+      "clauseIds": [
+        "RE11",
+        "RE10",
+        "RE43"
+      ],
+      "otherActiveRuleVersions": [
+        {
+          "entryId": "knowledge-580c8c0e7444886f46a7c950331995c1ed2ca6f2d83299e6e9b9ee0df2bd5ce5",
+          "versionId": "knowledge-version-b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+          "versionHash": "b51d563010628cb7798520071eb57afde171a912379c2e621245ac3a4c4a8616",
+          "title": "LikeAvto: правило 7"
+        }
+      ],
+      "relation": "exception_dependency",
+      "analysis": "Короткое правило о договоре дополнительно запрещает фото/паспорт/телефон; редакторский документ добавляет запрет повторного запроса и привязку истории. Нужны оба набора ограничений.",
+      "resolution": "Candidate integration judgment required; no source priority or activation changed."
+    },
+    {
+      "id": "O04",
+      "clauseIds": [
+        "RE25",
+        "FC15",
+        "FC16"
+      ],
+      "otherActiveRuleVersions": [
+        {
+          "entryId": "knowledge-4c1fd69ec1070755365c8c7dcff75209ecd93a04b780df8cab6fb09393a76cd2",
+          "versionId": "knowledge-version-5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+          "versionHash": "5f70ec1dddd3485ed19a7a5f4e07d1ba5f66c1ffd81c7b56db9e9dfb2933ea1b",
+          "title": "Общий стиль: правило 4"
+        },
+        {
+          "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+          "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+          "versionHash": "21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+          "title": "Общий стиль: правило 5"
+        },
+        {
+          "entryId": "knowledge-8ccafb5b3316aad5206b03f84b7a08e6215a33bf7e11ef37797c8849455fbcb5",
+          "versionId": "knowledge-version-e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+          "versionHash": "e752c87c8a57e9dafa3605861624fbd64b08dee0866220b738785074465d5979",
+          "title": "Общий стиль: правило 16"
+        }
+      ],
+      "relation": "conditional_tension",
+      "analysis": "Не делать отсутствие проверки стандартной отпиской совместимо с честной существенной оговоркой; специальную оговорку об оцинковке нельзя убрать при дедупликации.",
+      "resolution": "Candidate integration judgment required; no source priority or activation changed."
+    },
+    {
+      "id": "O05",
+      "clauseIds": [
+        "RE19",
+        "RE32",
+        "RE50"
+      ],
+      "otherActiveRuleVersions": [
+        {
+          "entryId": "knowledge-550ecc41fc1de1fe7d317a2efdb800a847ec23b389c1df529c9d20ebf03fbedf",
+          "versionId": "knowledge-version-5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+          "versionHash": "5453fb8cc51bfa1f56d410fc5b694d73e23a82613185f027d3c6899776ceea21",
+          "title": "Общий стиль: правило 3"
+        },
+        {
+          "entryId": "knowledge-e09481db6977e60a02dcd1ae32237cd81f87b7c9abdc4947eea67b0f606aaf41",
+          "versionId": "knowledge-version-c46e7202483015d2bceb1992829d25d43f088826ffa97a980fcdeaf12afc9a83",
+          "versionHash": "c46e7202483015d2bceb1992829d25d43f088826ffa97a980fcdeaf12afc9a83",
+          "title": "Общий стиль: правило 18"
+        },
+        {
+          "entryId": "knowledge-077e371694a0eccd0dbaa3408a5e98f0498402e8f8fbc61404ace6d319274e2e",
+          "versionId": "knowledge-version-e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+          "versionHash": "e3f0a78c46de5e10d20c1347e18fd07b93ab3e9891a32a629255bcd1b0827a17",
+          "title": "LikeAvto: правило 1"
+        },
+        {
+          "entryId": "knowledge-c3d742ea3ec5325d945ddf74a39ae040d45bb9bce56911fa40bcc7f78b10ee44",
+          "versionId": "knowledge-version-29df948b308a72dfe6b8119d67794587f452974ade1e7254126ae8f5eed86c60",
+          "versionHash": "29df948b308a72dfe6b8119d67794587f452974ade1e7254126ae8f5eed86c60",
+          "title": "LikeAvto: правило 5"
+        },
+        {
+          "entryId": "knowledge-f08cf1d6273b5f4e9929cb9787cb4de13e23080b2e27d12d5d5a8b2ec578e07d",
+          "versionId": "knowledge-version-85afee893260a500e4fc27c9e89a3304dede81f0ded23c2e2703d8ec3919f5ec",
+          "versionHash": "85afee893260a500e4fc27c9e89a3304dede81f0ded23c2e2703d8ec3919f5ec",
+          "title": "LikeAvto: правило 6"
+        }
+      ],
+      "relation": "unresolved_ambiguity",
+      "analysis": "AMB-CTA: источник допускает полезный контакт для актуального расчёта и маршрут при цене/подборе; manager-only в другом active правиле уже. Условия сохраняются отдельно; приоритет не установлен.",
+      "resolution": "Candidate integration judgment required; no source priority or activation changed.",
+      "ambiguityId": "AMB-CTA"
+    },
+    {
+      "id": "O06",
+      "clauseIds": [
+        "RE15",
+        "RE46",
+        "RE27",
+        "RE47"
+      ],
+      "otherActiveRuleVersions": [
+        {
+          "entryId": "knowledge-a6f5160be8e96884d9845d6ad52c4b6b25e7a8fa95f70979884a47cc63d0d5ba",
+          "versionId": "knowledge-version-9b26ac8a94f090edf403ab4e758b242b9e766c695ad9fe62f5db9912ac2b25ad",
+          "versionHash": "9b26ac8a94f090edf403ab4e758b242b9e766c695ad9fe62f5db9912ac2b25ad",
+          "title": "Общий стиль: правило 15"
+        },
+        {
+          "entryId": "knowledge-234dc0e60ae683ee4eacefd4866aa253c3643579483ac4f6287480a1bf52973e",
+          "versionId": "knowledge-version-67b59b9abf852384c78255ecf908ba690b6e3d8e47b910f85ef4f02f78a68643",
+          "versionHash": "67b59b9abf852384c78255ecf908ba690b6e3d8e47b910f85ef4f02f78a68643",
+          "title": "LikeAvto: правило 3"
+        }
+      ],
+      "relation": "overlap",
+      "analysis": "Общее невыдумывание не заменяет точные запреты: передача, срок, закрытие, контакт менеджера, документы и внутреннее применение ИИ.",
+      "resolution": "Candidate integration judgment required; no source priority or activation changed."
+    },
+    {
+      "id": "O07",
+      "clauseIds": [
+        "FC02",
+        "FC05",
+        "FC09",
+        "FC10",
+        "FC11"
+      ],
+      "otherActiveRuleVersions": [
+        {
+          "entryId": "knowledge-1f06cf3d5615599b1731e32f8eafc38c56aae94cc3616f6bce945ffaaf0fb8b1",
+          "versionId": "knowledge-version-b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+          "versionHash": "b4d9ba9e52d3e81a538a2d4d2c060b35c07a992ab001ed57ba7dd715ad82b47f",
+          "title": "Общий стиль: правило 2"
+        },
+        {
+          "entryId": "knowledge-93d8a30e6d30da6e10b64dadc693e259f6b7a0728e7f360a18197d113a5ed2fc",
+          "versionId": "knowledge-version-21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+          "versionHash": "21047396157008911150470a083573eb571fa815af2055b08d22d5d84c6a917c",
+          "title": "Общий стиль: правило 5"
+        },
+        {
+          "entryId": "knowledge-bfa5d819caeba767e015b004d4bd19f5b0e499d91010f15b8e87d34f7fdab09a",
+          "versionId": "knowledge-version-23dad4e5720bd0a40cb23abd88a7cae3458184ef00d2260cd899c7c9cf20f7a1",
+          "versionHash": "23dad4e5720bd0a40cb23abd88a7cae3458184ef00d2260cd899c7c9cf20f7a1",
+          "title": "LikeAvto: правило 4"
+        }
+      ],
+      "relation": "overlap",
+      "analysis": "Проверка конкретного рынка/версии совместима; единый общий запрет не заменяет методику источников и недопустимость необоснованного согласия.",
+      "resolution": "Candidate integration judgment required; no source priority or activation changed."
+    }
+  ],
+  "coverage": [
+    {
+      "symbol": "REPLY_EDITING",
+      "nonemptySourceLines": 82,
+      "referencedNonemptyLines": 82,
+      "unreferencedNonemptyLines": []
+    },
+    {
+      "symbol": "FACT_CHECKING",
+      "nonemptySourceLines": 21,
+      "referencedNonemptyLines": 21,
+      "unreferencedNonemptyLines": []
+    }
+  ],
+  "counts": {
+    "sources": 2,
+    "clauses": 71,
+    "clausesByDimension": {
+      "when_what": 26,
+      "how": 7,
+      "facts_guard": 19,
+      "identity_scope": 2,
+      "output_contract": 8,
+      "example_guard": 9
+    },
+    "examples": 14,
+    "crossSourceRelations": 7,
+    "uniqueEditorialCandidateIds": 25,
+    "mergeMapEntries": 71
+  },
+  "limits": [
+    "Candidate clauses are not activated policy and grant no external execution authority.",
+    "No platform routing policy, new fact, commercial promise or BAW scope is inferred from examples.",
+    "legacy output_contract atoms are preserved for adapter review; previous JSON schema is unspecified and must not override current CommunityHero contract.",
+    "Line-span completeness is mechanical coverage, not a substitute for semantic review.",
+    "Cross-source relations are integration guidance, not an automatic priority or semantic merge.",
+    "No model/provider calls or database writes were made. GET knowledge catalog was filtered in memory to current active LikeAvto rule heads; no full catalog or customer cases persisted."
+  ],
+  "suggestedMergeMap": [
+    {
+      "sourceClauseId": "RE01",
+      "targetRuleIds": [
+        "LA-E01"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE02",
+      "targetRuleIds": [
+        "LA-A01"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Не усиливать общее полезное вовлечение до обязательного ответа на каждое наблюдение; источник и общая условность сохраняются."
+    },
+    {
+      "sourceClauseId": "RE03",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A07"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE04",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-E02"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE05",
+      "targetRuleIds": [
+        "LA-S02"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE06",
+      "targetRuleIds": [
+        "LA-E03"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE07",
+      "targetRuleIds": [
+        "LA-A03"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE08",
+      "targetRuleIds": [
+        "LA-A05"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE09",
+      "targetRuleIds": [
+        "LA-F08"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE10",
+      "targetRuleIds": [
+        "LA-E04"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE11",
+      "targetRuleIds": [
+        "LA-A18"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE12",
+      "targetRuleIds": [
+        "LA-E05"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Нельзя слить с обычной опубликованной историей и потерять ready."
+    },
+    {
+      "sourceClauseId": "RE13",
+      "targetRuleIds": [
+        "LA-E06"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE14",
+      "targetRuleIds": [
+        "LA-E07"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE15",
+      "targetRuleIds": [
+        "LA-F02"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить явные перечисления: передача, срок и закрытие претензии."
+    },
+    {
+      "sourceClauseId": "RE16",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A10",
+        "LA-A18"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Добавить конкретный открытый вопрос команде при повторной жалобе; не свести к общему hold."
+    },
+    {
+      "sourceClauseId": "RE17",
+      "targetRuleIds": [
+        "LA-S02"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE18",
+      "targetRuleIds": [
+        "LA-S02"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE19",
+      "targetRuleIds": [
+        "LA-A15",
+        "LA-A16"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "AMB-CTA: manager-only, направление для цены/подбора и допустимый полезный CTA не имеют выбранного приоритета."
+    },
+    {
+      "sourceClauseId": "RE20",
+      "targetRuleIds": [
+        "LA-E08"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE21",
+      "targetRuleIds": [
+        "LA-E09"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE22",
+      "targetRuleIds": [
+        "LA-E10"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE23",
+      "targetRuleIds": [
+        "LA-E11"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE24",
+      "targetRuleIds": [
+        "LA-E12"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE25",
+      "targetRuleIds": [
+        "LA-E13"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE26",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A02"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE27",
+      "targetRuleIds": [
+        "LA-F01"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Добавить недопустимость выдуманного подтверждения и намёка на документы."
+    },
+    {
+      "sourceClauseId": "RE28",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-S03"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE29",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-E13",
+        "LA-F01"
+      ],
+      "disposition": "illustrative_support",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE30",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "disposition": "illustrative_support",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE31",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-E02",
+        "LA-S02"
+      ],
+      "disposition": "illustrative_support",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE32",
+      "targetRuleIds": [
+        "LA-A09"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "AMB-CTA: редакторский источник допускает контакт, если полезно; core LA-A09 сейчас формулирует предложение расчёта. Не разрешать расхождение автоматически."
+    },
+    {
+      "sourceClauseId": "RE33",
+      "targetRuleIds": [
+        "LA-F06"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE34",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A04"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE35",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "disposition": "illustrative_support",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE36",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-S01"
+      ],
+      "disposition": "illustrative_support",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE37",
+      "targetRuleIds": [
+        "LA-F01"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "При объединении сохранить аналоговые приборы как область иллюстрации, не универсальный тезис об их надёжности."
+    },
+    {
+      "sourceClauseId": "RE38",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-A03"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE39",
+      "targetRuleIds": [
+        "LA-E14"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE40",
+      "targetRuleIds": [
+        "LA-A01",
+        "LA-S01"
+      ],
+      "disposition": "illustrative_support",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE41",
+      "targetRuleIds": [
+        "LA-F01",
+        "LA-F02"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Не потерять запрет выдуманной причины цены и обещания скидки; это не запрет сообщить подтверждённую скидку."
+    },
+    {
+      "sourceClauseId": "RE42",
+      "targetRuleIds": [
+        "LA-A02",
+        "LA-A18"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE43",
+      "targetRuleIds": [
+        "LA-A18"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "LA-A18 обязан сохранить обе причины запрета повторения: номер уже дан ИЛИ ранее запрошен, включая ready."
+    },
+    {
+      "sourceClauseId": "RE44",
+      "targetRuleIds": [
+        "LA-O02"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "BAW не новый scope и не принятая карточка; только граница переноса."
+    },
+    {
+      "sourceClauseId": "RE45",
+      "targetRuleIds": [
+        "LA-E16"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE46",
+      "targetRuleIds": [
+        "LA-F02",
+        "LA-A17"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "LA-A17 отдельно запрещает исходящий контакт; подтверждение прошлой передачи не даёт нового разрешения обещать исходящий контакт."
+    },
+    {
+      "sourceClauseId": "RE47",
+      "targetRuleIds": [
+        "LA-E15"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE48",
+      "targetRuleIds": [
+        "LA-A03",
+        "LA-A07",
+        "LA-F03"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE49",
+      "targetRuleIds": [
+        "LA-A07"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE50",
+      "targetRuleIds": [
+        "LA-A07",
+        "LA-A16"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE51",
+      "targetRuleIds": [
+        "LA-E12"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "RE52",
+      "targetRuleIds": [
+        "LA-S02",
+        "LA-S03"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC01",
+      "targetRuleIds": [
+        "LA-F03"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "При расширении LA-F03 сохранить число мест, затем положение сидений, методику и единицы; сначала читать известное, не превращать в опрос."
+    },
+    {
+      "sourceClauseId": "FC02",
+      "targetRuleIds": [
+        "LA-F03"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC03",
+      "targetRuleIds": [
+        "LA-E17"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC04",
+      "targetRuleIds": [
+        "LA-E18"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC05",
+      "targetRuleIds": [
+        "LA-E19"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC06",
+      "targetRuleIds": [
+        "LA-E20"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC07",
+      "targetRuleIds": [
+        "LA-E21"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC08",
+      "targetRuleIds": [
+        "LA-E22"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC09",
+      "targetRuleIds": [
+        "LA-F03"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC10",
+      "targetRuleIds": [
+        "LA-E23"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC11",
+      "targetRuleIds": [
+        "LA-E02"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC12",
+      "targetRuleIds": [
+        "LA-E02"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC13",
+      "targetRuleIds": [
+        "LA-A07"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC14",
+      "targetRuleIds": [
+        "LA-E24"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC15",
+      "targetRuleIds": [
+        "LA-A10",
+        "LA-E13"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Полезное точно известное с ограничением допустимо; не превращать в обязательное признание незнания."
+    },
+    {
+      "sourceClauseId": "FC16",
+      "targetRuleIds": [
+        "LA-A10"
+      ],
+      "disposition": "attach_source_and_review_exception_coverage",
+      "notes": "Сохранить условие отсутствия полезного ответа без факта; связь с обязательным внутренним решением из core не теряется."
+    },
+    {
+      "sourceClauseId": "FC17",
+      "targetRuleIds": [
+        "LA-E12",
+        "LA-E18"
+      ],
+      "disposition": "illustrative_support",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC18",
+      "targetRuleIds": [
+        "LA-E18"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    },
+    {
+      "sourceClauseId": "FC19",
+      "targetRuleIds": [
+        "LA-E25"
+      ],
+      "disposition": "preserve_distinct_candidate",
+      "notes": "Сохранить модальность, условия и исходные sourceRefs; это предложение объединения, не автоматическая эквивалентность."
+    }
+  ],
+  "uniqueEditorialCandidates": [
+    {
+      "id": "LA-E01",
+      "title": "Выбор реакции до формулировки",
+      "kind": "action_policy",
+      "sourceClauseIds": [
+        "RE01"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E02",
+      "title": "Проверка именно спорного тезиса до согласия или опровержения",
+      "kind": "factual_boundary",
+      "sourceClauseIds": [
+        "RE04",
+        "RE31",
+        "FC11",
+        "FC12"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E03",
+      "title": "Уверенный тон не доказательство",
+      "kind": "factual_boundary",
+      "sourceClauseIds": [
+        "RE06"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E04",
+      "title": "История по аккаунту, площадке и author_id",
+      "kind": "identity_constraint",
+      "sourceClauseIds": [
+        "RE10"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E05",
+      "title": "Учитывать подготовленные ready-ответы",
+      "kind": "action_policy",
+      "sourceClauseIds": [
+        "RE12"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E06",
+      "title": "Ready не означает опубликованное",
+      "kind": "factual_boundary",
+      "sourceClauseIds": [
+        "RE13"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E07",
+      "title": "Сообщение клиента не внутренний статус заказа",
+      "kind": "factual_boundary",
+      "sourceClauseIds": [
+        "RE14"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E08",
+      "title": "В second_pass допустима полная замена реакции",
+      "kind": "legacy_runtime_contract",
+      "sourceClauseIds": [
+        "RE20"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E09",
+      "title": "При втором проходе сохранять факты, оговорки и контакты",
+      "kind": "legacy_runtime_contract",
+      "sourceClauseIds": [
+        "RE21"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E10",
+      "title": "Уместную исходную реакцию оставлять",
+      "kind": "legacy_runtime_contract",
+      "sourceClauseIds": [
+        "RE22"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E11",
+      "title": "Прежняя JSON-схема: источник не задаёт её состав",
+      "kind": "legacy_runtime_contract",
+      "sourceClauseIds": [
+        "RE23"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E12",
+      "title": "Примеры не факты и не универсальные шаблоны",
+      "kind": "example_constraint",
+      "sourceClauseIds": [
+        "RE24",
+        "RE51",
+        "FC17"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E13",
+      "title": "Существенная оговорка вместо автоматической отписки",
+      "kind": "style_policy_with_factual_exception",
+      "sourceClauseIds": [
+        "RE25",
+        "RE29",
+        "FC15"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E14",
+      "title": "Не обесценивать чужой выбор ради продажи",
+      "kind": "style_policy",
+      "sourceClauseIds": [
+        "RE39"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E15",
+      "title": "Участие ИИ признаётся только при подтверждённом контексте",
+      "kind": "factual_boundary",
+      "sourceClauseIds": [
+        "RE47"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E16",
+      "title": "Поясняющие скобки примера не публичный текст",
+      "kind": "output_constraint",
+      "sourceClauseIds": [
+        "RE45"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E17",
+      "title": "Не замалчивать и не исправлять молча расхождения чисел",
+      "kind": "factual_boundary",
+      "sourceClauseIds": [
+        "FC03"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E18",
+      "title": "Не выводить методику из числа, отсутствия слэша или картинки",
+      "kind": "factual_boundary",
+      "sourceClauseIds": [
+        "FC04",
+        "FC17",
+        "FC18"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E19",
+      "title": "Порядок поиска: производитель нужного рынка, затем таблица версии",
+      "kind": "action_policy",
+      "sourceClauseIds": [
+        "FC05"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E20",
+      "title": "Раздел сайта и тип источника важнее одного домена",
+      "kind": "factual_boundary",
+      "sourceClauseIds": [
+        "FC06"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E21",
+      "title": "Проверять колонки и сноски",
+      "kind": "action_policy",
+      "sourceClauseIds": [
+        "FC07"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E22",
+      "title": "Факт хранит версию, единицу, условия, ограничения и прямой URL",
+      "kind": "evidence_output_contract",
+      "sourceClauseIds": [
+        "FC08"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E23",
+      "title": "Нет подтверждения не означает опровергнуто",
+      "kind": "factual_boundary",
+      "sourceClauseIds": [
+        "FC10"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E24",
+      "title": "needs_research как прежний механизм, не политика бренда",
+      "kind": "legacy_runtime_contract",
+      "sourceClauseIds": [
+        "FC14"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    },
+    {
+      "id": "LA-E25",
+      "title": "Второй проход проверяет необоснованное согласие",
+      "kind": "legacy_runtime_contract",
+      "sourceClauseIds": [
+        "FC19"
+      ],
+      "status": "proposed",
+      "grantsExecutionAuthority": false
+    }
+  ],
+  "ambiguities": [
+    {
+      "id": "AMB-CTA",
+      "status": "unresolved",
+      "clauseIds": [
+        "RE19",
+        "RE32",
+        "RE50"
+      ],
+      "coreRuleIds": [
+        "LA-A09",
+        "LA-A15",
+        "LA-A16"
+      ],
+      "description": "Только при невозможности продолжить без менеджера; направить по цене/подбору; либо контакт допустим, если полезен для актуального расчёта. Условия не сведены к одному приоритету.",
+      "requiredDecision": "Согласовать условие CTA с владельцем итоговой редакции; не считать нормализацию разрешением новой маршрутизации."
+    }
+  ],
+  "integrationCoreSha256": "4d1edf1982bbd78d60cfd1d2902ac29b8292ead95b0be8c2c261451e4ebe38ee"
+}

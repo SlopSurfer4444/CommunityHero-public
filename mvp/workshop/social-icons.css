@@ -1,0 +1,57 @@
+.social-icon {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 16px;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  border-radius: 5px;
+  color: #667085;
+  background: #f2f4f7;
+  vertical-align: -2px;
+}
+
+.social-icon svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+}
+
+.social-icon__cutout {
+  fill: #fff;
+}
+
+.social-icon--vk {
+  color: #2787f5;
+  background: #edf6ff;
+}
+
+.social-icon--youtube {
+  color: #f04438;
+  background: #fff1f0;
+}
+
+.social-icon--instagram {
+  color: #c13584;
+  background: #fff0f7;
+}
+
+.social-icon--tiktok {
+  color: #111827;
+  background: #f4f4f5;
+}
+
+.social-icon--telegram {
+  color: #229ed9;
+  background: #eef9fd;
+}
+
+.social-icon--other {
+  color: #667085;
+  background: #f2f4f7;
+}
+

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "notice": "Pending analyst cases are not human gold. Reviewer is a supplied identity, not authenticated by this offline tool.",
+  "labels": [
+    {
+      "caseId": "synthetic-example",
+      "caseHash": "b9f6b6c841ea973ad1e01cc3cfc37ad53d62d9f2e3030b396ba1cd6036ffa053",
+      "split": "control",
+      "status": "approved",
+      "reviewer": "SYNTHETIC FIXTURE ONLY",
+      "approved": true,
+      "allowedActions": [
+        "reply"
+      ],
+      "requiredSourceIds": [],
+      "incompleteContext": false,
+      "requireAttentionIfIncomplete": false,
+      "notes": ""
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen_pending_root_admission",
+  "createdAtUtc": "2026-09-23T10:17:06.536Z",
+  "files": {
+    "activation-plan.v1.json": "d181b87caf6950017432d7eb50621a0d901b79b2bc7a6b8e1a3f1038f049ae85",
+    "rules.v1.json": "fcf08f3fb9eb5f79e503303094b68af9f91a3412e687039f647fed5ede26f4a9",
+    "rules.v1.ru.md": "748ea84badb7606e2dbd7633f96f71a93b0b15e4688dbc8ebc9d49d6be37fef4",
+    "coverage.v1.json": "4a89d1dbc8181bc03648750491d95009b77212f38c252ea21cc1d6d9b82ca659",
+    "scenario-suite.v1.json": "690721e1c6c45a3c649fc87a5657d79ef4add0b93353561d04f05e2dae966b74",
+    "owner-decision-reaction.v1.json": "f76d7987633cb5ba71bc23bbc57fdbff08637481ebdb6e73e6b68f241270b54b",
+    "owner-decision-cta.v1.json": "92e676991c51785ad5699494002a1ea23350dcc9dc0a7516beac85df0d38a0de",
+    "metrics.v1.json": "cfdd3f4ca58bc69c714ae5f31b2d4182722709f461f53847cd2da69c13336a6a",
+    "prompt-cost.v1.json": "9680018c19820bbfaffc548e82d161f56bc405caca277d6c6f6f3055f92f42c1",
+    "verify.mjs": "ddf92e9609aee289b2e3fc5371b90624c97a6364a6707167f0cf54b3733b925e",
+    "build-candidate.mjs": "bdb281c270a5339c6dd692e7767192d618d188f9b920e381843499f9bfd82bb4",
+    "README.md": "cd404a99eea95cc519a6152b4d059cdfe23fccb6ff5684d364d2ac2495440716"
+  },
+  "sourceHeads": 31,
+  "sourceClauses": 183,
+  "newActiveRules": 41,
+  "retainedTypedConstraints": 3,
+  "archivedContracts": 7,
+  "archivedOldEvidenceFieldConventions": 1,
+  "scenarioCases": 48,
+  "checks": {
+    "offlineStructural": "passed",
+    "currentHeadsAndByteHashes": "passed",
+    "independentEditorialReview": "E02 and F03 findings fixed; other inspected clauses retained",
+    "modelScenarioExecution": "not_run",
+    "dbActivation": "not_performed",
+    "titleReview": "41 unique meaningful titles; S02 attribution note removed; only plan titles and S02 text changed",
+    "titleReviewUnchangedRemainderSha256": "a067e3aad01264672bb02323ac452f44f5f112aceb96850b7084a5cd940eff82"
+  },
+  "projectionCodeHashes": {
+    "mvp/adapters/assistant.mjs": "9ef7d499d547fbf1d89309f32bd8372dc269c9337235abea7af93f868d397e5d",
+    "mvp/adapters/assistant-rule-semantics.mjs": "4a8973e6c076cb9890a6020cf55d9c8ebebc11873fda6a28e607b4dfb5bd5c85"
+  },
+  "scope": "Only this candidate directory written. GET /api/knowledge filtered in memory. No raw private catalog/case dump, DB write, model/provider call, or runtime mutation."
+}
