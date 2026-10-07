@@ -12,8 +12,12 @@ fn approval() -> Value {
             "item":{"id":"item-a","itemId":"provider-recipient","revision":3}}]})
 }
 fn history() -> Value {
-    json!({"audit":[{"id":"guard-audit","action":"approval.created","refId":"guard-approval","createdAt":"2026-09-22T00:00:00Z"}],
-        "approvals":[approval()]})
+    // This validator also checks current workspace contracts. Seed a complete
+    // isolated workspace while retaining the exact historical payloads.
+    let mut workspace=crate::empty();
+    workspace["audit"]=json!([{"id":"guard-audit","action":"approval.created","refId":"guard-approval","createdAt":"2026-09-22T00:00:00Z"}]);
+    workspace["approvals"]=json!([approval()]);
+    workspace
 }
 
 #[test]
@@ -77,7 +81,13 @@ fn approval_status_lifecycle_and_legacy_shapes_remain_supported() {
         .unwrap()
         .push(json!({"id":"legacy-approval","proposals":[]}));
     assert!(validate_change(&before, &after).is_ok());
-    assert!(validate_change(&json!({"jobs":[]}), &json!({"jobs":[]})).is_ok());
+    // Only the two history collections are omitted from this legacy bounded
+    // shape; unrelated workspace collections remain complete.
+    let mut legacy=crate::empty();
+    for collection in ["audit","approvals"] {
+        legacy.as_object_mut().unwrap().remove(collection);
+    }
+    assert!(validate_change(&legacy, &legacy).is_ok());
     after["approvals"][0]["status"] = json!(4);
     assert!(validate_change(&before, &after).is_err());
     let mut after = before.clone();

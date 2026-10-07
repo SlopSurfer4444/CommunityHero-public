@@ -41,6 +41,23 @@ test('timestamp-only snapshots skip normalization/render while meaningful jobs a
   await connection.refresh();assert.equal(state.renders,3);assert.equal(state.merges,2);assert.equal(data.items[0].draft,'Server change');
 });
 
+test('queue coverage updates repaint without remapping items and use the latest canonical observation',async t=>{
+  const {connection,state,data}=setup(t);
+  await connection.refresh();const item=data.items[0];
+  assert.equal(connection.queueCoverage('attention').state,'unknown');
+  state.response.sync.openCoverage={scope:'all-open',done:false,coverageComplete:false,pages:1};
+  await connection.refresh();assert.equal(state.renders,2);assert.equal(state.merges,1);
+  assert.equal(connection.queueCoverage('attention').note,'Сверка очереди продолжается.');
+  state.response.sync.openCoverage={scope:'all-open',done:true,traversalComplete:true,contextComplete:true,coverageComplete:true,
+    snapshotConsistent:false,accounting:{version:1,trackedUnique:1,importedUnique:1,unresolvedUnique:0,unverifiedPages:0,overflow:false}};
+  await connection.refresh();assert.equal(state.renders,3);assert.equal(state.merges,1);assert.equal(data.items[0],item);
+  assert.equal(connection.queueCoverage('attention').state,'complete');
+  state.response.sync.openCoverage.invalidatedAt='changed';
+  await connection.refresh();assert.equal(state.renders,4);assert.equal(connection.queueCoverage('attention').state,'incomplete');
+  state.response.sync.background={state:'backoff'};
+  await connection.refresh();assert.equal(state.renders,5);assert.match(connection.queueCoverage('attention').note,/Связь временно недоступна/);
+});
+
 test('background checks cheap generation but explicit refresh always obtains the actual snapshot',async t=>{
   const {connection,state}=setup(t);state.response.workspaceVersion='one';state.version='one';
   await connection.refresh();connection.start();state.source.emit();t.mock.timers.tick(250);await flush();

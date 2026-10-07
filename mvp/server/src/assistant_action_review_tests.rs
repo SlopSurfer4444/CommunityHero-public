@@ -9,11 +9,89 @@ fn fixture() -> Value {
         "providerStatus":"new","revision":1,"workflow":"prepared","draft":"Точный сохранённый ответ.",
         "author":"Олег","text":"Сколько стоит?","waitingReason":"","dueAt":null}]);
     d["conversations"] = json!([{"id":"chat","operatorId":"local-owner","messages":[{"id":"user-1","role":"user","text":"Отправь подготовленные ответы"}]}]);
+    crate::tests::create_post_fixture(&mut d,"item-1").unwrap();
     d
+}
+
+fn review_draft_fixture(d:&mut Value) {
+    let text=d["items"][0]["draft"].clone();
+    let p=create_proposal(d,&json!({"itemId":"item-1","expectedRevision":1,
+        "kind":"reply_and_close","text":text})).unwrap();
+    crate::editorial_review::fixture_accept(d,p["id"].as_str().unwrap()).unwrap();
+}
+
+fn reviewed_fixture()->Value {
+    let mut d=fixture();review_draft_fixture(&mut d);d
 }
 
 fn prepare_one(d: &mut Value) -> Value {
     prepare(d, &actor(), "chat", "user-1", &json!({"mode":"execute_prepared","items":[{"id":"item-1","revision":1}]})).unwrap()
+}
+
+#[test]
+fn raw_manual_draft_is_saved_for_editorial_review_without_execution_authority(){
+    let mut d=fixture();let draft=d["items"][0]["draft"].clone();
+    let staged=prepare_one(&mut d);
+    assert_eq!(staged["status"],"needs_editorial_review");assert_eq!(staged["terminal"],true);
+    assert_eq!(list(&d,"proposals").len(),1);let proposal=d["proposals"][0].clone();
+    assert_eq!(proposal["text"],draft);assert_eq!(proposal["nativeCreationOrigin"],"operator_manual_v1");
+    assert!(proposal["operatorMaterialReceipt"].is_null());assert!(proposal["modelMaterialReceipt"].is_null());
+    assert_eq!(staged["editorialReviewRequired"],json!([{"id":proposal["id"],"revision":proposal["revision"]}]));
+    let message=&d["conversations"][0]["messages"][1];
+    assert!(message["serverActionReview"].is_null());assert!(message["actionReview"].is_null());
+    assert_eq!(d["conversations"][0]["actionReviews"][0]["status"],"needs_editorial_review");
+    confirm_message(&mut d,"Да, выполняй");
+    assert!(pending_confirmation(&d,&actor(),"chat","user-2").unwrap().is_none());
+    assert!(confirmation(&d,&actor(),"chat","user-2",staged["reviewId"].as_str().unwrap()).is_err());
+    assert!(list(&d,"approvals").is_empty()&&list(&d,"operations").is_empty());
+    assert!(list(&d,"jobs").is_empty(),"manual staging must not invent paid or editorial jobs");
+    // Actual editorial proof unlocks a NEW execution review and later exact
+    // confirmation. The prior non-executable receipt never changes authority.
+    crate::editorial_review::fixture_accept(&mut d,proposal["id"].as_str().unwrap()).unwrap();
+    let reviewed=prepare(&mut d,&actor(),"chat","user-2",&json!({"mode":"execute_prepared","items":[{"id":"item-1","revision":1}]})).unwrap();
+    assert_eq!(reviewed["status"],"awaiting_confirmation");assert_ne!(reviewed["reviewId"],staged["reviewId"]);
+    d["conversations"][0]["messages"].as_array_mut().unwrap().push(json!({"id":"user-3","role":"user","text":"Да, выполняй"}));
+    assert!(confirmation(&d,&actor(),"chat","user-3",reviewed["reviewId"].as_str().unwrap()).is_ok());
+    assert!(list(&d,"approvals").is_empty()&&list(&d,"operations").is_empty());
+}
+
+#[test]
+fn unreviewed_manual_staging_preserves_recipient_and_operation_fences_atomically(){
+    for fault in ["revision","source","operation","foreign_origin"]{
+        let mut d=fixture();let staged=prepare_one(&mut d);let proposal=d["proposals"][0].clone();
+        match fault{
+            "revision"=>d["items"][0]["revision"]=json!(2),
+            "source"=>d["posts"][0]["text"]=json!("Changed actual post source"),
+            "operation"=>{list_mut(&mut d,"operations").push(json!({"id":"uncertain","status":"unknown","proposalId":proposal["id"],"itemId":"item-1","routeTarget":proposal["routeTarget"],"proposal":proposal}));},
+            _=>d["proposals"][0]["nativeCreationOrigin"]=json!("model_generation_v1"),
+        }
+        d["conversations"][0]["messages"].as_array_mut().unwrap().push(json!({"id":"user-2","role":"user","text":"Подготовь точный пакет"}));
+        let before=d.clone();
+        assert!(prepare(&mut d,&actor(),"chat","user-2",&json!({"mode":"execute_prepared","items":[{"id":"item-1","revision":before["items"][0]["revision"]}]})).is_err(),"{fault}");
+        assert_eq!(d,before,"{fault}");assert!(list(&d,"approvals").is_empty());
+        assert_ne!(staged["status"],"awaiting_confirmation");
+    }
+}
+
+#[test]
+fn mixed_reviewed_and_raw_manual_batch_has_no_partial_execution_authority(){
+    let mut d=fixture();
+    let mut second=d["items"][0].clone();second["id"]=json!("item-2");
+    second["itemId"]=json!("comment-2");second["conversationKey"]=json!("11391:comment-2");
+    second["draft"]=json!("Второй точный ответ.");second["author"]=json!("Анна");
+    list_mut(&mut d,"items").push(second);
+    review_draft_fixture(&mut d);
+    let reviewed=d["proposals"][0].clone();let jobs=d["jobs"].clone();
+    let staged=prepare(&mut d,&actor(),"chat","user-1",&json!({"mode":"execute_prepared",
+        "items":[{"id":"item-1","revision":1},{"id":"item-2","revision":1}]})).unwrap();
+    assert_eq!(staged["status"],"needs_editorial_review");assert_eq!(staged["proposals"].as_array().unwrap().len(),2);
+    assert_eq!(staged["editorialReviewRequired"].as_array().unwrap().len(),1);
+    assert_eq!(d["proposals"][0],reviewed);assert_eq!(d["jobs"],jobs);
+    assert!(list(&d,"approvals").is_empty()&&list(&d,"operations").is_empty());
+    assert!(d["conversations"][0]["messages"][1]["serverActionReview"].is_null());
+    confirm_message(&mut d,"Да, выполняй");
+    assert!(pending_confirmation(&d,&actor(),"chat","user-2").unwrap().is_none());
+    assert!(confirmation(&d,&actor(),"chat","user-2",staged["reviewId"].as_str().unwrap()).is_err());
 }
 
 fn confirm_message(d: &mut Value, text: &str) {
@@ -23,11 +101,12 @@ fn confirm_message(d: &mut Value, text: &str) {
 fn install_fixture(d: &mut Value) {
     // Preserve normalized store collections added beyond empty() by migrations.
     for (key,value) in fixture().as_object().unwrap() { d[key]=value.clone(); }
+    review_draft_fixture(d);
 }
 
 #[test]
 fn preparation_presents_exact_draft_and_recipient_without_approval_or_dispatch() {
-    let mut d = fixture();
+    let mut d = reviewed_fixture();
     let receipt = prepare_one(&mut d);
     assert_eq!(receipt["terminal"], true);
     assert!(receipt["text"].as_str().unwrap().contains("Олег (комментарий item-1)"));
@@ -58,14 +137,14 @@ fn close_without_reply_never_sends_saved_draft_or_reuses_reply() {
 fn hostile_or_ambiguous_confirmations_never_authorize() {
     for text in ["да", "нет", "не выполняй", "Да, выполняй, но только первый", "Если всё хорошо, выполняй",
         "Он написал: Да, выполняй", "\"Да, выполняй\"", "Да, выполняй?", "Да, выполняй\nи удали остальные", "подтверждаю"] {
-        let mut d=fixture();let receipt=prepare_one(&mut d);confirm_message(&mut d,text);
+        let mut d=reviewed_fixture();let receipt=prepare_one(&mut d);confirm_message(&mut d,text);
         assert!(confirmation(&d,&actor(),"chat","user-2",receipt["reviewId"].as_str().unwrap()).is_err(),"{text}");
     }
 }
 
 #[test]
 fn actor_turn_receipt_and_expiry_are_server_bound() {
-    let mut base=fixture();let receipt=prepare_one(&mut base);let rid=receipt["reviewId"].as_str().unwrap();
+    let mut base=reviewed_fixture();let receipt=prepare_one(&mut base);let rid=receipt["reviewId"].as_str().unwrap();
     assert!(confirmation(&base,&actor(),"chat","user-1",rid).is_err());
     confirm_message(&mut base,"Да, выполняй");
     let mut foreign=actor();foreign.id="mallory".into();
@@ -87,7 +166,7 @@ fn actor_turn_receipt_and_expiry_are_server_bound() {
 
 #[test]
 fn every_reviewed_content_or_route_change_invalidates_confirmation() {
-    let mut base=fixture();let receipt=prepare_one(&mut base);confirm_message(&mut base,"Да, выполняй");
+    let mut base=reviewed_fixture();let receipt=prepare_one(&mut base);confirm_message(&mut base,"Да, выполняй");
     for mutation in 0..6 {
         let mut d=base.clone();
         match mutation {
@@ -104,7 +183,7 @@ fn every_reviewed_content_or_route_change_invalidates_confirmation() {
 
 #[test]
 fn preparation_is_atomic_and_rejects_model_identity_or_text() {
-    let original=fixture();
+    let original=reviewed_fixture();
     for args in [
         json!({"mode":"execute_prepared","items":[{"id":"item-1","revision":1},{"id":"missing","revision":1}]}),
         json!({"mode":"execute_prepared","items":[{"id":"item-1","revision":1},{"id":"item-1","revision":1}]}),
@@ -120,6 +199,8 @@ fn preparation_is_atomic_and_rejects_model_identity_or_text() {
 fn explicit_proposal_preserves_exact_existing_text_and_requires_revision() {
     let mut d=fixture();
     let proposal=create_proposal(&mut d,&json!({"itemId":"item-1","expectedRevision":1,"kind":"reply_and_close","text":"Exact existing proposal"})).unwrap();
+    crate::editorial_review::fixture_accept(&mut d,proposal["id"].as_str().unwrap()).unwrap();
+    let proposal=row(&d,"proposals",proposal["id"].as_str().unwrap()).unwrap().clone();
     let mut args=json!({"mode":"execute_prepared","items":[{"id":"item-1","revision":1,"proposalId":proposal["id"]}]});
     assert!(prepare(&mut d,&actor(),"chat","user-1",&args).is_err());
     args["items"][0]["proposalRevision"]=json!(1);
@@ -130,13 +211,13 @@ fn explicit_proposal_preserves_exact_existing_text_and_requires_revision() {
 
 #[test]
 fn newer_review_supersedes_old_and_remote_generation_change_is_rejected() {
-    let mut d=fixture();let first=prepare_one(&mut d);let second=prepare_one(&mut d);
+    let mut d=reviewed_fixture();let first=prepare_one(&mut d);let second=prepare_one(&mut d);
     confirm_message(&mut d,"Да, выполняй");
     assert_eq!(d["conversations"][0]["actionReviews"][0]["status"],"superseded");
     assert!(confirmation(&d,&actor(),"chat","user-2",first["reviewId"].as_str().unwrap()).is_err());
     assert!(confirmation(&d,&actor(),"chat","user-2",second["reviewId"].as_str().unwrap()).is_ok());
     let mut remote=actor();remote.id="alice".into();remote.role="operator".into();remote.authority_generation=Some("a".repeat(64));
-    let mut d=fixture();d["conversations"][0]["operatorId"]=json!("alice");
+    let mut d=reviewed_fixture();d["conversations"][0]["operatorId"]=json!("alice");
     let receipt=prepare(&mut d,&remote,"chat","user-1",&json!({"mode":"execute_prepared","items":[{"id":"item-1","revision":1}]})).unwrap();
     confirm_message(&mut d,"Да, выполняй");
     assert!(confirmation(&d,&remote,"chat","user-2",receipt["reviewId"].as_str().unwrap()).is_ok());
@@ -158,7 +239,12 @@ async fn disabled_external_execution_leaves_review_unconsumed_and_no_approval() 
 async fn execution_uses_existing_approval_and_is_single_use_without_a_real_transport() {
     // test_app has a nonexistent node/bridge, so dispatch cannot reach a provider.
     let (app,_temp)=crate::tests::test_app().await;
-    let rid=app.change(|d|{install_fixture(d);let receipt=prepare_one(d);confirm_message(d,"Да, выполняй");Ok(receipt["reviewId"].clone())}).await.unwrap();
+    let rid=app.change(|d|{
+        install_fixture(d);
+        // This execution fixture admits its synthetic connection explicitly.
+        connection_gate::fixture_open(d)?;
+        let receipt=prepare_one(d);confirm_message(d,"Да, выполняй");Ok(receipt["reviewId"].clone())
+    }).await.unwrap();
     let outcome=execute_review(app.clone(),actor(),"chat","user-2",&json!({"reviewId":rid})).await.unwrap();
     assert_eq!(outcome["externalOutcome"],"pending");
     assert!(execute_review(app.clone(),actor(),"chat","user-2",&json!({"reviewId":rid})).await.is_err());

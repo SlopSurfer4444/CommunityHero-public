@@ -2,15 +2,15 @@ use super::*;
 use sha2::{Digest, Sha256};
 
 const TOKEN: &str = "alice-test-access-key-0123456789abcdef0123456789abcdef";
-struct Harness {
-    app: App,
-    actor: Actor,
-    access: PathBuf,
+pub(crate) struct Harness {
+    pub(crate) app: App,
+    pub(crate) actor: Actor,
+    pub(crate) access: PathBuf,
     log: PathBuf,
     _temp: tempfile::TempDir,
 }
 impl Harness {
-    async fn new(revoke_on: &str) -> Self {
+    pub(crate) async fn new(revoke_on: &str) -> Self {
         let temp = tempfile::tempdir().unwrap();
         let access = temp.path().join("access.json");
         std::fs::write(&access, access_config(TOKEN)).unwrap();
@@ -24,23 +24,27 @@ impl Harness {
         let (events, _) = broadcast::channel(8);
         let log = temp.path().join("calls.jsonl");
         let bridge = temp.path().join("isolated-fake.mjs");
-        let script = r#"import {appendFile,writeFile} from 'node:fs/promises';
+    let script = r#"import {appendFile,writeFile,readFile} from 'node:fs/promises';
 let input='';for await(const c of process.stdin)input+=c;const r=JSON.parse(input);
 const itemId=r.itemId??r.actions[0].itemId;
 await appendFile(__LOG__,JSON.stringify({operation:r.operation,itemId})+'\n');
+if(r.operation==='execute'&&__REVOKE__==='gate_execute'){
+ const until=Date.now()+10000;
+ while(true){try{await readFile(__LOG__+'.release');break;}catch{if(Date.now()>until)throw new Error('isolated execute gate timed out');await new Promise(resolve=>setTimeout(resolve,10));}}
+}
 if(r.operation===__REVOKE__)await writeFile(__ACCESS__,'{"operators":[]}');
-const result=r.operation==='context'?{itemId,objectId:'11391',postKey:'11391:post-1',conversationKey:'11391:'+itemId,contextEvidenceDigest:'a'.repeat(64)}:{results:r.actions.map(a=>({actionId:a.actionId,itemId:a.itemId,status:'verified'}))};
+const result=r.operation==='context'?{itemId,objectId:'11391',postKey:'11391:post-1',conversationKey:'11391:'+itemId,contextEvidenceDigest:'a'.repeat(64)}:{account:r.account,results:r.actions.map(a=>({actionId:a.actionId,itemId:a.itemId,status:'verified'}))};
 process.stdout.write(JSON.stringify({ok:true,result}));"#
             .replace("__LOG__", &json!(log.to_string_lossy()).to_string())
             .replace("__ACCESS__", &json!(access.to_string_lossy()).to_string())
             .replace("__REVOKE__", &json!(revoke_on).to_string());
         std::fs::write(&bridge, script).unwrap();
-        let app = App {
-            account:crate::accounts::Profile::LikeAvto,
+        let app = App {lifecycle_task_count: Default::default(), lifecycle_admission: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto)), lifecycle_owner: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto).identity().clone()), lifecycle_provider_token: Default::default(), lifecycle_work: Default::default(), media_discovery: Default::default(),preparation_wake: Default::default(),provider_session: Default::default(),
+            account:crate::accounts::Profile::LikeAvto,navigation:crate::account_navigation::Navigation::root(),
             db: Database::Sqlite(db),
             gate: Arc::new(crate::writer_gate::WriterGate::default()),
             execution_gate: Arc::new(Mutex::new(())),
-            assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),
+            preparation_workers: Default::default(),editorial_gate: Default::default(),assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),
             events,
             csrf: "owner-test".into(),
             auth: Some(auth),
@@ -56,8 +60,10 @@ process.stdout.write(JSON.stringify({ok:true,result}));"#
             tasks: Arc::new(Mutex::new(HashMap::new())),
             bootstrap_cache: Arc::new(bootstrap_cache::Cache::default()),
         };
+        crate::runtime_lifecycle_app::initialize_app_fixture(&app).await.unwrap();
         app.change(|d| {
             d["items"] = json!((1..=2).map(|n| json!({"id":format!("item-{n}"),"itemId":format!("comment-{n}"),"objectId":"11391","postKey":"11391:post-1","conversationKey":format!("11391:comment-{n}"),"contextEvidenceDigest":"a".repeat(64),"providerStatus":"new","revision":1,"workflow":"attention"})).collect::<Vec<_>>());
+            connection_gate::fixture_open(d)?;
             Ok(())
         }).await.unwrap();
         Self {
@@ -68,7 +74,7 @@ process.stdout.write(JSON.stringify({ok:true,result}));"#
             _temp: temp,
         }
     }
-    async fn approval(&self) -> String {
+    pub(crate) async fn approval(&self) -> String {
         self.approval_with_kind("close").await
     }
     async fn approval_with_kind(&self, kind: &str) -> String {
@@ -97,7 +103,7 @@ process.stdout.write(JSON.stringify({ok:true,result}));"#
         assert!(a.get("approvalAuthority").is_none());
         a["id"].as_str().unwrap().to_owned()
     }
-    async fn enqueue(&self, approval: String) {
+    pub(crate) async fn enqueue(&self, approval: String) {
         let _ = execute(
             State(self.app.clone()),
             axum::Extension(self.actor.clone()),
@@ -106,7 +112,7 @@ process.stdout.write(JSON.stringify({ok:true,result}));"#
         .await
         .unwrap();
     }
-    async fn finished(&self) -> Value {
+    pub(crate) async fn finished(&self) -> Value {
         tokio::time::timeout(Duration::from_secs(15), async {
             loop {
                 let data = self.app.read().await.unwrap();
@@ -116,6 +122,7 @@ process.stdout.write(JSON.stringify({ok:true,result}));"#
                         .all(|op| op["status"] != "dispatching")
                     && list(&data, "jobs")
                         .iter()
+                        .filter(|job|job["kind"]!="conductor")
                         .all(|job| matches!(job["status"].as_str(), Some("completed" | "failed")))
                 {
                     return data;
@@ -126,13 +133,14 @@ process.stdout.write(JSON.stringify({ok:true,result}));"#
         .await
         .unwrap()
     }
-    fn calls(&self) -> Vec<Value> {
+    pub(crate) fn calls(&self) -> Vec<Value> {
         std::fs::read_to_string(&self.log)
             .unwrap_or_default()
             .lines()
             .map(|line| serde_json::from_str(line).unwrap())
             .collect()
     }
+    pub(crate) fn release_execute(&self) {std::fs::write(self.log.with_extension("jsonl.release"),"").unwrap();}
 }
 fn access_config(token: &str) -> String {
     json!({"operators":[{"id":"alice","name":"Alice","tokenHash":format!("{:x}",Sha256::digest(token.as_bytes()))}]}).to_string()
@@ -191,7 +199,19 @@ async fn revoke_mid_batch_keeps_effect_and_readback_but_stops_queued_conversatio
         })
         .await
         .unwrap();
-    let approval = h.approval_with_kind("reply_and_close").await;
+    let refs=h.app.change(|d| {
+        for n in 1..=2 {crate::tests::create_post_fixture(d,&format!("item-{n}"))?;}
+        let mut refs=vec![];
+        for n in 1..=2 {
+            let p=create_proposal(d,&json!({"itemId":format!("item-{n}"),"kind":"reply_and_close","expectedRevision":1,
+                "text":format!("Reviewed response {n}")}))?;
+            editorial_review::fixture_accept(d,p["id"].as_str().unwrap()).map_err(bad)?;
+            refs.push(json!({"id":p["id"],"revision":p["revision"]}));
+        }
+        Ok(json!(refs))
+    }).await.unwrap();
+    let approval=approval_new(State(h.app.clone()),axum::Extension(h.actor.clone()),Json(json!({"proposals":refs})))
+        .await.unwrap().0["id"].as_str().unwrap().to_owned();
     h.enqueue(approval).await;
     let data = h.finished().await;
     let calls = h.calls();
@@ -267,4 +287,69 @@ async fn local_owner_legacy_admission_survives_disabled_remote_auth() {
         check(&h.app, &missing).await.is_err(),
         "Unbound old queued work never gains dispatch authority"
     );
+}
+#[tokio::test]
+async fn local_retirement_failure_stops_new_permits_even_if_persisted_gate_still_looks_open() {
+    let (app,_temp)=crate::tests::test_app().await;
+    let (independent,_other_temp)=crate::tests::test_app().await;
+    app.change(|d|connection_gate::fixture_open(d)).await.unwrap();
+    require_unheld(&app).unwrap();hold_transport_failure(&app);
+    assert!(require_unheld(&app.clone()).is_err());assert!(require_unheld(&independent).is_ok());
+    assert!(begin(&app,&json!({"id":"new-operation","attemptId":"new-attempt"})).await.is_err());
+    // A durable ready observation or direct fixture reopen cannot clear this
+    // hold: production clears it only after verified root case admission.
+    app.change(|d|connection_gate::fixture_open(d)).await.unwrap();
+    assert!(require_unheld(&app).is_err());let d=app.read().await.unwrap();
+    assert_eq!(d[connection_gate::FIELD]["state"],"open");assert!(list(&d,"operations").iter().all(|op|op.get(connection_gate::PERMIT_FIELD).is_none()));
+}
+
+#[tokio::test]
+async fn recovery_cannot_clear_a_failure_observed_after_its_protected_read_started() {
+    let (app,_temp)=crate::tests::test_app().await;
+    hold_transport_failure(&app);
+    let original=capture_recovery_hold(&app).unwrap();
+    // The controlled ordering is the actual race: a newly classified failure
+    // arrives while the earlier recovery is inspecting the protected state.
+    hold_transport_failure(&app);
+    assert!(clear_after_recovery_admission(&app,&original).is_err());
+    assert!(require_unheld(&app).is_err());
+    let current=capture_recovery_hold(&app).unwrap();
+    clear_after_recovery_admission(&app,&current).unwrap();
+    require_unheld(&app).unwrap();
+}
+
+#[tokio::test]
+async fn no_hold_snapshot_and_previously_cleared_token_cannot_erase_a_later_failure() {
+    let (app,_temp)=crate::tests::test_app().await;
+    let initially_clear=capture_recovery_hold(&app).unwrap();
+    hold_transport_failure(&app);
+    assert!(clear_after_recovery_admission(&app,&initially_clear).is_err());
+    let admitted=capture_recovery_hold(&app).unwrap();
+    clear_after_recovery_admission(&app,&admitted).unwrap();
+    hold_transport_failure(&app);
+    assert!(clear_after_recovery_admission(&app,&admitted).is_err());
+    assert!(require_unheld(&app).is_err());
+}
+
+#[tokio::test]
+async fn recovery_hold_token_is_scoped_to_the_original_company_workspace() {
+    let (app,_temp)=crate::tests::test_app().await;
+    let (other,_other_temp)=crate::tests::test_app().await;
+    hold_transport_failure(&app);hold_transport_failure(&other);
+    let original=capture_recovery_hold(&app).unwrap();
+    assert!(clear_after_recovery_admission(&other,&original).is_err());
+    assert!(require_unheld(&other).is_err());
+    clear_after_recovery_admission(&app,&original).unwrap();
+    require_unheld(&app).unwrap();assert!(require_unheld(&other).is_err());
+}
+
+#[tokio::test]
+async fn exhausted_failure_generation_cannot_accept_a_same_counter_token() {
+    let (app,_temp)=crate::tests::test_app().await;
+    TRANSPORT_FAILURE_HOLDS.get_or_init(Default::default).lock().unwrap().insert(
+        hold_key(&app),HoldState{generation:u64::MAX,held:true,exhausted:false});
+    let last=capture_recovery_hold(&app).unwrap();hold_transport_failure(&app);
+    assert!(capture_recovery_hold(&app).is_err());
+    assert!(clear_after_recovery_admission(&app,&last).is_err());
+    assert!(require_unheld(&app).is_err());
 }

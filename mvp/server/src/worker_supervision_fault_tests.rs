@@ -33,19 +33,19 @@ if(r.operation==='context'){
   process.stdout.write(JSON.stringify({ok:false,error:{code:'timeout_after_side_effect'}}));
 }else if(r.operation==='readback'){
   const mode=(await readFile(__MODE__,'utf8')).trim();let saved=null;try{saved=JSON.parse(await readFile(__EFFECT__,'utf8'));}catch{}
-  const status=mode==='verified'&&saved?.actionId===action.actionId&&saved?.itemId===action.itemId?'verified':'unknown';
-  process.stdout.write(JSON.stringify({ok:true,result:{results:[{actionId:action.actionId,itemId:action.itemId,status}]}}));
+  const status=mode!=='unknown'&&saved?.actionId===action.actionId&&saved?.itemId===action.itemId?'verified':'unknown';
+  process.stdout.write(JSON.stringify({ok:true,result:{account:mode==='foreign-account'?'baw-russia':mode==='missing-account'?undefined:r.account,results:[{actionId:action.actionId,itemId:action.itemId,status}]}}));
 }else{process.stdout.write(JSON.stringify({ok:false,error:{code:'unsupported'}}));}"#
             .replace("__LOG__", &json!(log.to_string_lossy()).to_string())
             .replace("__EFFECT__", &json!(effect.to_string_lossy()).to_string())
             .replace("__MODE__", &json!(mode.to_string_lossy()).to_string());
         std::fs::write(&bridge, script).unwrap();
-        let app = App {
-            account: accounts::Profile::LikeAvto,
+        let app = App {lifecycle_task_count: Default::default(), lifecycle_admission: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(accounts::Profile::LikeAvto)), lifecycle_owner: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(accounts::Profile::LikeAvto).identity().clone()), lifecycle_provider_token: Default::default(), lifecycle_work: Default::default(), media_discovery: Default::default(),preparation_wake: Default::default(),provider_session: Default::default(),
+            account: accounts::Profile::LikeAvto,navigation:crate::account_navigation::Navigation::root(),
             db: Database::Sqlite(db),
             gate: Arc::new(crate::writer_gate::WriterGate::default()),
             execution_gate: Arc::new(Mutex::new(())),
-            assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),
+            preparation_workers: Default::default(),editorial_gate: Default::default(),assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),
             events,
             csrf: "fault-test".into(),
             auth: None,
@@ -58,6 +58,7 @@ if(r.operation==='context'){
             tasks: Arc::new(Mutex::new(HashMap::new())),
             bootstrap_cache: Arc::new(bootstrap_cache::Cache::default()),
         };
+        crate::runtime_lifecycle_app::initialize_app_fixture(&app).await.unwrap();
         app.change(|data| {
             data["items"] = json!([{
                 "id":"item-1","itemId":"comment-1","objectId":"11391",
@@ -66,6 +67,7 @@ if(r.operation==='context'){
                 "revision":1,"workflow":"attention","draft":"","waitingReason":"",
                 "dueAt":null
             }]);
+            connection_gate::fixture_open(data)?;
             Ok(())
         })
         .await
@@ -211,6 +213,19 @@ async fn unresolved_readback_stays_unknown_and_manual_reconcile_never_reexecutes
 }
 
 #[tokio::test]
+async fn verified_readback_for_foreign_or_missing_account_remains_unknown() {
+    for mode in ["foreign-account","missing-account"] {
+        let harness=FaultHarness::new(mode).await;
+        let job=harness.execute_reviewed_close().await;
+        let data=harness.wait_job(&job).await;
+        assert_eq!(data["operations"][0]["evidence"]["results"][0]["status"],"verified");
+        assert_eq!(data["operations"][0]["status"],"unknown");
+        assert_eq!(harness.calls().iter().filter(|call|call["operation"]=="execute").count(),1);
+        harness.app.db.close().await;
+    }
+}
+
+#[tokio::test]
 async fn panic_after_fake_provider_effect_becomes_unknown_then_readback_only() {
     let harness = FaultHarness::new("verified").await;
     let (job, operation) = harness
@@ -224,11 +239,17 @@ async fn panic_after_fake_provider_effect_becomes_unknown_then_readback_only() {
             let job = new_job(data, "execute", "approval-panic")?;
             let mut target = row(data, "items", "item-1")?.clone();
             target["connectorBinding"] = legacy_binding();
+            let authority=dispatch_authority::approval_binding(&harness.actor);
             let operation = json!({
                 "id":"operation-panic","approvalId":"approval-panic",
                 "proposalId":"proposal-panic","itemId":"item-1",
+                "attemptId":"panic-attempt","createdAt":now(),
+                "approvedBy":harness.actor.public_json(),"executedBy":harness.actor.public_json(),
+                "dispatchAuthority":{"approved":authority,"executed":authority},
                 "status":"dispatching","target":target,
-                "action":{"actionId":"operation-panic","action":"close","itemId":"comment-1"}
+                "action":{"actionId":"operation-panic","action":"close","itemId":"comment-1",
+                    "objectId":"11391","conversationKey":"11391:comment-1",
+                    "contextEvidenceDigest":"a".repeat(64),"expectedStatuses":["new"],"workTime":0}
             });
             list_mut(data, "operations").push(operation.clone());
             Ok((job, operation))
@@ -237,12 +258,10 @@ async fn panic_after_fake_provider_effect_becomes_unknown_then_readback_only() {
         .unwrap();
     let worker = harness.app.clone();
     harness.app.spawn(job.clone(), async move {
-        let _ = worker
-            .bridge(
-                "execute",
-                json!({"account":"likeavto","actions":[operation["action"].clone()]}),
-            )
-            .await;
+        let permit=dispatch_authority::begin(&worker,&operation).await.unwrap().unwrap();
+        let execution=dispatch_transport::execute(&worker,&operation,permit).await;
+        assert!(execution.result.is_err(),"Synthetic provider reports timeout after its recorded effect");
+        assert!(execution.local_error.is_none(),"Native cessation and original receipt must commit before the artificial panic");
         panic!("panic after provider side effect");
         #[allow(unreachable_code)]
         Ok(json!(null))
@@ -250,6 +269,11 @@ async fn panic_after_fake_provider_effect_becomes_unknown_then_readback_only() {
     let failed = harness.wait_job(&job).await;
     assert_eq!(row(&failed, "jobs", &job).unwrap()["status"], "failed");
     assert_eq!(failed["operations"][0]["status"], "unknown");
+    assert_eq!(failed["operations"][0]["dispatchPermit"]["phase"],"transport_settled");
+    assert!(connection_gate::valid_permit(&failed["operations"][0]));
+    let receipt=failed["operations"][0]["executeReceipt"].clone();
+    assert!(receipt["error"].is_string());
+    assert_eq!(harness.calls().iter().filter(|call|call["operation"]=="execute").count(),1);
     assert_eq!(
         failed["operations"][0]["evidence"]["workerExit"]["requiresReadback"],
         true
@@ -264,6 +288,7 @@ async fn panic_after_fake_provider_effect_becomes_unknown_then_readback_only() {
     .unwrap();
     let data = harness.wait_job(started["jobId"].as_str().unwrap()).await;
     assert_eq!(data["operations"][0]["status"], "succeeded");
+    assert_eq!(data["operations"][0]["executeReceipt"],receipt);
     let calls = harness.calls();
     assert_eq!(
         calls

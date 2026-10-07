@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+const file=new URL('../workshop/app.js',import.meta.url);
+let s=fs.readFileSync(file,'utf8');
+s=s.replaceAll('mvp.prepareReply(item))','mvp.prepareReply(item).catch(()=>{}))').replaceAll('mvp.saveDraft(item))','mvp.saveDraft(item).catch(()=>{}))').replaceAll('mvp.saveDraft(item);','mvp.saveDraft(item).catch(()=>{});');
+s=s.replaceAll('return mvp.closeOne(item);','return mvp.closeOne(item).catch(()=>{});').replaceAll('return mvp.closeMany(viewItems());','return mvp.closeMany(viewItems()).catch(()=>{});');
+s=s.replaceAll('Учебные данные','Загруженная выборка LikeAvto').replaceAll('История макета','Локальная история');
+s=s.replace(/<img class="channel" src="\/channel-assets\/\$\{post.channel === 'VK' \? 'vk.png' : 'telegram.svg'\}" alt="\$\{esc\(post.channel\)\}">/g,'${channelBadge(post.channel)}');
+s=s.replace(/<img class="channel" src="\/channel-assets\/\$\{g.post.channel==='VK'\?'vk.png':'telegram.svg'\}" alt="\$\{esc\(g.post.channel\)\}">/g,'${channelBadge(g.post.channel)}');
+s += `\nfunction channelBadge(channel){return channel==='VK'?'<img class="channel" src="/channel-assets/vk.png" alt="VK">': '<span class="channel" title="'+esc(channel)+'">'+esc(channel==='YouTube'?'▶':channel==='Instagram'?'◎':channel?.slice(0,1)||'·')+'</span>';}\n`;
+fs.writeFileSync(file,s);

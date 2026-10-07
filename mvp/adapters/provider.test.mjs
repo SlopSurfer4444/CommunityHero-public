@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateActions,mapRead,projectContext} from './provider.mjs';
+import {validateActions,mapRead,projectContext,publicationTitle} from './provider.mjs';
 import {dispatch} from './bridge.mjs';
 import {runProcess} from './process.mjs';
 
@@ -33,7 +33,18 @@ test('projection binds BAW data without leaking LikeAvto labels and retains offi
   const mapped=mapRead([row],{}, {accountKey:'baw-russia',providerAccountId:'baw-russia',displayName:'BAW Russia',primaryObjectId:'12182',objectIds:['12182']});
   assert.deepEqual(row.officialReplyIds,['r1']);
   assert.equal(mapped.live.account,'BAW Russia');assert.equal(mapped.live.accountKey,'baw-russia');
-  assert.equal(mapped.posts[0].title,'Публикация BAW Russia');assert.doesNotMatch(JSON.stringify(mapped),/LikeAvto/);
+  assert.equal(mapped.posts[0].title,'Post');assert.doesNotMatch(JSON.stringify(mapped),/LikeAvto/);
+});
+test('provider post titles use an actual caption line when the upstream title is generic',()=>{
+  assert.equal(publicationTitle('Video by baw_import','\n  Обзор BAW с полным приводом #baw\nДругой текст','BAW Russia'),'Обзор BAW с полным приводом #baw');
+  assert.equal(publicationTitle('Публикация LikeAvto','<br>Changan Q05: опыт владельца','LikeAvto'),'Changan Q05: опыт владельца');
+  assert.equal(publicationTitle('Название производителя','Другой текст','LikeAvto'),'Название производителя');
+  assert.equal(publicationTitle('Clip by account','#tag #only\nСодержательная строка','BAW Russia'),'Содержательная строка');
+  assert.equal(publicationTitle(null,'','BAW Russia'),'Публикация BAW Russia');
+  const row=projectContext({item:{id:'c',status:'new',text:'Комментарий'},parent:{id:'p',title:'Video by baw_import',text:'Обзор BAW с полным приводом\nПодробности'},officialReplies:[]},'12182',{fastCommentAttachments:()=>[{type:'video'}],fastConveyorPublicSourceUrl:()=>null,fastConveyorAuthorId:()=>undefined,computeThreadContextEvidenceDigest:()=> 'a'.repeat(64)});
+  const mapped=mapRead([row],{}, {accountKey:'baw-russia',providerAccountId:'baw-russia',displayName:'BAW Russia'});
+  assert.equal(mapped.posts[0].title,'Обзор BAW с полным приводом');
+  assert.equal(mapped.posts[0].text,'Обзор BAW с полным приводом\nПодробности');
 });
 test('process output/time limits terminate children before reject',async()=>{
   await assert.rejects(runProcess(process.execPath,['-e','setInterval(()=>{},1000)'],{timeoutMs:80}),e=>e.code==='ADAPTER_TIMEOUT');

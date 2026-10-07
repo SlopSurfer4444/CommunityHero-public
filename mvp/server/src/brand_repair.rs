@@ -113,10 +113,12 @@ mod tests {
         let temp=tempfile::tempdir().unwrap();
         let db=open_db(&temp.path().join("workspace.sqlite")).await.unwrap();
         let (events,_)=broadcast::channel(8);
-        let app=App{account:crate::accounts::Profile::LikeAvto,db:Database::Sqlite(db),gate:Arc::new(crate::writer_gate::WriterGate::default()),execution_gate:Arc::new(Mutex::new(())),
-        assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),events,csrf:id(),auth:None,public_origin:None,external_writes:false,port:4186,
+        let app=App{lifecycle_task_count: Default::default(),lifecycle_admission: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto)),lifecycle_owner: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto).identity().clone()),lifecycle_provider_token: Default::default(),lifecycle_work: Default::default(),media_discovery: Default::default(),preparation_wake: Default::default(),provider_session: Default::default(),account:crate::accounts::Profile::LikeAvto,navigation:crate::account_navigation::Navigation::root(),db:Database::Sqlite(db),gate:Arc::new(crate::writer_gate::WriterGate::default()),execution_gate:Arc::new(Mutex::new(())),
+        preparation_workers: Default::default(),editorial_gate: Default::default(),assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),events,csrf:id(),auth:None,public_origin:None,external_writes:false,port:4186,
             data:temp.path().to_owned(),bridge:temp.path().join("never-execute"),node:temp.path().join("no-runtime"),tasks:Arc::new(Mutex::new(HashMap::new())),bootstrap_cache:Arc::new(bootstrap_cache::Cache::default())};
-        app.change(|d|{*d=data();Ok(())}).await.unwrap();
+        // Seed the isolated fixture before its explicit native ownership bootstrap.
+        app.db.change(|d|{*d=data();Ok(())}).await.unwrap();
+        crate::runtime_lifecycle_app::initialize_app_fixture(&app).await.unwrap();
         let before=app.read().await.unwrap();
         let Json(report)=repair(State(app.clone()),Json(json!({}))).await.unwrap();
         assert_eq!(report["applied"],false);assert_eq!(report["roleChanges"],2);

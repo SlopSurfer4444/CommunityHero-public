@@ -6,11 +6,13 @@ import path from 'node:path';
 import http from 'node:http';
 import {spawn} from 'node:child_process';
 import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
 import {runProcess} from './process.mjs';
 import {assistantCliArgs, reviewModelCatalog} from './assistant.mjs';
+import {codexVisionArgs,codexVisionCatalog} from './media-vision-codex.mjs';
 
-const cli='C:/AIDev/DevTools/bin/codex.exe';
-const pinnedHash='97d4d67419d0ac2f71342f9a5e850f9468aa622618de8ea823223edb9a91926a';
+const pinnedHash='86e8ef1013f98df51fdeea446597f7e3ca32e454d1d4d8c0402a68b03c311d70';
+const cli=process.env.COMMUNITYHERO_CODEX_CLI??fileURLToPath(new URL(`../runs/runtime-tools/codex-${pinnedHash}/codex.exe`,import.meta.url));
 const maliciousCall={id:'call_forbidden_exec',type:'custom_tool_call',call_id:'call_forbidden_exec',
   name:'exec',input:"text('synthetic-probe')"};
 const terminal={id:'msg_terminal',type:'message',role:'assistant',status:'completed',
@@ -46,7 +48,7 @@ test('pinned CLI rejects injected exec calls in constrained profiles and probes 
  {skip:process.platform!=='win32',timeout:90000},async t=>{
   assert.equal(createHash('sha256').update(await fs.readFile(cli)).digest('hex'),pinnedHash);
   const base=await fs.mkdtemp(path.join(os.tmpdir(),'ch-forbidden-tools-'));
-  const catalog=JSON.parse((await runProcess(cli,['debug','models','--bundled'])).stdout);
+  const catalog=JSON.parse(await fs.readFile(new URL('./fixtures/codex-sol61-catalog-0159.json',import.meta.url),'utf8'));
   const constrainedCatalog=reviewModelCatalog(catalog);
   const requests=[];
   const sockets=new Set();
@@ -86,14 +88,14 @@ test('pinned CLI rejects injected exec calls in constrained profiles and probes 
   });
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   try {
-    for(const profile of ['first-pass','review','prior-first-pass']) {
-      const review=profile==='review';
+    for(const profile of ['first-pass','review','prior-first-pass','gpt-6.1-sol']) {
+      const review=profile==='review',vision=profile.startsWith('gpt-6');
       const requestStart=requests.length;
       const home=path.join(base,profile);await fs.mkdir(home);
       await fs.writeFile(path.join(home,'response.schema.json'),JSON.stringify({type:'object',properties:{ok:{type:'boolean'}},required:['ok'],additionalProperties:false}));
       await fs.writeFile(path.join(home,'instructions.txt'),'Return JSON only.');
-      await fs.writeFile(path.join(home,'models.json'),JSON.stringify(constrainedCatalog));
-      const args=assistantCliArgs(home,review);
+      await fs.writeFile(path.join(home,'models.json'),JSON.stringify(vision?codexVisionCatalog(catalog,profile):constrainedCatalog));
+      const args=vision?codexVisionArgs(home,[],profile):assistantCliArgs(home,review);
       if(profile==='prior-first-pass') {
         // Reproduce the formerly deployed gaps while retaining read-only
         // sandboxing and all other disabled tools: use the native catalog and
@@ -122,7 +124,7 @@ test('pinned CLI rejects injected exec calls in constrained profiles and probes 
         const exposed=(attempts[0].tools||[]).some(tool=>tool.name==='exec'||tool.tools?.some(n=>n.name==='exec'));
         t.diagnostic(`prior first-pass request exposed exec=${exposed}; returned tool result=${String(toolResults[0].output||'')}`);
         assert.equal(exposed,false);
-        assert.ok(toolResults.every(item=>String(item.output||'').includes('disabled')
+        assert.ok(toolResults.every(item=>item.output==='unsupported custom tool call: exec'
           && !String(item.output||'').includes('synthetic-probe')),
           'prior first-pass returned an execution marker instead of a disabled-tool rejection');
       } else {
@@ -144,8 +146,8 @@ test('pinned CLI rejects injected exec calls in constrained profiles and probes 
       // that the attempted tool did not run before the structured completion.
       if(profile==='prior-first-pass') {
         assert.equal(result.code,0,result.stderr);
-        assert.ok(toolResults.every(item=>item.output==='code-mode host is disabled'),
-          'prior first-pass did not return the explicit disabled-host result');
+        assert.ok(toolResults.every(item=>item.output==='unsupported custom tool call: exec'),
+          'prior first-pass did not return the explicit unsupported-tool result');
         const events=result.stdout.split(/\r?\n/).filter(Boolean).map(line=>JSON.parse(line));
         assert.ok(events.some(event=>event.item?.type==='agent_message'||event.item?.type==='message'),
           'prior first-pass did not reach terminal structured output');

@@ -35,7 +35,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     sqlx::raw_sql(include_str!("../../migrations/0003_history_guards.sql"))
         .execute(&mut *tx)
         .await?;
+    sqlx::raw_sql(include_str!("../../migrations/0004_feedback_payload_id.sql"))
+        .execute(&mut *tx)
+        .await?;
     tx.commit().await?;
-    println!("History guards schema v3 ready; execution remains disabled");
+    println!("History guards and feedback lookup index ready; execution remains disabled");
     Ok(())
 }

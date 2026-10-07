@@ -10,6 +10,14 @@ const brand = {id:'reply',role:'brand',parentId:'target',providerItemId:'provide
 const branch = (messages=[target],extra={}) => ({id:'branch',postId:'post',contextComplete:false,messages,...extra});
 const outcome = (messages,extra={}) => deriveClosure(item,[branch(messages,extra)]).outcome;
 
+test('closure attribution uses selected account instead of a hardcoded company',()=>{
+  const op={itemId:item.id,status:'succeeded',action:{action:'close'}};
+  assert.equal(deriveClosure(item,[],[op],'BAW Russia').actor,'BAW Russia');
+  assert.equal(deriveClosure({...item,connectorBinding:{accountId:'Another company'}},[],[op]).actor,'Another company');
+  assert.equal(deriveClosure(item).actor,'Команда');
+  assert.equal(deriveClosure(item,[branch([target,brand])],[],'LikeAvto').actor,'LikeAvto');
+});
+
 test('direct provider brand reply establishes reply despite incomplete branch',()=>{
   const result=deriveClosure(item,[branch([target,brand])]);
   assert.equal(result.outcome,'reply');assert.equal(result.replyId,'reply');assert.equal(result.at,null);

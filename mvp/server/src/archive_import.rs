@@ -345,9 +345,11 @@ const item={id:key,itemId:key,objectId:'11391',postKey:'11391:p',conversationKey
 process.stdout.write(JSON.stringify({ok:true,result:{items:[item],hasMore:n<9,cursor:n<9?String(n+1):null,window:r.window}}));"#
             .replace("__LOG__",&json!(log.to_string_lossy()).to_string());
         std::fs::write(&bridge,script).unwrap();
-        let mut app=App{account:crate::accounts::Profile::LikeAvto,db:Database::Sqlite(db),gate:Arc::new(crate::writer_gate::WriterGate::default()),execution_gate:Arc::new(Mutex::new(())),
-        assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),events,csrf:id(),auth:None,public_origin:None,external_writes:false,port:4186,
+        let mut app=App{lifecycle_task_count: Default::default(),lifecycle_admission: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto)),lifecycle_owner: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto).identity().clone()),lifecycle_provider_token: Default::default(),lifecycle_work: Default::default(),media_discovery: Default::default(),preparation_wake: Default::default(),provider_session: Default::default(),account:crate::accounts::Profile::LikeAvto,navigation:crate::account_navigation::Navigation::root(),db:Database::Sqlite(db),gate:Arc::new(crate::writer_gate::WriterGate::default()),execution_gate:Arc::new(Mutex::new(())),
+        preparation_workers: Default::default(),editorial_gate: Default::default(),assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),events,csrf:id(),auth:None,public_origin:None,external_writes:false,port:4186,
             data:temp.path().to_owned(),bridge,node:PathBuf::from("C:/Users/hello/AppData/Local/Microsoft/WinGet/Packages/OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe/node-v24.15.0-win-x64/node.exe"),tasks:Arc::new(Mutex::new(HashMap::new())),bootstrap_cache:Arc::new(bootstrap_cache::Cache::default())};
+        app.db.change(|d|crate::accounts::initialize(d,crate::accounts::Profile::LikeAvto)).await.unwrap();
+        crate::runtime_lifecycle_app::initialize_app_fixture(&app).await.unwrap();
         for batch in 0..2 {
             let Json(response)=import(State(app.clone()),Json(dates())).await.unwrap();
             let job=response["jobId"].as_str().unwrap().to_owned();

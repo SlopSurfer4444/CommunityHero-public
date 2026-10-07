@@ -12,6 +12,8 @@ export function mediaPreparationHold(item={}) {
 }
 
 export function replyReadiness(item,state={}) {
+  const disposition=state._preparationDisposition||item?.preparationDisposition;
+  if(disposition?.blocksActions)return {disabled:true,reason:disposition.label};
   const hold=mediaPreparationHold(item);
   if(hold)return {disabled:true,reason:hold.label};
   if(state._staleGenerated&&!state.manualEdited)return {disabled:true,reason:'Сначала проверьте сохранённый ответ'};
@@ -39,8 +41,10 @@ export function updateMediaActionControls(root,item,state) {
   const hold=mediaPreparationHold(item),readiness=replyReadiness(item,state);
   const send=root.querySelector('.composer .send-button');
   if(send){send.disabled=readiness.disabled;send.title=readiness.reason||'Проверить ответ перед отправкой';}
-  const close=root.querySelector('#close-comment');if(close)close.disabled=!!hold;
+  const disposition=state._preparationDisposition||item?.preparationDisposition;
+  const close=root.querySelector('#close-comment');if(close){close.disabled=!!hold||!!disposition?.blocksActions;if(disposition?.blocksActions)close.title=disposition.detail;}
   const status=root.querySelector('#draft-status');
   if(status&&hold){status.dataset.mediaHold='true';status.textContent=hold.label;status.title=hold.detail;}
-  else if(status?.dataset.mediaHold){delete status.dataset.mediaHold;status.textContent=state._staleGenerated&&!state.manualEdited?'Нужна перепроверка':'Черновик · не отправлен';status.title=status.textContent;}
+  else if(status&&disposition){delete status.dataset.mediaHold;status.dataset.operationHold='true';status.textContent=disposition.label;status.title=disposition.detail;}
+  else if(status&&(status.dataset.mediaHold||status.dataset.operationHold)){delete status.dataset.mediaHold;delete status.dataset.operationHold;status.textContent=state._staleGenerated&&!state.manualEdited?'Нужна перепроверка':'Черновик · не отправлен';status.title=status.textContent;}
 }

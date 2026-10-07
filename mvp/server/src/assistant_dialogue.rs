@@ -9,6 +9,34 @@ fn seal(bundle:&mut Value)->ApiResult<()> {
     if input.len()>550_000{return Err(bad("Контекст найденных комментариев слишком большой. Уточните запрос"));}
     bundle["digest"]=json!(format!("{:x}",Sha256::digest(input.as_bytes())));Ok(())
 }
+/// Mixed-post conversation is useful for navigation and discussion, but it has
+/// no public-proposal authority. A proposal-producing conversation uses the
+/// exact same native post/family and mandatory-material capture as preparation.
+pub(crate) fn attach_proposal_policy(d:&Value,bundle:&mut Value)->ApiResult<()> {
+    bundle["request"]["purpose"]=json!("discussion");
+    let ids=bundle["itemIds"].as_array().ok_or_else(||bad("Discussion recipients missing"))?;
+    let strict=!ids.is_empty()&&crate::preparation_unit::capture(d,ids,&crate::now()).is_ok();
+    bundle["request"]["discussionProposalMode"]=json!(if strict{"strict_group_v1"}else{"read_only_v1"});
+    if strict {
+        crate::preparation_unit::attach(d,bundle,&crate::now()).map_err(conflict)?;
+        crate::preparation_materials::attach_request(d,&mut bundle["request"]).map_err(conflict)?;
+    }else{
+        bundle["request"].as_object_mut().unwrap().remove("strictGroup");
+        bundle["request"].as_object_mut().unwrap().remove("strictGroupContract");
+        bundle["request"]["publicProposalInstruction"]=json!("This is a read-only discussion across posts. Return no public proposals. Use the strict preparation plan to prepare public replies separately for each post or proven family.");
+    }
+    seal(bundle)
+}
+fn current_proposal_policy(d:&Value,bundle:&Value)->ApiResult<()> {
+    match bundle["request"]["discussionProposalMode"].as_str(){
+        Some("read_only_v1")=>Ok(()),
+        Some("strict_group_v1")=>{
+            crate::preparation_unit::current_bundle(d,bundle,&crate::now()).map_err(conflict)?;
+            crate::preparation_materials::require_request(d,&bundle["request"]).map_err(conflict)
+        },
+        _=>Err(conflict("Discussion proposal policy missing or unsupported"))
+    }
+}
 pub fn lookup_query(result:&Value)->ApiResult<Option<&str>>{
     if result["lookup"].is_null(){return Ok(None);}
     let q=result["lookup"]["query"].as_str().unwrap_or("").trim();
@@ -30,7 +58,7 @@ fn retrieved_bundle(d:&Value,old:&Value,messages:&[Value],query:&str)->ApiResult
             "proposalId":shown["draftContext"]["proposalId"],"proposalRevision":shown["draftContext"]["proposalRevision"]})).map_err(bad)?;
     }
     next["request"]["lookupAllowed"]=json!(false);
-    next["request"]["lookupResults"]=found.clone();seal(&mut next)?;
+    next["request"]["lookupResults"]=found.clone();attach_proposal_policy(d,&mut next)?;
     Ok((next,found))
 }
 
@@ -49,18 +77,34 @@ fn refreshed_bundle(d:&Value,old:&Value,messages:&[Value],results:&[Value])->Api
     for shown in old["request"]["items"].as_array().into_iter().flatten().filter(|i|i["draftContext"].is_object()){
         assistant_context::attach_displayed_draft(d,&mut next,&json!({"itemId":shown["id"],"text":shown["draft"],"proposalId":shown["draftContext"]["proposalId"],"proposalRevision":shown["draftContext"]["proposalRevision"]})).map_err(bad)?;
     }
-    next["request"]["toolResults"]=json!(results);seal(&mut next)?;Ok(next)
+    next["request"]["toolResults"]=json!(results);attach_proposal_policy(d,&mut next)?;Ok(next)
 }
 fn finish(d:&mut Value,job_id:&str,conversation_id:&str,result:&Value)->ApiResult<Value>{
     crate::assistant_tools::check_owner(d,job_id,conversation_id)?;
     let job=row(d,"jobs",job_id)?.clone();
+    if result["proposals"].as_array().is_some_and(|rows|!rows.is_empty()) {
+        if job["prepareBundle"]["request"]["discussionProposalMode"]!="strict_group_v1" {
+            return Err(conflict("Read-only discussion cannot admit public proposals; use strict preparation groups"));
+        }
+        current_proposal_policy(d,&job["prepareBundle"])?;
+    }
     let outcome=prepare_bundle::admit(d,job_id,conversation_id,result)?;
+    annotate_finish(d,&job,job_id,conversation_id)?;Ok(outcome)
+}
+fn finish_native(d:&mut Value,job_id:&str,conversation_id:&str,text:&str,reason:&str)->ApiResult<Value>{
+    crate::assistant_tools::check_owner(d,job_id,conversation_id)?;
+    let job=row(d,"jobs",job_id)?.clone();
+    if job["purpose"]!="discussion"{return Err(conflict("Native terminal discussion ownership changed"));}
+    let outcome=prepare_bundle::admit_native_terminal(d,job_id,conversation_id,text,reason)?;
+    annotate_finish(d,&job,job_id,conversation_id)?;Ok(outcome)
+}
+fn annotate_finish(d:&mut Value,job:&Value,job_id:&str,conversation_id:&str)->ApiResult<()> {
     let messages=row_mut(d,"conversations",conversation_id)?["messages"].as_array_mut().unwrap();
     if let Some(message)=messages.last_mut().filter(|m|m["prepareRunId"]==job_id){
         if job["toolResults"].is_array(){message["toolResults"]=job["toolResults"].clone();}
         if let Some(nav)=job["toolResults"].as_array().into_iter().flatten().rev().find(|r|r["name"]=="navigate"&&r["ok"]==true){message["navigation"]=nav["result"].clone();}
         if job["lookupResults"].is_object(){message["lookupResults"]=job["lookupResults"].clone();}
-    }Ok(outcome)
+    }Ok(())
 }
 
 async fn current_authority(app:&App,actor:&crate::operator_auth::Actor)->ApiResult<()> {
@@ -110,17 +154,39 @@ pub async fn run(app:App,job_id:String,conversation_id:String,actor:crate::opera
                 row_mut(d,"jobs",&job_id)?["prepareOutcome"]=receipt["result"].clone();
                 execution_message(d,&conversation_id,&job_id,&[receipt.clone()],&receipt["result"])?;
                 Ok(receipt["result"].clone())
-            }else{finish(d,&job_id,&conversation_id,&json!({"text":format!("Не удалось подтвердить состояние выполнения пакета: {}",receipt["error"]["message"].as_str().unwrap_or("ошибка проверки")),"proposals":[],"sources":[]}))}
+            }else{finish_native(d,&job_id,&conversation_id,&format!("Не удалось подтвердить состояние выполнения пакета: {}",receipt["error"]["message"].as_str().unwrap_or("ошибка проверки")),"confirmed_execution_failed")}
         }).await;
     }
     let mut used=0_usize;let mut legacy_lookup=false;
     for pass in 0..assistant_tools::MAX_PASSES {
         current_authority(&app,&actor).await?;
+        let photo_ids=app.change_assistant_dialogue(Some(&job_id),&conversation_id,&[],|d|{
+            assistant_tools::check_owner(d,&job_id,&conversation_id)?;
+            let mut bundle=row(d,"jobs",&job_id)?["prepareBundle"].clone();
+            prepare_bundle::current(d,&bundle).map_err(conflict)?;
+            if bundle["request"]["discussionProposalMode"].is_null(){attach_proposal_policy(d,&mut bundle)?;}
+            let ids=if bundle["request"]["discussionProposalMode"]=="strict_group_v1" {
+                crate::preparation_unit::current_bundle(d,&bundle,&crate::now()).map_err(conflict)?;
+                if bundle["request"]["materialReadiness"]["requirements"].as_array().into_iter().flatten()
+                    .any(|r|r["kind"]=="post_photo") {bundle["itemIds"].as_array().cloned().unwrap_or_default()}else{Vec::new()}
+            }else{Vec::new()};
+            row_mut(d,"jobs",&job_id)?["prepareBundle"]=bundle;Ok(ids)
+        }).await?;
+        if !photo_ids.is_empty(){crate::photo_acquisition::ensure_for_preparation(&app,&job_id,&photo_ids).await?;}
         let context_started=std::time::Instant::now();
         let request=app.change_assistant_dialogue(Some(&job_id),&conversation_id,&[],|d|{
             if assistant_tools::check_owner(d,&job_id,&conversation_id)?!=actor.id{return Err(conflict("Assistant actor changed"));}
             let mut bundle=row(d,"jobs",&job_id)?["prepareBundle"].clone();
             prepare_bundle::current(d,&bundle).map_err(conflict)?;
+            if bundle["request"]["discussionProposalMode"].is_null(){attach_proposal_policy(d,&mut bundle)?;}
+            if bundle["request"]["discussionProposalMode"]=="strict_group_v1" {
+                // Only new acquisition observations may enter this next pass;
+                // old source/recipient/family pins must still match first.
+                crate::preparation_unit::current_bundle(d,&bundle,&crate::now()).map_err(conflict)?;
+                crate::preparation_materials::attach_request(d,&mut bundle["request"]).map_err(conflict)?;
+                seal(&mut bundle)?;
+            }
+            current_proposal_policy(d,&bundle)?;
             if pass==0&&row(d,"jobs",&job_id)?["toolResults"].as_array().is_some_and(|a|!a.is_empty()){
                 return Err(conflict("Assistant tool run already has durable results; start a new request"));
             }
@@ -160,7 +226,7 @@ pub async fn run(app:App,job_id:String,conversation_id:String,actor:crate::opera
             finish(d,&job_id,&conversation_id,&response)
         }).await;}
         if pass+1>=assistant_tools::MAX_PASSES||used+calls.len()>assistant_tools::MAX_CALLS {
-            return app.change_assistant(Some(&job_id),&conversation_id,|d|finish(d,&job_id,&conversation_id,&json!({"text":"Достигнут лимит шагов этого запроса. Выполненные действия и результаты сохранены; продолжите новым сообщением.","sources":[],"proposals":[]}))).await;
+            return app.change_assistant(Some(&job_id),&conversation_id,|d|finish_native(d,&job_id,&conversation_id,"Достигнут лимит шагов этого запроса. Выполненные действия и результаты сохранены; продолжите новым сообщением.","tool_budget_exhausted")).await;
         }
         for call in calls {
             let tool_started=std::time::Instant::now();
@@ -257,17 +323,32 @@ pub async fn run(app:App,job_id:String,conversation_id:String,actor:crate::opera
         let temp=tempfile::tempdir().unwrap();
         let db=open_db(&temp.path().join("isolated.sqlite")).await.unwrap();
         let (events,_)=broadcast::channel(8);
-        let app=App{account:crate::accounts::Profile::LikeAvto,db:Database::Sqlite(db),gate:Arc::new(crate::writer_gate::WriterGate::default()),execution_gate:Arc::new(Mutex::new(())),assistant_gate:Arc::new(Mutex::new(())),assistant_chat_gate:Arc::new(Mutex::new(())),
+        let app=App{lifecycle_task_count: Default::default(),lifecycle_admission: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::BawRussia)),lifecycle_owner: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::BawRussia).identity().clone()),lifecycle_provider_token: Default::default(),lifecycle_work: Default::default(),media_discovery: Default::default(),preparation_wake: Default::default(),provider_session: Default::default(),account:crate::accounts::Profile::BawRussia,navigation:crate::account_navigation::Navigation::root(),db:Database::Sqlite(db),gate:Arc::new(crate::writer_gate::WriterGate::default()),execution_gate:Arc::new(Mutex::new(())),preparation_workers: Default::default(),editorial_gate: Default::default(),assistant_gate:Arc::new(Mutex::new(())),assistant_chat_gate:Arc::new(Mutex::new(())),
             events,csrf:"test".into(),auth:None,public_origin:None,external_writes:false,port:0,data:temp.path().to_owned(),
             bridge:temp.path().join("fake-dialogue.mjs"),node:PathBuf::from("C:/Users/hello/AppData/Local/Microsoft/WinGet/Packages/OpenJS.NodeJS.LTS_Microsoft.Winget.Source_8wekyb3d8bbwe/node-v24.15.0-win-x64/node.exe"),
             tasks:Arc::new(Mutex::new(HashMap::new())),bootstrap_cache:Arc::new(bootstrap_cache::Cache::default())};
+        app.db.change(|d|crate::accounts::initialize(d,crate::accounts::Profile::BawRussia)).await.unwrap();
+        crate::runtime_lifecycle_app::initialize_app_fixture(&app).await.unwrap();
         let log=temp.path().join("requests.jsonl");
+        let material_module=std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../adapters/assistant-materials.mjs");
+        let material_url=format!("file:///{}",material_module.to_string_lossy().replace('\\',"/"));
         let script=r#"import {appendFile} from 'node:fs/promises';
+import {materialInvocation} from __MATERIAL_MODULE__;
 let input='';for await(const chunk of process.stdin)input+=chunk;const r=JSON.parse(input);
 if(r.operation!=='assistant')throw Error('unexpected action');
 await appendFile(__LOG__,JSON.stringify(r)+'\n');
+// Offline text-only BAW fixture: normal invocation projection and native
+// paid-capture retention are exercised without images or model execution.
+function respond(result){
+ if(r.mandatoryMaterialContract==='mandatory_post_materials_v1'){
+  if(r.postContextBundle.members.some(m=>m.assets.some(a=>a.modality==='photo')))throw Error('unexpected fixture photo');
+  const invocation=materialInvocation({payload:r,input:JSON.stringify(r)},{manifest:[]},{instructions:'Synthetic BAW fixture',schema:'{}',cliSha256:__CLI_SHA__,stdin:JSON.stringify(r)});
+  result.runMetadata={schemaVersion:1,model:__MODEL__,modelProfile:__PROFILE__,reasoningEffort:'high',promptVersion:'communityhero-discussion-fixture-v1',instructionSha256:invocation.instructionSha256,inputSha256:invocation.actualTextInputSha256,cliSha256:__CLI_SHA__,elapsedMs:1,completedAt:'2026-10-06T00:00:00Z',materialInvocation:invocation,visualNeedContract:r.visualNeedContract,visualSelection:r.visualSelection};
+ }
+ process.stdout.write(JSON.stringify({ok:true,result}));
+}
 const mode=__QUERY__;
-if(mode==='LANE'){process.stdout.write(JSON.stringify({ok:true,result:{text:'Личный ассистент ответил',sources:[],proposals:[],toolCalls:[]}}));process.exit(0);}
+if(mode==='LANE'){respond({text:'Личный ассистент ответил',sources:[],proposals:[],toolCalls:[]});process.exit(0);}
 if(mode.startsWith('TOOLS')){
  const step=(r.toolResults||[]).length;
  if(mode==='TOOLS_FAIL'&&step===3)throw Error('simulated late model failure');
@@ -285,20 +366,23 @@ if(mode.startsWith('TOOLS')){
  }
  if(mode==='TOOLS_LIMIT')tool={name:'workspace_stats',arguments:{}};
  if(mode==='TOOLS_PROPOSAL'&&step>=2){
-   process.stdout.write(JSON.stringify({ok:true,result:{text:'Подготовлено',sources:[],proposals:[{itemId:'a',kind:'reply_and_close',text:'Точный подготовленный ответ.'}],toolCalls:[]}}));process.exit(0);
+   respond({text:'Подготовлено',sources:[],proposals:[{itemId:'a',kind:'reply_and_close',text:'Точный подготовленный ответ.'}],toolCalls:[]});process.exit(0);
  }
  if(mode==='TOOLS_REVIEW'&&step===2)tool={name:'prepare_action_review',arguments:{mode:'close_without_reply',items:[{id:'a',revision:1}]}};
- process.stdout.write(JSON.stringify({ok:true,result:{text:tool?'Working':'Done',sources:[],proposals:[],toolCalls:tool?[{id:'call'+step,...tool}]:[]}}));process.exit(0);
+ respond({text:tool?'Working':'Done',sources:[],proposals:[],toolCalls:tool?[{id:'call'+step,...tool}]:[]});process.exit(0);
 }
 const lookup=r.lookupAllowed||__REPEAT__?{kind:'search_comments',query:__QUERY__}:null;
-process.stdout.write(JSON.stringify({ok:true,result:{text:r.lookupAllowed?'Ищу':r.lookupResults.total?'Найдены совпадения':'Совпадений нет',sources:[],proposals:[],lookup}}));
-"#.replace("__LOG__",&json!(log.to_string_lossy()).to_string()).replace("__QUERY__",&json!(query).to_string()).replace("__REPEAT__",if repeat{"true"}else{"false"});
+respond({text:r.lookupAllowed?'Ищу':r.lookupResults.total?'Найдены совпадения':'Совпадений нет',sources:[],proposals:[],lookup});
+"#.replace("__MATERIAL_MODULE__",&json!(material_url).to_string()).replace("__CLI_SHA__",&json!(crate::codex_model_policy::CLI_SHA256).to_string())
+            .replace("__MODEL__",&json!(crate::codex_model_policy::MODEL).to_string()).replace("__PROFILE__",&json!(crate::codex_model_policy::PROFILE).to_string())
+            .replace("__LOG__",&json!(log.to_string_lossy()).to_string()).replace("__QUERY__",&json!(query).to_string()).replace("__REPEAT__",if repeat{"true"}else{"false"});
         std::fs::write(&app.bridge,script).unwrap();
         app.change(|d|{
             d["items"]=json!([{"id":"a","author":"Олег","text":"Первый комментарий","branchId":"b","revision":1,"workflow":"attention"},{"id":"c","author":"Олег","text":"Второй комментарий","branchId":"b","revision":1,"workflow":"attention"}]);
             d["branches"]=json!([{"id":"b","postId":"p","messages":[]}]);d["posts"]=json!([{"id":"p","title":"Публикация"}]);
             if matches!(query,"TOOLS_PROPOSAL"|"TOOLS_REVIEW") {
-                d["items"][0]["itemId"]=json!("source-a");d["items"][0]["objectId"]=json!("11391");d["items"][0]["postKey"]=json!("11391:p");d["items"][0]["conversationKey"]=json!("11391:a");d["items"][0]["contextEvidenceDigest"]=json!("a".repeat(64));
+                d["items"][0]["postId"]=json!("p");d["posts"][0]["attachments"]=json!([]);
+                d["items"][0]["itemId"]=json!("source-a");d["items"][0]["objectId"]=json!("12182");d["items"][0]["platform"]=json!("VK");d["items"][0]["postKey"]=json!("12182:p");d["items"][0]["conversationKey"]=json!("12182:a");d["items"][0]["contextEvidenceDigest"]=json!("a".repeat(64));
             }
             let messages=json!([{"id":"user1","role":"user","text":"Найди комментарий Олега"}]);
             d["conversations"]=json!([{"id":"chat","operatorId":"local-owner","messages":messages}]);
@@ -308,8 +392,9 @@ process.stdout.write(JSON.stringify({ok:true,result:{text:r.lookupAllowed?'Ищ�
                 crate::assistant_action_review::prepare(d,&operator_auth::Actor::local_owner("test"),"chat","user1",&json!({"mode":"close_without_reply","items":[{"id":"a","revision":1}]}))?;
                 d["conversations"][0]["messages"].as_array_mut().unwrap().push(json!({"id":"user2","role":"user","text":"Да, закрывай"}));"user2"
             }else{"user1"};
-            let bundle=prepare_bundle::build(d,&[],d["conversations"][0]["messages"].as_array().unwrap()).map_err(bad)?;
-            d["jobs"]=json!([{"id":"job","kind":"assistant","status":"running","operatorId":"local-owner","refId":"chat","sourceUserMessageId":source,"prepareBundle":bundle}]);Ok(())
+            let mut bundle=prepare_bundle::build(d,&[],d["conversations"][0]["messages"].as_array().unwrap()).map_err(bad)?;
+            attach_proposal_policy(d,&mut bundle)?;
+            d["jobs"]=json!([{"id":"job","kind":"assistant","purpose":"discussion","status":"running","operatorId":"local-owner","refId":"chat","sourceUserMessageId":source,"prepareBundle":bundle}]);Ok(())
         }).await.unwrap();
         let result=if query=="LANE" {
             let _background_guard=app.assistant_gate.lock().await;
@@ -330,7 +415,7 @@ process.stdout.write(JSON.stringify({ok:true,result:{text:r.lookupAllowed?'Ищ�
                     tokio::time::sleep(std::time::Duration::from_millis(20)).await;
                 }
             }).await.expect("personal discussion was blocked by background preparation gate")
-        }else{run(app.clone(),"job".into(),"chat".into(),operator_auth::Actor::local_owner("test"),Value::Null).await};
+        }else{crate::runtime_lifecycle_app::with_job("job".into(),run(app.clone(),"job".into(),"chat".into(),operator_auth::Actor::local_owner("test"),Value::Null)).await};
         let state=app.read().await.unwrap();
         let calls=std::fs::read_to_string(log).unwrap_or_default().lines().map(|l|serde_json::from_str(l).unwrap()).collect();
         (result,state,calls)
@@ -415,6 +500,58 @@ process.stdout.write(JSON.stringify({ok:true,result:{text:r.lookupAllowed?'Ищ�
     }
     #[tokio::test]async fn personal_message_completes_while_background_preparation_gate_is_held(){
         let (result,_,calls)=fake_run("LANE",false).await;assert!(result.is_ok());assert_eq!(calls.len(),1);
+    }
+
+    fn policy_fixture()->Value {
+        let mut d=crate::empty();crate::accounts::initialize(&mut d,crate::accounts::Profile::BawRussia).unwrap();
+        d["items"]=json!([{"id":"a","itemId":"a","objectId":"12182","platform":"VK","postId":"p","postKey":"p","conversationKey":"12182:a","branchId":"b","revision":1},
+            {"id":"z","itemId":"z","objectId":"12182","platform":"VK","postId":"q","postKey":"q","conversationKey":"12182:z","branchId":"c","revision":1}]);
+        d["posts"]=json!([{"id":"p","postKey":"p","text":"Post one","attachments":[]},{"id":"q","postKey":"q","text":"Post two","attachments":[]}]);
+        d["branches"]=json!([{"id":"b","postId":"p","messages":[]},{"id":"c","postId":"q","messages":[]}]);
+        d["conversations"]=json!([{"id":"chat","operatorId":"local-owner","messages":[{"id":"user","role":"user","text":"Discuss sources"}]}]);d
+    }
+    #[test]fn mixed_discussion_rejects_public_proposals_before_any_admission(){
+        let mut d=policy_fixture();let mut bundle=prepare_bundle::build(&d,&[json!("a"),json!("z")],&[]).unwrap();
+        attach_proposal_policy(&d,&mut bundle).unwrap();assert_eq!(bundle["request"]["discussionProposalMode"],"read_only_v1");
+        assert!(bundle["request"]["strictGroup"].is_null());
+        d["jobs"]=json!([{"id":"job","kind":"assistant","status":"running","operatorId":"local-owner","refId":"chat","sourceUserMessageId":"user","prepareBundle":bundle}]);
+        let before=d.clone();assert!(finish(&mut d,"job","chat",&json!({"text":"Claimed proposal","sources":[],"proposals":[{"itemId":"a","kind":"reply_and_close","text":"Forged mixed reply"}]})).is_err());
+        assert_eq!(d,before);assert!(crate::list(&d,"proposals").is_empty());assert!(crate::list(&d,"operations").is_empty());
+    }
+    #[test]fn tool_read_of_another_post_removes_previous_proposal_authority(){
+        let d=policy_fixture();let mut old=prepare_bundle::build(&d,&[json!("a")],&[]).unwrap();attach_proposal_policy(&d,&mut old).unwrap();
+        assert_eq!(old["request"]["discussionProposalMode"],"strict_group_v1");assert!(current_proposal_policy(&d,&old).is_ok());
+        let next=refreshed_bundle(&d,&old,&[],&[json!({"ok":true,"name":"read_comments","result":{"items":[{"id":"z"}]}})]).unwrap();
+        assert_eq!(next["request"]["discussionProposalMode"],"read_only_v1");assert!(next["request"]["strictGroup"].is_null());
+        let mut stale=d.clone();stale["posts"][0]["text"]=json!("Changed while waiting");assert!(current_proposal_policy(&stale,&old).is_err());
+    }
+    #[test]fn native_terminal_keeps_local_receipts_without_inventing_paid_model_evidence(){
+        for reason in ["tool_budget_exhausted","confirmed_execution_failed"] {
+            let mut d=policy_fixture();let mut bundle=prepare_bundle::build(&d,&[],&[]).unwrap();attach_proposal_policy(&d,&mut bundle).unwrap();
+            let results=json!([{"id":"call","name":"execute_action_review","ok":false,"error":{"message":"Confirmed local failure"}}]);
+            d["jobs"]=json!([{"id":"job","kind":"assistant","purpose":"discussion","status":"running","operatorId":"local-owner","refId":"chat","sourceUserMessageId":"user","prepareBundle":bundle,"toolResults":results}]);
+            let outcome=finish_native(&mut d,"job","chat","Local terminal observation",reason).unwrap();
+            assert_eq!(outcome["decisionSource"],"native_tool_terminal");assert_eq!(outcome["candidates"],json!([]));
+            assert_eq!(d["jobs"][0]["toolResults"],results);assert_eq!(d["conversations"][0]["messages"][1]["toolResults"],results);
+            for key in ["proposals","approvals","operations"]{assert!(crate::list(&d,key).is_empty());}
+            assert!(d["jobs"][0]["modelMaterialReceipts"].is_null());
+        }
+    }
+    #[test]fn native_terminal_requires_both_saved_discussion_job_and_exact_discussion_request(){
+        for fault in ["job_purpose","request_purpose","conversation","operator","source_turn"] {
+            let mut d=policy_fixture();let mut bundle=prepare_bundle::build(&d,&[],&[]).unwrap();attach_proposal_policy(&d,&mut bundle).unwrap();
+            assert_eq!(bundle["request"]["purpose"],"discussion");
+            d["jobs"]=json!([{"id":"job","kind":"assistant","purpose":"discussion","status":"running","operatorId":"local-owner","refId":"chat","sourceUserMessageId":"user","prepareBundle":bundle}]);
+            match fault {
+                "job_purpose"=>d["jobs"][0]["purpose"]=json!("engine_prepare"),
+                "request_purpose"=>{d["jobs"][0]["prepareBundle"]["request"]["purpose"]=json!("triage");seal(&mut d["jobs"][0]["prepareBundle"]).unwrap();},
+                "conversation"=>d["jobs"][0]["refId"]=json!("other-chat"),
+                "operator"=>d["conversations"][0]["operatorId"]=json!("other-operator"),
+                _=>d["conversations"][0]["messages"].as_array_mut().unwrap().push(json!({"id":"later","role":"user","text":"New operator turn"})),
+            }
+            let before=d.clone();assert!(finish_native(&mut d,"job","chat","Claimed terminal observation","tool_budget_exhausted").is_err(),"{fault}");
+            assert_eq!(d,before,"{fault}: rejection must preserve local receipts and authority");
+        }
     }
 
 }

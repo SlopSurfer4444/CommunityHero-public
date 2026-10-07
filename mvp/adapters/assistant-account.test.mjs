@@ -17,7 +17,7 @@ test('BAW assistant payload, drafting prompt and research remain account-bound',
 
 test('generation and research evidence hashes bind the selected account instructions',()=>{
   const like=generationMetadata('same',true,0,'likeavto'),baw=generationMetadata('same',true,0,'baw-russia');
-  assert.equal(like.promptVersion,'communityhero-drafting-v14-imported-rule-semantics');
+  assert.equal(like.promptVersion,'communityhero-drafting-v19-intent-scoped-evidence');
   assert.notEqual(like.instructionSha256,baw.instructionSha256);
   assert.notEqual(researchMetadata('same','no_sources',[],{},0,'likeavto').instructionSha256,researchMetadata('same','no_sources',[],{},0,'baw-russia').instructionSha256);
 });

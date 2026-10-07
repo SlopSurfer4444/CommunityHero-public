@@ -19,7 +19,7 @@ test('serialized model input retains exact cross-post attribution without granti
     assert.match(instructions,/Neither form verifies the\nsource's factual claims or full coverage/);
     assert.match(instructions,/Do not invent a binding from a similar\nvehicle/);
   }
-  assert.equal(generationMetadata(input,true).promptVersion,'communityhero-drafting-v14-imported-rule-semantics');
+  assert.equal(generationMetadata(input,true).promptVersion,'communityhero-drafting-v19-intent-scoped-evidence');
 });
 
 test('shared identity attribution preserves supported identities and removes duplicates',()=>{
@@ -48,4 +48,20 @@ test('malformed, unbound and foreign attribution never reaches the model',()=>{
 test('unbound old material remains unbound even when a similarly titled target is attached',()=>{
   const req=fixture();delete req.knowledgeManifest[0].mediaBinding;
   assert.equal(JSON.parse(prepareAssistantRequest(req).input).knowledgeManifest[0].mediaBinding,undefined);
+});
+
+test('short Mazda mileage reaction receives reused transcript text and its source attribution',()=>{
+  const req=fixture();
+  req.items[0].text='500 тыс 😅';
+  req.posts[0].title='Mazda CX-50';
+  req.materials[0].text='Ведущий говорит: ресурс двигателя — 500 тысяч километров.';
+  req.materials[0].transcription={partial:false,coverage:'full',sourcePostKey:'source:video'};
+  const payload=JSON.parse(prepareAssistantRequest(req).input);
+  assert.equal(payload.items[0].text,'500 тыс 😅');
+  assert.equal(payload.materials[0].text,req.materials[0].text);
+  assert.equal(payload.materials[0].transcription.partial,false);
+  assert.equal(payload.materials[0].transcription.sourcePostKey,'source:video');
+  assert.deepEqual(payload.knowledgeManifest[0].mediaBinding,[binding]);
+  assert.equal(payload.materials[0].visualEvidence,undefined);
+  // Text delivery is verified here; wording quality still needs a model evaluation.
 });

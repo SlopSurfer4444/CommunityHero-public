@@ -13,9 +13,11 @@ test('recipient and draft state live in a sibling footer outside the glass input
   assert.ok(composer.includes('textarea id="draft" aria-describedby="draft-status"'));
   assert.match(composer,/<div class="composer-submit">\$\{sendButton[\s\S]*?<\/div><\/div>[\s\S]*?<\/div><footer class="composer-meta-footer"/);
   assert.ok(!composer.includes('class="composer-label"'));
-  assert.match(composer,/const draftStatus=stale\|\|staleGenerated\?'Нужна перепроверка':replyStatus\|\|'Черновик · не отправлен'/);
+  // Current preparation disposition is visible in the footer before generic
+  // stale/draft wording; a canonical media hold retains first priority.
+  assert.match(composer,/const draftStatus=mediaHold\?\.label\|\|disposition\?\.label\|\|\(stale\|\|staleGenerated\?'Нужна перепроверка':replyStatus\|\|'Черновик · не отправлен'\)/);
   assert.match(composer,/class="composer-recipient" title="\$\{esc\(recipient\)\}"/);
-  assert.match(composer,/<span id="draft-status" title="\$\{esc\(draftStatusTitle\)\}">\$\{esc\(draftStatus\)\}<\/span>/);
+  assert.match(composer,/<span id="draft-status" data-media-hold="\$\{mediaHold\?'true':''\}" title="\$\{esc\(draftStatusTitle\)\}">\$\{esc\(draftStatus\)\}<\/span>/);
 });
 
 test('compact footer truncates only the recipient and lets status wrap without changing the input minimum',()=>{

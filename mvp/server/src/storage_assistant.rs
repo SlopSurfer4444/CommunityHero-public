@@ -27,20 +27,34 @@ fn empty_dialogue(d:&Value,job:Option<&str>,conversation:&str,scope:Scope<'_>)->
         has_roots(&j["prepareBundle"]["itemIds"])||has_roots(&j["toolResults"])||has_roots(&j["prepareBundle"]["request"]["toolResults"]))
 }
 
-fn required_jobs(d:&Value,job:Option<&str>)->HashSet<String>{
-    let mut selected=HashSet::new();
-    if let Some(job)=job{selected.insert(job.to_owned());}
-    for proposal in crate::list(d,"proposals").iter().filter(|p|ACTIVE_PROPOSAL.contains(&p["status"].as_str().unwrap_or(""))){
-        for value in [&proposal["prepareRunId"],&proposal["recovery"]["prepareRunId"]]{if let Some(id)=value.as_str(){selected.insert(id.to_owned());}}
+fn dependency_roots(d:&Value,job:Option<&str>,conversation:&str)->Vec<Value>{
+    let mut roots=crate::list(d,"proposals").iter().filter(|p|ACTIVE_PROPOSAL.contains(&p["status"].as_str().unwrap_or(""))).cloned().collect::<Vec<_>>();
+    for selected in crate::list(d,"jobs").iter().filter(|j|job==j["id"].as_str()||(j["kind"]=="assistant"&&matches!(j["status"].as_str(),Some("running"|"queued")))) {
+        roots.push(json!({"prepareRunId":selected["id"]}));
     }
-    selected
+    for manual in crate::list(d,"jobs").iter().filter(|j|j["purpose"]=="manual_video_frames") {roots.push(json!({"prepareRunId":manual["id"]}));}
+    if let Some(job)=job{roots.push(json!({"prepareRunId":job}));}
+    // Preserve frozen reviewed proposals and retained operation proof roots as
+    // well as live drafts. Traverse exact carriers, never retarget their IDs.
+    for operation in crate::list(d,"operations") {roots.push(operation.clone());}
+    for chat in crate::list(d,"conversations").iter().filter(|chat|chat["id"]==conversation) {if let Some(reviews)=chat.get("actionReviews"){roots.push(reviews.clone());}}
+    roots
+}
+fn required_jobs(d:&Value,job:Option<&str>,conversation:&str)->HashSet<String>{
+    let roots=dependency_roots(d,job,conversation);let mut jobs=Vec::new();
+    loop{
+        let(ids,bundles,full)=super::source_snapshot::scoped_job_dependencies(&jobs,&roots);
+        let next=crate::list(d,"jobs").iter().filter(|j|full||j["id"].as_str().is_some_and(|id|ids.iter().any(|selected|selected==id))||j["prepareBundle"]["id"].as_str().is_some_and(|id|bundles.iter().any(|selected|selected==id))).cloned().collect::<Vec<_>>();
+        if next==jobs{return next.iter().filter_map(|j|j["id"].as_str().map(str::to_owned)).collect();}
+        jobs=next;
+    }
 }
 fn projected(d:&Value,job:Option<&str>,conversation:&str)->ApiResult<Value>{
     projected_scope(d,job,conversation,Scope::Corpus)
 }
 fn projected_scope(d:&Value,job:Option<&str>,conversation:&str,scope:Scope<'_>)->ApiResult<Value>{
     let empty=empty_dialogue(d,job,conversation,scope);
-    let selected=if empty{job.into_iter().map(str::to_owned).collect()}else{required_jobs(d,job)};
+    let selected=if empty{job.into_iter().map(str::to_owned).collect()}else{required_jobs(d,job,conversation)};
     let mut value=metadata(d);
     for table in TABLES{
         if empty&&EMPTY_DIALOGUE_TABLES.contains(&table){value[table]=json!([]);continue;}
@@ -52,6 +66,7 @@ fn projected_scope(d:&Value,job:Option<&str>,conversation:&str,scope:Scope<'_>)-
         };
     }
     validate_roots(&value,job,conversation)?;
+    if !empty {super::scope_context::project(d,&mut value)?;}
     Ok(value)
 }
 fn validate_roots(value:&Value,job:Option<&str>,conversation:&str)->ApiResult<()> {
@@ -79,6 +94,7 @@ SELECT json_set(json_remove(w.payload,'$.jobs','$.conversations','$.audit','$.fe
  '$.materials',json(CASE WHEN empty_dialogue THEN '[]' ELSE json_extract(w.payload,'$.materials') END),
  '$.jobs',json(COALESCE((SELECT json_group_array(json(j.value)) FROM json_each(w.payload,'$.jobs') j
   WHERE json_extract(j.value,'$.id')=?1
+     OR (NOT empty_dialogue AND json_extract(j.value,'$.purpose')='manual_video_frames')
      OR (json_extract(j.value,'$.kind')='assistant' AND json_extract(j.value,'$.status') IN ('running','queued'))
      OR (NOT empty_dialogue AND EXISTS(SELECT 1 FROM json_each(w.payload,'$.proposals') p
        WHERE json_extract(p.value,'$.status') IN ('draft','approved','dispatching','unknown')
@@ -90,9 +106,12 @@ FROM w
 // Build the proposal-reference set once. A correlated EXISTS here repeatedly
 // decompresses proposal payloads for every historical job on large workspaces.
 const PG_JOBS:&str=r#"(id=$2 OR (kind='assistant' AND status IN ('running','queued'))
+ OR payload->>'purpose'='manual_video_frames'
  OR id IN (SELECT p.payload->>'prepareRunId' FROM communityhero.proposals p
    WHERE p.workspace_id=$1 AND p.status IN ('draft','approved','dispatching','unknown')
    UNION SELECT p.payload#>>'{recovery,prepareRunId}' FROM communityhero.proposals p
+   WHERE p.workspace_id=$1 AND p.status IN ('draft','approved','dispatching','unknown')
+   UNION SELECT p.payload#>>'{origin,prepareRunId}' FROM communityhero.proposals p
    WHERE p.workspace_id=$1 AND p.status IN ('draft','approved','dispatching','unknown')))"#;
 
 async fn load_pg(connection:&mut PgConnection,job:Option<&str>,conversation:&str,write:bool,scope:Scope<'_>)->ApiResult<Value>{
@@ -139,16 +158,23 @@ async fn load_pg(connection:&mut PgConnection,job:Option<&str>,conversation:&str
         value[table]=Value::Array(data);
         drop(parse_timing);
     }
-    validate_roots(&value,job,conversation)?;Ok(value)
+    validate_roots(&value,job,conversation)?;
+    if !empty {
+        let roots=dependency_roots(&value,job,conversation);
+        value["jobs"]=json!(super::reads::dispatch::dependency_jobs_pg(connection,&roots).await?);
+        super::scope_context::load(connection,&mut value).await?;
+    }
+    Ok(value)
 }
 
 impl Database {
     /// Caller holds the process writer gate. Append one server-owned record on
     /// the leased writer, without loading unrelated conversation/source history.
-    pub(crate) async fn create_conversation(&self,actor_id:&str,title:&str,item_ids:&[Value])->ApiResult<Value>{
+    pub(crate) async fn create_conversation(&self,actor_id:&str,title:&str,item_ids:&[Value],expected_runtime:&crate::runtime_lifecycle::RuntimeIdentity)->ApiResult<Value>{
         let record=||json!({"id":crate::id(),"title":title,"operatorId":actor_id,"itemIds":item_ids,"messages":[],"createdAt":crate::now()});
         match self{
             Self::Sqlite(_)=>self.change(|d|{
+                crate::runtime_lifecycle::current_owner(d,expected_runtime)?;
                 for key in item_ids {crate::row(d,"items",key.as_str().ok_or_else(||crate::bad("Invalid itemIds"))?)?;}
                 let conversation=record();
                 crate::list_mut(d,"conversations").push(conversation.clone());Ok(conversation)
@@ -160,6 +186,7 @@ impl Database {
                     .bind(WORKSPACE).fetch_one(&mut *tx).await?;
                 if workspace.try_get::<bool,_>("execution_enabled")?{return Err(internal("PostgreSQL pilot execution must remain disabled"));}
                 let metadata=parse(workspace.try_get::<&str,_>("metadata")?)?;
+                crate::runtime_lifecycle::current_owner(&metadata,expected_runtime)?;
                 if !metadata.is_object()||!metadata["account"].is_string()
                     ||workspace.try_get::<Option<String>,_>("account")?.as_deref()!=metadata["account"].as_str(){return Err(internal("Workspace identity mismatch"));}
                 text(&metadata,"account")?;
@@ -206,8 +233,20 @@ impl Database {
     async fn read_assistant_scope(&self,job:Option<&str>,conversation:&str,scope:Scope<'_>)->ApiResult<Value>{
         match self{
             Self::Sqlite(pool)=>{
-                let payload:String=sqlx::query_scalar(SQLITE_ASSISTANT).bind(job).bind(conversation).bind(matches!(scope,Scope::Dialogue(ids) if ids.is_empty())).fetch_one(pool).await?;
-                let value=parse(&payload)?;validate_roots(&value,job,conversation)?;Ok(value)
+                let mut tx=pool.begin().await?;
+                let payload:String=sqlx::query_scalar(SQLITE_ASSISTANT).bind(job).bind(conversation).bind(matches!(scope,Scope::Dialogue(ids) if ids.is_empty())).fetch_one(&mut *tx).await?;
+                let mut value=parse(&payload)?;validate_roots(&value,job,conversation)?;
+                if !empty_dialogue(&value,job,conversation,scope){
+                    let roots=dependency_roots(&value,job,conversation);
+                    value["jobs"]=json!(super::reads::dispatch::dependency_jobs_sqlite(&mut tx,&roots).await?);
+                    // Existing SQLite ownership projection requires the whole
+                    // document. Keep it in this SAME reader snapshot; this is
+                    // not a claim that SQLite wire transfer is now bounded.
+                    let raw:String=sqlx::query_scalar("SELECT payload FROM workspace WHERE id=1").fetch_one(&mut *tx).await?;
+                    let workspace=parse(&raw)?;super::scope_context::project(&workspace,&mut value)?;
+                }
+                tx.commit().await?;
+                Ok(value)
             },
             Self::Postgres { reader:pool, .. }=>{
                 let acquire=crate::performance::Span::new("assistant.read.pool_wait");

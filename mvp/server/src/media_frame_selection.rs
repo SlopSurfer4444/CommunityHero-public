@@ -1,40 +1,25 @@
-//! Deterministic all-frame metric pass and sparse visual selection.
-//! Metrics use a <=640-pixel grayscale view only; original RGB/PNG bytes are
-//! never resized for vision. Every decoded RGB frame is bound to its inventory
-//! pixel hash before its features can influence selection.
+//! Deterministic midpoint/end sampling: at most two original frames per second.
+//! Uses the durable inventory emitted by our decoder after successful EOF.
+//! CAS authenticates its bytes, not the provenance of arbitrary external inventories.
+//! This avoids a second decode/hash of unselected pixels; extraction still checks
+//! selected RGB hashes before any pixels reach vision.
+//! Sampling is independent of scene/text changes and can miss brief text.
 
 use crate::media_artifacts::{ArtifactRef, ArtifactStore, JsonlWriter};
 use crate::media_frame_decoder::DECODER_CONTRACT;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-use std::collections::{BTreeMap, BTreeSet, VecDeque};
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
-use std::process::Stdio;
-use std::time::Duration;
-use tokio::io::AsyncReadExt;
-use tokio::process::Command;
 
-const TIMEOUT: Duration = Duration::from_secs(4 * 60 * 60);
+const MAX_INVENTORY_LINE_BYTES: u64 = 8192;
+const MAX_FRAME_PIXELS: u64 = 64_000_000;
 const MAX_FRAME_BYTES: u64 = 256 * 1024 * 1024;
 const MAX_INDEX_BYTES: usize = 16 * 1024 * 1024;
 const MAX_DESCRIPTOR_BYTES: u64 = 1024 * 1024;
-const FEATURE_LONG_EDGE: usize = 640;
-const TILE: usize = 16;
-const EDGE_THRESHOLD: u16 = 24;
-const BASELINE_MS: u64 = 500;
-const LOCAL_FLIP_PERMILLE: u32 = 90;
-const LOCAL_EDGE_DENSITY_DELTA_PERMILLE: u32 = 70;
-const LOCAL_VS_MEDIAN: u32 = 3;
-const LOCAL_STABLE_FLIP_PERMILLE: u32 = 20;
-const LOCAL_STABLE_MEAN_DELTA: u32 = 4;
-const SCENE_BROAD_TILE_PERMILLE: u32 = 150;
-const SCENE_BROAD_PERCENT: u32 = 40;
-const SCENE_HISTOGRAM_TV_PERMILLE: u32 = 180;
-const PULSE_EDGE_FLIP_PERMILLE: u32 = 120;
-const PULSE_EDGE_GAIN_PERMILLE: u32 = 60;
-const PULSE_RETURN_FLIP_PERMILLE: u32 = 50;
+pub(crate) const POLICY_ID: &str = "fixed_mid_end_2fps_v1";
 
 /// Returns the immutable selection descriptor's ArtifactRef JSON. Its
 /// `selection` object is JSONL; `selectionIndex` is the next-work cursor.
@@ -57,7 +42,7 @@ pub(crate) async fn select(
         .map_err(|_| "visual_selection_descriptor_missing")?;
     let descriptor: Value = serde_json::from_slice(&descriptor_bytes)
         .map_err(|_| "visual_selection_descriptor_invalid")?;
-    let (inventory_ref, source_ref, width, height, frame_count) = validate_descriptor(&descriptor)?;
+    let (inventory_ref, source_ref, _, _, frame_count) = validate_descriptor(&descriptor)?;
     store
         .verify(&source_ref)
         .map_err(|_| "visual_selection_source_artifact_invalid")?;
@@ -67,56 +52,16 @@ pub(crate) async fn select(
         .map_err(|_| "visual_selection_inventory_missing")?;
     let inventory_file =
         File::open(inventory_path).map_err(|_| "visual_selection_inventory_missing")?;
-    let mut inventory_lines = BufReader::new(inventory_file).lines();
-    let frame_bytes = width
-        .checked_mul(height)
-        .and_then(|n| n.checked_mul(3))
-        .filter(|n| *n > 0 && *n <= MAX_FRAME_BYTES)
-        .ok_or("visual_selection_dimensions_invalid")?;
-    let mut command = Command::new(ffmpeg);
-    command
-        .args([
-            "-nostdin",
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-i",
-            source_path
-                .to_str()
-                .ok_or("visual_selection_source_invalid")?,
-            "-map",
-            "0:v:0",
-            "-vf",
-            "format=rgb24",
-            "-fps_mode",
-            "passthrough",
-            "-enc_time_base",
-            "demux",
-            "-c:v",
-            "rawvideo",
-            "-pix_fmt",
-            "rgb24",
-            "-f",
-            "rawvideo",
-            "pipe:1",
-        ])
-        .stdin(Stdio::null())
-        .stderr(Stdio::null())
-        .stdout(Stdio::piped())
-        .kill_on_drop(true);
-    #[cfg(windows)]
-    command.creation_flags(0x08000000);
-    let mut child = command
-        .spawn()
-        .map_err(|_| "visual_selection_spawn_failed")?;
-    let mut stdout = child
-        .stdout
-        .take()
-        .ok_or("visual_selection_stdout_missing")?;
+    let index_ref = ArtifactRef::from_json(&descriptor["index"])
+        .map_err(|_| "visual_selection_index_invalid")?;
+    let index_bytes = store
+        .read_bytes(&index_ref, MAX_INDEX_BYTES as u64)
+        .map_err(|_| "visual_selection_inventory_index_missing")?;
+    let inventory_index: Value = serde_json::from_slice(&index_bytes)
+        .map_err(|_| "visual_selection_inventory_index_invalid")?;
     let mut writer = store
         .begin_jsonl()
         .map_err(|_| "visual_selection_store_failed")?;
-    let mut core = SelectorCore::default();
     let mut offsets = Vec::new();
     let mut index_bytes_estimate =
         serde_json::to_vec(&json!({"schemaVersion":2,"kind":"media_frame_index","offsets":[]}))
@@ -125,38 +70,12 @@ pub(crate) async fn select(
     let mut output_offset = 0_u64;
     let mut selected_count = 0_u64;
     let mut reason_counts = BTreeMap::<String, u64>::new();
-    let mut rgb = vec![0_u8; frame_bytes as usize];
-    let outcome = tokio::time::timeout(TIMEOUT, async {
-        for frame_index in 0..frame_count {
-            let line = inventory_lines
-                .next()
-                .ok_or("visual_selection_inventory_short")?
-                .map_err(|_| "visual_selection_inventory_read_failed")?;
-            let row: Value = serde_json::from_str(&line)
-                .map_err(|_| "visual_selection_inventory_row_invalid")?;
-            validate_row(&row, frame_index)?;
-            stdout
-                .read_exact(&mut rgb)
-                .await
-                .map_err(|_| "visual_selection_decode_short")?;
-            let pixel_sha = format!("{:x}", Sha256::digest(&rgb));
-            if row["pixelSha256"] != pixel_sha {
-                return Err("visual_selection_pixel_mismatch");
-            }
-            let metrics = Metrics::from_rgb(&rgb, width as usize, height as usize)?;
-            for selected in core.push(row, metrics)? {
-                emit_selection(
-                    selected,
-                    &mut writer,
-                    &mut offsets,
-                    &mut index_bytes_estimate,
-                    &mut output_offset,
-                    &mut selected_count,
-                    &mut reason_counts,
-                )?;
-            }
-        }
-        for selected in core.finish()? {
+    select_verified_inventory(
+        BufReader::new(inventory_file),
+        &inventory_ref,
+        &descriptor,
+        &inventory_index,
+        |selected| {
             emit_selection(
                 selected,
                 &mut writer,
@@ -165,43 +84,9 @@ pub(crate) async fn select(
                 &mut output_offset,
                 &mut selected_count,
                 &mut reason_counts,
-            )?;
-        }
-        if inventory_lines.next().is_some() {
-            return Err("visual_selection_inventory_extra");
-        }
-        let mut extra = [0_u8; 1];
-        if stdout
-            .read(&mut extra)
-            .await
-            .map_err(|_| "visual_selection_read_failed")?
-            != 0
-        {
-            return Err("visual_selection_decode_extra");
-        }
-        let status = child
-            .wait()
-            .await
-            .map_err(|_| "visual_selection_wait_failed")?;
-        if !status.success() {
-            return Err("visual_selection_decode_failed");
-        }
-        Ok(())
-    })
-    .await;
-    match outcome {
-        Ok(Ok(())) => {}
-        Ok(Err(error)) => {
-            let _ = child.kill().await;
-            let _ = child.wait().await;
-            return Err(error.into());
-        }
-        Err(_) => {
-            let _ = child.kill().await;
-            let _ = child.wait().await;
-            return Err("visual_selection_timeout".into());
-        }
-    }
+            )
+        },
+    )?;
     let selection_ref = writer
         .finish()
         .map_err(|_| "visual_selection_store_failed")?;
@@ -229,6 +114,93 @@ pub(crate) async fn select(
     Ok(reference.to_json())
 }
 
+/// The descriptor reference must come from the engine's completed decoder pass.
+/// Hash the same bytes we parse, so a file change after path() verification cannot
+/// substitute rows. Staged selection output is published only after this returns.
+fn select_verified_inventory<R: BufRead>(
+    mut reader: R,
+    reference: &ArtifactRef,
+    descriptor: &Value,
+    index: &Value,
+    mut emit: impl FnMut(Value) -> Result<(), &'static str>,
+) -> Result<(), &'static str> {
+    let frame_count = descriptor["frameCount"]
+        .as_u64()
+        .ok_or("visual_selection_descriptor_invalid")?;
+    let first_pts = descriptor["firstPts"]
+        .as_str()
+        .and_then(|s| s.parse::<i64>().ok())
+        .ok_or("visual_selection_descriptor_invalid")?;
+    let mut core = SelectorCore::new(
+        descriptor["timeBaseNumerator"].as_u64().unwrap_or(0),
+        descriptor["timeBaseDenominator"].as_u64().unwrap_or(0),
+    )?;
+    let index_offsets = index["offsets"]
+        .as_array()
+        .ok_or("visual_selection_inventory_index_invalid")?;
+    if index.as_object().is_none_or(|object| object.len() != 3)
+        || index["schemaVersion"] != 2
+        || index["kind"] != "media_frame_index"
+        || index_offsets.len() as u64 != frame_count.div_ceil(32)
+    {
+        return Err("visual_selection_inventory_index_invalid");
+    }
+    let mut hash = Sha256::new();
+    let mut bytes = 0_u64;
+    let mut line = Vec::new();
+    for frame_index in 0..frame_count {
+        if frame_index % 32 == 0 {
+            let expected = json!({"frameIndex":frame_index,"byteOffset":bytes});
+            if index_offsets[(frame_index / 32) as usize] != expected {
+                return Err("visual_selection_inventory_index_invalid");
+            }
+        }
+        line.clear();
+        let read = reader
+            .by_ref()
+            .take(MAX_INVENTORY_LINE_BYTES + 1)
+            .read_until(b'\n', &mut line)
+            .map_err(|_| "visual_selection_inventory_read_failed")?;
+        if read == 0 {
+            return Err("visual_selection_inventory_short");
+        }
+        if read as u64 > MAX_INVENTORY_LINE_BYTES || line.last() != Some(&b'\n') {
+            return Err("visual_selection_inventory_row_invalid");
+        }
+        bytes = bytes
+            .checked_add(read as u64)
+            .filter(|n| *n <= reference.bytes)
+            .ok_or("visual_selection_inventory_content_mismatch")?;
+        hash.update(&line);
+        let row: Value =
+            serde_json::from_slice(&line).map_err(|_| "visual_selection_inventory_row_invalid")?;
+        validate_row(&row, frame_index)?;
+        if frame_index == 0
+            && row["pts"].as_str().and_then(|s| s.parse::<i64>().ok()) != Some(first_pts)
+        {
+            return Err("visual_selection_inventory_first_pts_mismatch");
+        }
+        for selected in core.push(row)? {
+            emit(selected)?;
+        }
+    }
+    let mut extra = [0_u8; 1];
+    if reader
+        .read(&mut extra)
+        .map_err(|_| "visual_selection_inventory_read_failed")?
+        != 0
+    {
+        return Err("visual_selection_inventory_extra");
+    }
+    if bytes != reference.bytes || format!("{:x}", hash.finalize()) != reference.sha256 {
+        return Err("visual_selection_inventory_content_mismatch");
+    }
+    for selected in core.finish()? {
+        emit(selected)?;
+    }
+    Ok(())
+}
+
 fn validate_descriptor(
     descriptor: &Value,
 ) -> Result<(ArtifactRef, ArtifactRef, u64, u64, u64), String> {
@@ -246,7 +218,27 @@ fn validate_descriptor(
         .map_err(|_| "visual_selection_descriptor_invalid")?;
     ArtifactRef::from_json(&descriptor["index"])
         .map_err(|_| "visual_selection_descriptor_invalid")?;
-    if descriptor["sourceIdentity"]["mediaSha256"] != source.sha256 {
+    let identity = &descriptor["sourceIdentity"];
+    if identity.as_object().is_none_or(|object| object.len() != 4)
+        || identity["account"]
+            .as_str()
+            .is_none_or(|s| s.trim().is_empty() || s.len() > 256)
+        || identity["postKey"]
+            .as_str()
+            .is_none_or(|s| s.trim().is_empty() || s.len() > 1024)
+        || identity["durationMs"].as_u64().is_none()
+        || identity["mediaSha256"] != source.sha256
+        || descriptor["firstPts"]
+            .as_str()
+            .and_then(|s| s.parse::<i64>().ok())
+            .is_none()
+        || descriptor["timeBaseNumerator"]
+            .as_u64()
+            .is_none_or(|n| n == 0)
+        || descriptor["timeBaseDenominator"]
+            .as_u64()
+            .is_none_or(|n| n == 0)
+    {
         return Err("visual_selection_descriptor_invalid".into());
     }
     let width = descriptor["width"]
@@ -257,6 +249,12 @@ fn validate_descriptor(
         .as_u64()
         .filter(|n| *n > 0)
         .ok_or("visual_selection_descriptor_invalid")?;
+    width
+        .checked_mul(height)
+        .filter(|n| *n <= MAX_FRAME_PIXELS)
+        .and_then(|n| n.checked_mul(3))
+        .filter(|n| *n > 0 && *n <= MAX_FRAME_BYTES)
+        .ok_or("visual_selection_dimensions_invalid")?;
     let count = descriptor["frameCount"]
         .as_u64()
         .filter(|n| *n > 0)
@@ -317,301 +315,126 @@ fn valid_sha(value: &str) -> bool {
             .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
 }
 
-#[derive(Clone)]
-struct Metrics {
-    edge: Vec<u8>,
-    edge_counts: Vec<u16>,
-    gray_sums: Vec<u32>,
-    pixels_per_tile: Vec<u16>,
-    histogram: [u32; 16],
-    width: usize,
-    height: usize,
-    tiles_x: usize,
-}
-
-impl Metrics {
-    fn from_rgb(rgb: &[u8], width: usize, height: usize) -> Result<Self, &'static str> {
-        let expected = width
-            .checked_mul(height)
-            .and_then(|n| n.checked_mul(3))
-            .ok_or("visual_selection_dimensions_invalid")?;
-        if rgb.len() != expected {
-            return Err("visual_selection_dimensions_invalid");
-        }
-        let step = width.max(height).div_ceil(FEATURE_LONG_EDGE).max(1);
-        let w = width.div_ceil(step);
-        let h = height.div_ceil(step);
-        let mut gray = vec![0_u8; w * h];
-        let mut histogram = [0_u32; 16];
-        for y in 0..h {
-            for x in 0..w {
-                let p = ((y * step) * width + x * step) * 3;
-                let lum = ((77_u32 * rgb[p] as u32
-                    + 150_u32 * rgb[p + 1] as u32
-                    + 29_u32 * rgb[p + 2] as u32)
-                    >> 8) as u8;
-                gray[y * w + x] = lum;
-                histogram[(lum / 16) as usize] += 1;
-            }
-        }
-        let tiles_x = w.div_ceil(TILE);
-        let tiles_y = h.div_ceil(TILE);
-        let count = tiles_x * tiles_y;
-        let mut edge = vec![0_u8; w * h];
-        let mut edge_counts = vec![0_u16; count];
-        let mut gray_sums = vec![0_u32; count];
-        let mut pixels_per_tile = vec![0_u16; count];
-        for y in 0..h {
-            for x in 0..w {
-                let i = y * w + x;
-                let tile = (y / TILE) * tiles_x + x / TILE;
-                let left = if x > 0 { gray[i - 1] } else { gray[i] };
-                let up = if y > 0 { gray[i - w] } else { gray[i] };
-                let gradient = gray[i].abs_diff(left) as u16 + gray[i].abs_diff(up) as u16;
-                if gradient >= EDGE_THRESHOLD {
-                    edge[i] = 1;
-                    edge_counts[tile] += 1;
-                }
-                gray_sums[tile] += gray[i] as u32;
-                pixels_per_tile[tile] += 1;
-            }
-        }
-        Ok(Self {
-            edge,
-            edge_counts,
-            gray_sums,
-            pixels_per_tile,
-            histogram,
-            width: w,
-            height: h,
-            tiles_x,
-        })
-    }
-}
-
-#[derive(Default)]
 struct SelectorCore {
-    pending: VecDeque<FrameState>,
-    next_baseline_ms: u64,
+    numerator: u64,
+    denominator: u64,
+    first_pts: Option<i64>,
+    last_pts: Option<i64>,
     seen: u64,
+    bucket: Option<Bucket>,
 }
-struct FrameState {
-    row: Value,
-    metrics: Metrics,
-    reasons: BTreeSet<&'static str>,
+struct Bucket {
+    second: u128,
+    midpoint: Value,
+    midpoint_distance: u128,
+    end: Value,
 }
 
 impl SelectorCore {
-    fn push(&mut self, row: Value, metrics: Metrics) -> Result<Vec<Value>, &'static str> {
-        let index = row["frameIndex"]
-            .as_u64()
-            .ok_or("visual_selection_inventory_row_invalid")?;
-        if index != self.seen {
-            return Err("visual_selection_inventory_order_invalid");
+    fn new(numerator: u64, denominator: u64) -> Result<Self, &'static str> {
+        if numerator == 0 || denominator == 0 {
+            return Err("visual_selection_timebase_invalid");
         }
-        let timestamp = row["timestampMs"]
-            .as_u64()
-            .ok_or("visual_selection_inventory_row_invalid")?;
-        if self.pending.back().is_some_and(|previous| {
-            previous.row["timestampMs"]
-                .as_u64()
-                .is_some_and(|last| timestamp < last)
-        }) {
+        Ok(Self {
+            numerator,
+            denominator,
+            first_pts: None,
+            last_pts: None,
+            seen: 0,
+            bucket: None,
+        })
+    }
+
+    fn push(&mut self, row: Value) -> Result<Vec<Value>, &'static str> {
+        validate_row(&row, self.seen)?;
+        let pts = row["pts"].as_str().unwrap().parse::<i64>().unwrap();
+        if self.last_pts.is_some_and(|last| pts < last) {
             return Err("visual_selection_timestamp_order_invalid");
         }
-        let mut reasons = BTreeSet::new();
-        if self.seen == 0 {
-            reasons.insert("first");
-            self.next_baseline_ms = BASELINE_MS;
-        } else if timestamp >= self.next_baseline_ms {
-            reasons.insert("baseline");
-            self.next_baseline_ms = timestamp
-                .checked_div(BASELINE_MS)
-                .and_then(|n| n.checked_add(1))
-                .and_then(|n| n.checked_mul(BASELINE_MS))
-                .unwrap_or(u64::MAX);
+        let first = *self.first_pts.get_or_insert(pts);
+        let scaled = u128::try_from(i128::from(pts) - i128::from(first))
+            .ok()
+            .and_then(|delta| delta.checked_mul(u128::from(self.numerator)))
+            .ok_or("visual_selection_timestamp_overflow")?;
+        let den = u128::from(self.denominator);
+        let timestamp = scaled
+            .checked_mul(1000)
+            .map(|n| n / den)
+            .and_then(|n| u64::try_from(n).ok())
+            .ok_or("visual_selection_timestamp_overflow")?;
+        if row["timestampMs"] != timestamp {
+            return Err("visual_selection_timestamp_mismatch");
         }
-        self.pending.push_back(FrameState {
-            row,
-            metrics,
-            reasons,
-        });
-        self.seen += 1;
-        let len = self.pending.len();
-        if len >= 2 {
-            let scene = scene_cut(
-                &self.pending[len - 2].metrics,
-                &self.pending[len - 1].metrics,
-            );
-            if scene {
-                self.pending[len - 2].reasons.insert("scene_before");
-                self.pending[len - 1].reasons.insert("scene_after");
-            }
-        }
-        if len >= 3 {
-            if persistent_local_change(
-                &self.pending[len - 3].metrics,
-                &self.pending[len - 2].metrics,
-                &self.pending[len - 1].metrics,
-            ) {
-                self.pending[len - 3].reasons.insert("local_change_before");
-                self.pending[len - 2].reasons.insert("local_change_after");
-            }
-            if transient_pulse(
-                &self.pending[len - 3],
-                &self.pending[len - 2],
-                &self.pending[len - 1],
-            ) {
-                self.pending[len - 2].reasons.insert("transient_pulse");
-            }
-        }
+        let second = scaled / den;
+        // Compare exact rational distance to .5s without rounding to milliseconds.
+        let distance = ((scaled % den) * 2).abs_diff(den);
         let mut emitted = Vec::new();
-        if self.pending.len() > 2 {
-            if let Some(value) = selected_row(self.pending.pop_front().expect("pending")) {
-                emitted.push(value);
+        if self
+            .bucket
+            .as_ref()
+            .is_some_and(|bucket| bucket.second != second)
+        {
+            emitted = self.flush(false);
+        }
+        match &mut self.bucket {
+            Some(bucket) => {
+                // Equal-distance ties retain the earlier inventory frame.
+                if distance < bucket.midpoint_distance {
+                    bucket.midpoint = row.clone();
+                    bucket.midpoint_distance = distance;
+                }
+                // The latest frame is nearest the open right boundary, including
+                // duplicate-PTS frames. This also preserves the actual final frame.
+                bucket.end = row;
+            }
+            None => {
+                self.bucket = Some(Bucket {
+                    second,
+                    midpoint: row.clone(),
+                    midpoint_distance: distance,
+                    end: row,
+                })
             }
         }
+        self.last_pts = Some(pts);
+        self.seen = self
+            .seen
+            .checked_add(1)
+            .ok_or("visual_selection_too_large")?;
         Ok(emitted)
     }
+
+    fn flush(&mut self, final_bucket: bool) -> Vec<Value> {
+        let Some(bucket) = self.bucket.take() else {
+            return Vec::new();
+        };
+        let mut mid = bucket.midpoint;
+        let mut end = bucket.end;
+        let end_reasons = if final_bucket {
+            json!(["second_end", "last"])
+        } else {
+            json!(["second_end"])
+        };
+        if mid["frameIndex"] == end["frameIndex"] {
+            mid["reasons"] = if final_bucket {
+                json!(["second_midpoint", "second_end", "last"])
+            } else {
+                json!(["second_midpoint", "second_end"])
+            };
+            vec![mid]
+        } else {
+            mid["reasons"] = json!(["second_midpoint"]);
+            end["reasons"] = end_reasons;
+            vec![mid, end]
+        }
+    }
+
     fn finish(&mut self) -> Result<Vec<Value>, &'static str> {
         if self.seen == 0 {
             return Err("visual_selection_empty");
         }
-        self.pending
-            .back_mut()
-            .ok_or("visual_selection_empty")?
-            .reasons
-            .insert("last");
-        let mut emitted = Vec::new();
-        while let Some(frame) = self.pending.pop_front() {
-            if let Some(value) = selected_row(frame) {
-                emitted.push(value);
-            }
-        }
-        Ok(emitted)
+        Ok(self.flush(true))
     }
-}
-
-fn selected_row(frame: FrameState) -> Option<Value> {
-    if frame.reasons.is_empty() {
-        return None;
-    }
-    Some(
-        json!({"frameIndex":frame.row["frameIndex"],"pts":frame.row["pts"],
-        "timestampMs":frame.row["timestampMs"],"pixelSha256":frame.row["pixelSha256"],
-        "reasons":frame.reasons.into_iter().collect::<Vec<_>>() }),
-    )
-}
-
-fn tile_flips(before: &Metrics, after: &Metrics) -> Vec<u16> {
-    let mut flips = vec![0_u16; before.edge_counts.len()];
-    for i in 0..before.edge.len() {
-        if before.edge[i] != after.edge[i] {
-            let tile = (i / before.width / TILE) * before.tiles_x + (i % before.width / TILE);
-            flips[tile] += 1;
-        }
-    }
-    flips
-}
-
-fn scene_cut(before: &Metrics, after: &Metrics) -> bool {
-    if before.width != after.width || before.height != after.height {
-        return true;
-    }
-    let tile_count = before.edge_counts.len();
-    let flips = tile_flips(before, after);
-    let mut broad = 0_usize;
-    for tile in 0..tile_count {
-        let pixels = before.pixels_per_tile[tile] as u32;
-        let flip_permille = flips[tile] as u32 * 1000 / pixels;
-        if flip_permille >= SCENE_BROAD_TILE_PERMILLE {
-            broad += 1;
-        }
-    }
-    let histogram_diff: u64 = before
-        .histogram
-        .iter()
-        .zip(after.histogram.iter())
-        .map(|(a, b)| a.abs_diff(*b) as u64)
-        .sum();
-    let pixels = (before.width * before.height) as u64;
-    let total_variation_permille = histogram_diff * 500 / pixels;
-    broad * 100 >= tile_count * SCENE_BROAD_PERCENT as usize
-        && total_variation_permille >= SCENE_HISTOGRAM_TV_PERMILLE as u64
-}
-
-fn persistent_local_change(before: &Metrics, middle: &Metrics, after: &Metrics) -> bool {
-    if before.width != middle.width
-        || middle.width != after.width
-        || before.height != middle.height
-        || middle.height != after.height
-    {
-        return false;
-    }
-    let into = tile_flips(before, middle);
-    let stable = tile_flips(middle, after);
-    let mut sorted = into.clone();
-    sorted.sort_unstable();
-    let median = sorted[sorted.len() / 2] as u32;
-    let mut eligible = vec![false; into.len()];
-    for tile in 0..before.edge_counts.len() {
-        let pixels = before.pixels_per_tile[tile] as u32;
-        let edge_gain = middle.edge_counts[tile].saturating_sub(before.edge_counts[tile]) as u32
-            * 1000
-            / pixels;
-        let mean_middle = middle.gray_sums[tile] / pixels;
-        let mean_after = after.gray_sums[tile] / pixels;
-        eligible[tile] = into[tile] as u32 * 1000 / pixels >= LOCAL_FLIP_PERMILLE
-            && edge_gain >= LOCAL_EDGE_DENSITY_DELTA_PERMILLE
-            && into[tile] as u32 >= LOCAL_VS_MEDIAN * median.max(1)
-            && stable[tile] as u32 * 1000 / pixels <= LOCAL_STABLE_FLIP_PERMILLE
-            && mean_middle.abs_diff(mean_after) <= LOCAL_STABLE_MEAN_DELTA;
-    }
-    adjacent_tiles(&eligible, before.tiles_x)
-}
-
-fn transient_pulse(before: &FrameState, middle: &FrameState, after: &FrameState) -> bool {
-    let a = &before.metrics;
-    let b = &middle.metrics;
-    let c = &after.metrics;
-    if a.width != b.width || b.width != c.width || a.height != b.height || b.height != c.height {
-        return false;
-    }
-    if before.row["pixelSha256"] == after.row["pixelSha256"]
-        && before.row["pixelSha256"] != middle.row["pixelSha256"]
-    {
-        let into = tile_flips(a, b);
-        return into.iter().enumerate().any(|(tile, flip)| {
-            let pixels = a.pixels_per_tile[tile] as u32;
-            *flip as u32 * 1000 / pixels >= LOCAL_FLIP_PERMILLE
-                && b.edge_counts[tile].saturating_sub(a.edge_counts[tile]) as u32 * 1000 / pixels
-                    >= PULSE_EDGE_GAIN_PERMILLE
-        });
-    }
-    let into = tile_flips(a, b);
-    let out = tile_flips(b, c);
-    let returned = tile_flips(a, c);
-    let mut eligible = vec![false; into.len()];
-    for tile in 0..into.len() {
-        let pixels = a.pixels_per_tile[tile] as u32;
-        let edge_gain =
-            b.edge_counts[tile].saturating_sub(a.edge_counts[tile].max(c.edge_counts[tile])) as u32
-                * 1000
-                / pixels;
-        eligible[tile] = into[tile] as u32 * 1000 / pixels >= PULSE_EDGE_FLIP_PERMILLE
-            && out[tile] as u32 * 1000 / pixels >= PULSE_EDGE_FLIP_PERMILLE
-            && returned[tile] as u32 * 1000 / pixels <= PULSE_RETURN_FLIP_PERMILLE
-            && edge_gain >= PULSE_EDGE_GAIN_PERMILLE;
-    }
-    adjacent_tiles(&eligible, a.tiles_x)
-}
-
-fn adjacent_tiles(eligible: &[bool], tiles_x: usize) -> bool {
-    eligible.iter().enumerate().any(|(index, active)| {
-        *active
-            && ((index % tiles_x + 1 < tiles_x && eligible.get(index + 1) == Some(&true))
-                || eligible.get(index + tiles_x) == Some(&true))
-    })
 }
 
 fn emit_selection(
@@ -662,16 +485,17 @@ fn emit_selection(
     Ok(())
 }
 
-pub(crate) fn policy() -> Value {
-    let mut value = json!({"version":2,"metricColor":"BT601-grayscale-nearest","metricLongEdgeMax":FEATURE_LONG_EDGE,
-        "tileSize":TILE,"edgeThreshold":EDGE_THRESHOLD,"baselineIntervalMs":BASELINE_MS,
-        "localFlipPermille":LOCAL_FLIP_PERMILLE,"localEdgeDensityDeltaPermille":LOCAL_EDGE_DENSITY_DELTA_PERMILLE,
-        "localVsMedian":LOCAL_VS_MEDIAN,"localStableFlipPermille":LOCAL_STABLE_FLIP_PERMILLE,
-        "localStableMeanDelta":LOCAL_STABLE_MEAN_DELTA,"localRequiresAdjacentTiles":true,
-        "sceneBroadTilePermille":SCENE_BROAD_TILE_PERMILLE,"sceneBroadPercent":SCENE_BROAD_PERCENT,
-        "sceneHistogramTvPermille":SCENE_HISTOGRAM_TV_PERMILLE,
-        "pulseEdgeFlipPermille":PULSE_EDGE_FLIP_PERMILLE,"pulseEdgeGainPermille":PULSE_EDGE_GAIN_PERMILLE,
-        "pulseReturnFlipPermille":PULSE_RETURN_FLIP_PERMILLE,
+/// Frozen historical descriptor. This does not select new work or relabel old evidence.
+pub(crate) fn legacy_policy() -> Value {
+    let mut value = json!({"version":2,"metricColor":"BT601-grayscale-nearest","metricLongEdgeMax":640,
+        "tileSize":16,"edgeThreshold":24,"baselineIntervalMs":500,
+        "localFlipPermille":90,"localEdgeDensityDeltaPermille":70,
+        "localVsMedian":3,"localStableFlipPermille":20,
+        "localStableMeanDelta":4,"localRequiresAdjacentTiles":true,
+        "sceneBroadTilePermille":150,"sceneBroadPercent":40,
+        "sceneHistogramTvPermille":180,
+        "pulseEdgeFlipPermille":120,"pulseEdgeGainPermille":60,
+        "pulseReturnFlipPermille":50,
         "pulseExactRgbReturnAllowsSingleTile":true,"pulseNearReturnRequiresAdjacentTiles":true,
         "reasonEnums":["first","last","baseline","scene_before","scene_after","local_change_before","local_change_after","transient_pulse"],
         "selectionIndexOffsetKey":"frameIndex",
@@ -683,202 +507,399 @@ pub(crate) fn policy() -> Value {
     value
 }
 
+pub(crate) fn policy() -> Value {
+    let mut value = json!({
+        "version":3,"id":POLICY_ID,"bucketDurationMs":1000,"maximumFramesPerBucket":2,
+        "timeBasis":"exact_pts_relative_to_first_frame","bucketBounds":"left_closed_right_open",
+        "midpointMs":500,"midpointTieBreak":"earlier_frame_index",
+        "endTarget":"right_boundary_from_below","endTieBreak":"later_frame_index",
+        "emptyBuckets":"skip","partialFinalBucket":"same_targets_preserve_final_frame",
+        "deduplication":"same_frame_index_only","adaptiveExtras":false,
+        "coverageUncertainty":"Brief text or visual changes between sampled frames can be missed.",
+        "reasonEnums":["second_midpoint","second_end","last"],
+        "selectionIndexOffsetKey":"frameIndex","selectedFramesAreOriginalRgb24":true
+    });
+    value["sha256"] = json!(format!(
+        "{:x}",
+        Sha256::digest(value.to_string().as_bytes())
+    ));
+    value
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn rgb(blank: u8) -> Vec<u8> {
-        vec![blank; 64 * 64 * 3]
+    fn row(index: u64, pts: i64, timestamp: u64) -> Value {
+        json!({"frameIndex":index,"pts":pts.to_string(),"timestampMs":timestamp,
+            "pixelSha256":format!("{:x}",Sha256::digest(index.to_le_bytes()))})
     }
-    fn row(index: u64, time: u64) -> Value {
-        json!({"frameIndex":index,"pts":index.to_string(),"timestampMs":time,"pixelSha256":"a".repeat(64)})
-    }
-    fn row_for_frame(index: u64, time: u64, frame: &[u8]) -> Value {
-        json!({"frameIndex":index,"pts":index.to_string(),"timestampMs":time,
-            "pixelSha256":format!("{:x}",Sha256::digest(frame))})
-    }
-    #[test]
-    fn one_frame_price_pulse_is_selected_without_baseline_hit() {
-        let mut core = SelectorCore::default();
-        let blank = rgb(30);
-        let mut price = blank.clone();
-        for y in 16..32 {
-            for x in 16..32 {
-                let on = (y % 4 == 0) || (x % 3 == 0);
-                let p = (y * 64 + x) * 3;
-                for channel in &mut price[p..p + 3] {
-                    *channel = if on { 240 } else { 30 };
-                }
-            }
-        }
+    fn sample(pts: &[i64], num: u64, den: u64) -> Vec<Value> {
+        let mut core = SelectorCore::new(num, den).unwrap();
         let mut selected = Vec::new();
-        for (index, time, bytes) in [(0, 0, &blank), (1, 33, &price), (2, 66, &blank)] {
-            selected.extend(
-                core.push(
-                    row_for_frame(index, time, bytes),
-                    Metrics::from_rgb(bytes, 64, 64).unwrap(),
-                )
-                .unwrap(),
-            );
+        for (i, &pts_value) in pts.iter().enumerate() {
+            let time = ((i128::from(pts_value) - i128::from(pts[0])) * i128::from(num) * 1000
+                / i128::from(den)) as u64;
+            selected.extend(core.push(row(i as u64, pts_value, time)).unwrap());
         }
         selected.extend(core.finish().unwrap());
-        let middle = selected
+        selected
+    }
+    fn indices(rows: &[Value]) -> Vec<u64> {
+        rows.iter()
+            .map(|r| r["frameIndex"].as_u64().unwrap())
+            .collect()
+    }
+    fn inventory_fixture(rows: &[Value]) -> (Vec<u8>, ArtifactRef, Value, Value) {
+        let mut bytes = Vec::new();
+        let mut offsets = Vec::new();
+        for (i, row) in rows.iter().enumerate() {
+            if i % 32 == 0 {
+                offsets.push(json!({"frameIndex":i,"byteOffset":bytes.len()}));
+            }
+            bytes.extend(serde_json::to_vec(row).unwrap());
+            bytes.push(b'\n');
+        }
+        let reference = ArtifactRef {
+            sha256: format!("{:x}", Sha256::digest(&bytes)),
+            bytes: bytes.len() as u64,
+        };
+        let source = ArtifactRef {
+            sha256: "b".repeat(64),
+            bytes: 5,
+        };
+        let descriptor = json!({"kind":"media_frame_inventory","schemaVersion":2,
+            "source":source.to_json(),"inventory":reference.to_json(),"index":source.to_json(),
+            "sourceIdentity":{"account":"offline-test","postKey":"post","mediaSha256":source.sha256,"durationMs":2000},
+            "width":16,"height":16,"frameCount":rows.len(),"firstPts":"0",
+            "timeBaseNumerator":1,"timeBaseDenominator":1000,"pixelFormat":"rgb24",
+            "decoderContractSha256":format!("{:x}",Sha256::digest(DECODER_CONTRACT.as_bytes()))});
+        let index = json!({"schemaVersion":2,"kind":"media_frame_index","offsets":offsets});
+        (bytes, reference, descriptor, index)
+    }
+    fn selected_inventory(
+        bytes: &[u8],
+        reference: &ArtifactRef,
+        descriptor: &Value,
+        index: &Value,
+    ) -> Result<Vec<Value>, &'static str> {
+        let mut selected = Vec::new();
+        select_verified_inventory(
+            std::io::Cursor::new(bytes),
+            reference,
+            descriptor,
+            index,
+            |row| {
+                selected.push(row);
+                Ok(())
+            },
+        )?;
+        Ok(selected)
+    }
+    #[test]
+    fn verified_stream_matches_existing_selector_rows_and_rejects_late_tamper() {
+        let pts: Vec<i64> = (0..100).map(|i| i * 33).collect();
+        let rows: Vec<Value> = pts
             .iter()
-            .find(|item| item["frameIndex"] == 1)
-            .expect("brief price frame selected");
-        assert!(
-            middle["reasons"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .any(|reason| reason == "transient_pulse")
+            .enumerate()
+            .map(|(i, &p)| row(i as u64, p, p as u64))
+            .collect();
+        let (bytes, reference, descriptor, index) = inventory_fixture(&rows);
+        assert_eq!(
+            selected_inventory(&bytes, &reference, &descriptor, &index).unwrap(),
+            sample(&pts, 1, 1000)
         );
+        // Simulate bytes changed after the initial CAS path verification: even an
+        // unselected frame's otherwise-valid hash must invalidate the whole pass.
+        let mut tampered = rows.clone();
+        tampered[0]["pixelSha256"] = json!("e".repeat(64));
+        let (changed, _, _, _) = inventory_fixture(&tampered);
+        assert_eq!(
+            selected_inventory(&changed, &reference, &descriptor, &index).unwrap_err(),
+            "visual_selection_inventory_content_mismatch"
+        );
+        let mut wrong_size = reference.clone();
+        wrong_size.bytes += 1;
+        assert!(selected_inventory(&bytes, &wrong_size, &descriptor, &index).is_err());
     }
     #[test]
-    fn unchanged_motionless_video_uses_only_baseline_and_endpoints() {
-        let mut core = SelectorCore::default();
-        let frame = rgb(30);
-        let mut selected = Vec::new();
-        for index in 0..61_u64 {
-            selected.extend(
-                core.push(
-                    row(index, index * 33),
-                    Metrics::from_rgb(&frame, 64, 64).unwrap(),
-                )
-                .unwrap(),
-            );
+    fn verified_stream_rejects_index_count_and_first_pts_mismatch() {
+        let rows: Vec<Value> = (0..65).map(|i| row(i, i as i64 * 33, i * 33)).collect();
+        let (bytes, reference, descriptor, index) = inventory_fixture(&rows);
+        for field in ["byteOffset", "frameIndex"] {
+            let mut bad = index.clone();
+            bad["offsets"][1][field] = json!(1);
+            assert!(selected_inventory(&bytes, &reference, &descriptor, &bad).is_err());
         }
-        selected.extend(core.finish().unwrap());
-        assert!(selected.len() <= 6);
-        assert_eq!(selected.first().unwrap()["frameIndex"], 0);
-        assert_eq!(selected.last().unwrap()["frameIndex"], 60);
+        let mut bad = index.clone();
+        bad["offsets"].as_array_mut().unwrap().pop();
+        assert!(selected_inventory(&bytes, &reference, &descriptor, &bad).is_err());
+        let mut bad = index.clone();
+        bad["schemaVersion"] = json!(1);
+        assert!(selected_inventory(&bytes, &reference, &descriptor, &bad).is_err());
+        for count in [0, 64, 66] {
+            let mut bad = descriptor.clone();
+            bad["frameCount"] = json!(count);
+            assert!(selected_inventory(&bytes, &reference, &bad, &index).is_err());
+        }
+        let mut bad = descriptor.clone();
+        bad["firstPts"] = json!("1");
+        assert!(selected_inventory(&bytes, &reference, &bad, &index).is_err());
     }
-
-    fn moving_frame(index: usize, with_price: bool) -> Vec<u8> {
-        let (width, height) = (96, 64);
-        let mut image = vec![30_u8; width * height * 3];
-        for y in 42..58 {
-            for x in (index * 2)..(index * 2 + 12).min(width) {
-                let p = (y * width + x) * 3;
-                image[p..p + 3].fill(220);
-            }
-        }
-        if with_price {
-            for y in 16..32 {
-                for x in 16..64 {
-                    let p = (y * width + x) * 3;
-                    image[p..p + 3].fill(if y % 4 == 0 || x % 3 == 0 { 240 } else { 30 });
-                }
-            }
-        }
-        image
-    }
-
     #[test]
-    fn one_frame_price_on_changing_background_is_selected() {
-        let mut core = SelectorCore::default();
-        let mut selected = Vec::new();
-        for index in 0..3_u64 {
-            let image = moving_frame(index as usize, index == 1);
-            selected.extend(
-                core.push(
-                    row_for_frame(index, index * 33, &image),
-                    Metrics::from_rgb(&image, 96, 64).unwrap(),
-                )
-                .unwrap(),
+    fn verified_stream_rejects_row_schema_pts_order_timestamp_and_line_failures() {
+        let rows = vec![row(0, 0, 0), row(1, 33, 33), row(2, 66, 66)];
+        for (key, value) in [
+            ("unexpected", json!(true)),
+            ("frameIndex", json!(9)),
+            ("pts", json!("-1")),
+            ("timestampMs", json!(34)),
+            ("pixelSha256", json!("bad")),
+        ] {
+            let mut bad = rows.clone();
+            bad[1][key] = value;
+            let (bytes, reference, descriptor, index) = inventory_fixture(&bad);
+            assert!(
+                selected_inventory(&bytes, &reference, &descriptor, &index).is_err(),
+                "{key}"
             );
         }
-        selected.extend(core.finish().unwrap());
-        let middle = selected
-            .iter()
-            .find(|item| item["frameIndex"] == 1)
-            .expect("moving-background price selected");
+        let (bytes, reference, descriptor, index) = inventory_fixture(&rows);
         assert!(
-            middle["reasons"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .any(|reason| reason == "transient_pulse")
+            selected_inventory(&bytes[..bytes.len() - 1], &reference, &descriptor, &index).is_err()
         );
+        let mut extra = bytes.clone();
+        extra.extend(b"{}\n");
+        assert!(selected_inventory(&extra, &reference, &descriptor, &index).is_err());
+        let oversized = vec![b' '; MAX_INVENTORY_LINE_BYTES as usize + 1];
+        assert!(selected_inventory(&oversized, &reference, &descriptor, &index).is_err());
     }
-
     #[test]
-    fn ordinary_moving_bar_does_not_select_every_frame() {
-        let mut core = SelectorCore::default();
-        let mut selected = Vec::new();
-        for index in 0..40_u64 {
-            let image = moving_frame(index as usize, false);
-            selected.extend(
-                core.push(
-                    row_for_frame(index, index * 33, &image),
-                    Metrics::from_rgb(&image, 96, 64).unwrap(),
-                )
-                .unwrap(),
-            );
+    fn descriptor_dimensions_identity_and_decoder_contract_remain_strict() {
+        let (_, _, descriptor, _) = inventory_fixture(&[row(0, 0, 0)]);
+        assert!(validate_descriptor(&descriptor).is_ok());
+        for (key, value) in [
+            ("width", json!(0)),
+            ("height", json!(u64::MAX)),
+            ("frameCount", json!(0)),
+            ("timeBaseNumerator", json!(0)),
+            ("timeBaseDenominator", json!(0)),
+            ("firstPts", json!("invalid")),
+            ("pixelFormat", json!("gray")),
+            ("decoderContractSha256", json!("a".repeat(64))),
+        ] {
+            let mut bad = descriptor.clone();
+            bad[key] = value;
+            assert!(validate_descriptor(&bad).is_err(), "{key}");
         }
-        selected.extend(core.finish().unwrap());
-        assert!(
-            selected.len() <= 8,
-            "ordinary motion selected {} frames",
-            selected.len()
-        );
+        for (key, value) in [
+            ("account", json!("")),
+            ("postKey", json!(null)),
+            ("mediaSha256", json!("c".repeat(64))),
+            ("durationMs", json!(-1)),
+            ("unexpected", json!(1)),
+        ] {
+            let mut bad = descriptor.clone();
+            bad["sourceIdentity"][key] = value;
+            assert!(validate_descriptor(&bad).is_err(), "{key}");
+        }
     }
-
-    #[cfg(windows)]
+    async fn stored_fixture() -> (
+        tempfile::TempDir,
+        ArtifactStore,
+        std::path::PathBuf,
+        std::path::PathBuf,
+        Value,
+    ) {
+        let temp = tempfile::tempdir().unwrap();
+        let store = ArtifactStore::open(&temp.path().join("artifacts")).unwrap();
+        let source = temp.path().join("source.mp4");
+        std::fs::write(&source, b"offline source bytes").unwrap();
+        let tool = temp.path().join("not-an-executable.exe");
+        std::fs::write(&tool, b"must never execute").unwrap();
+        let rows: Vec<Value> = (0..60).map(|i| row(i, i as i64 * 33, i * 33)).collect();
+        let (bytes, _, mut descriptor, index) = inventory_fixture(&rows);
+        let source_ref = store.put_file(&source).unwrap();
+        descriptor["source"] = source_ref.to_json();
+        descriptor["sourceIdentity"]["mediaSha256"] = json!(source_ref.sha256);
+        descriptor["inventory"] = store.put_bytes(&bytes).unwrap().to_json();
+        descriptor["index"] = store
+            .put_bytes(&serde_json::to_vec(&index).unwrap())
+            .unwrap()
+            .to_json();
+        let descriptor_ref = store
+            .put_bytes(&serde_json::to_vec(&descriptor).unwrap())
+            .unwrap()
+            .to_json();
+        (temp, store, source, tool, descriptor_ref)
+    }
     #[tokio::test]
-    #[ignore = "requires pinned local FFmpeg and read-only Honda/transient fixtures"]
-    async fn local_fixture_selection_counts_and_transient_price() {
-        use std::path::PathBuf;
-        let ffmpeg = PathBuf::from(std::env::var_os("COMMUNITYHERO_TEST_FFMPEG").unwrap_or_else(||
-            "C:/Users/hello/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-8.1.1-full_build/bin/ffmpeg.exe".into()));
-        let fixture_dir =
-            PathBuf::from("C:/AIDev/Workspaces/scratch/communityhero-local-vision-canary-20260923");
-        for (name, duration_ms) in [("honda.mp4", 62_000_u64), ("transient-price.mkv", 100_u64)] {
-            let source = fixture_dir.join(name);
-            let temp = tempfile::tempdir().unwrap();
-            let store = ArtifactStore::open(&temp.path().join("objects")).unwrap();
-            let source_ref = store.put_file(&source).unwrap();
-            let identity = json!({"account":"local-fixture","postKey":name,
-                "mediaSha256":source_ref.sha256,"durationMs":duration_ms});
-            let inventory_ref = crate::media_frame_decoder::inventory(
-                &ffmpeg,
-                &source,
-                &source_ref.to_json(),
-                &identity,
-                &store,
-            )
+    async fn fixed_selection_uses_no_decoder_and_has_identical_output_artifacts() {
+        let (_temp, store, source, tool, descriptor_ref) = stored_fixture().await;
+        let selected_ref = select(&tool, &source, &descriptor_ref, &store)
             .await
             .unwrap();
-            let selection_ref = select(&ffmpeg, &source, &inventory_ref, &store)
-                .await
-                .unwrap();
-            let descriptor_ref = ArtifactRef::from_json(&selection_ref).unwrap();
-            let descriptor: Value = serde_json::from_slice(
-                &store
-                    .read_bytes(&descriptor_ref, MAX_DESCRIPTOR_BYTES)
-                    .unwrap(),
-            )
-            .unwrap();
-            eprintln!(
-                "fixture={} total={} selected={} reasonCounts={}",
-                name,
-                descriptor["frameCount"],
-                descriptor["selectedCount"],
-                descriptor["reasonCounts"]
-            );
-            let rows_ref = ArtifactRef::from_json(&descriptor["selection"]).unwrap();
-            let rows_path = store.path(&rows_ref).unwrap();
-            let selected: Vec<Value> = BufReader::new(File::open(rows_path).unwrap())
-                .lines()
-                .map(|line| serde_json::from_str(&line.unwrap()).unwrap())
-                .collect();
-            if name == "transient-price.mkv" {
-                assert!(selected.iter().any(|row| {
-                    row["frameIndex"] == 1
-                        && row["reasons"].as_array().unwrap().iter().any(|reason| {
-                            reason == "transient_pulse" || reason == "local_change_after"
-                        })
-                }));
+        let selected_ref = ArtifactRef::from_json(&selected_ref).unwrap();
+        let descriptor: Value = serde_json::from_slice(
+            &store
+                .read_bytes(&selected_ref, MAX_DESCRIPTOR_BYTES)
+                .unwrap(),
+        )
+        .unwrap();
+        let mut expected = sample(&(0..60).map(|i| i * 33).collect::<Vec<_>>(), 1, 1000);
+        let mut reasons = BTreeMap::<String, u64>::new();
+        for (i, row) in expected.iter_mut().enumerate() {
+            row["selectionIndex"] = json!(i);
+            for reason in row["reasons"].as_array().unwrap() {
+                *reasons.entry(reason.as_str().unwrap().into()).or_default() += 1;
             }
         }
+        let expected_rows = store.write_jsonl(expected).unwrap();
+        let expected_index=store.put_bytes(&serde_json::to_vec(&json!({"schemaVersion":2,"kind":"media_frame_index","offsets":[{"frameIndex":0,"byteOffset":0}]})).unwrap()).unwrap();
+        let expected_descriptor = json!({"schemaVersion":2,"kind":"media_frame_selection","inventoryDescriptor":descriptor_ref,
+            "selection":expected_rows.to_json(),"selectionIndex":expected_index.to_json(),"selectedCount":4,
+            "frameCount":60,"policy":policy(),"reasonCounts":reasons});
+        assert_eq!(descriptor, expected_descriptor);
+        assert_eq!(
+            selected_ref,
+            store
+                .put_bytes(&serde_json::to_vec(&expected_descriptor).unwrap())
+                .unwrap()
+        );
+    }
+    #[tokio::test]
+    async fn stored_descriptor_inventory_index_and_source_tampering_fail_closed() {
+        for target in ["descriptor", "inventory", "index", "source", "source_file"] {
+            let (_temp, store, source, tool, descriptor_ref) = stored_fixture().await;
+            let reference = ArtifactRef::from_json(&descriptor_ref).unwrap();
+            let descriptor: Value = serde_json::from_slice(
+                &store.read_bytes(&reference, MAX_DESCRIPTOR_BYTES).unwrap(),
+            )
+            .unwrap();
+            let path = match target {
+                "descriptor" => store.path(&reference).unwrap(),
+                "source_file" => source.clone(),
+                _ => store
+                    .path(&ArtifactRef::from_json(&descriptor[target]).unwrap())
+                    .unwrap(),
+            };
+            std::fs::write(path, b"tampered").unwrap();
+            assert!(
+                select(&tool, &source, &descriptor_ref, &store)
+                    .await
+                    .is_err(),
+                "{target}"
+            );
+        }
+    }
+    #[test]
+    fn cfr_selects_midpoint_and_end_without_first_or_adaptive_extras() {
+        let pts: Vec<i64> = (0..60).collect();
+        let selected = sample(&pts, 1, 30);
+        assert_eq!(indices(&selected), vec![15, 29, 45, 59]);
+        assert_eq!(
+            selected.last().unwrap()["reasons"],
+            json!(["second_end", "last"])
+        );
+    }
+    #[test]
+    fn vfr_nearest_midpoint_is_exact_and_ties_choose_earlier() {
+        assert_eq!(
+            indices(&sample(
+                &[0, 400, 600, 990, 1000, 1400, 1500, 1970],
+                1,
+                1000
+            )),
+            vec![1, 3, 6, 7]
+        );
+        // Millisecond flooring would tie these distances and pick the wrong frame.
+        assert_eq!(
+            indices(&sample(&[0, 499100, 500100, 999999], 1, 1000000)),
+            vec![2, 3]
+        );
+    }
+    #[test]
+    fn short_single_frame_and_partial_final_bucket_deduplicate_actual_frame() {
+        assert_eq!(indices(&sample(&[0], 1, 30)), vec![0]);
+        assert_eq!(indices(&sample(&[0, 33, 66], 1, 1000)), vec![2]);
+        assert_eq!(
+            indices(&sample(&[0, 500, 999, 1000, 1100], 1, 1000)),
+            vec![1, 2, 4]
+        );
+    }
+    #[test]
+    fn empty_seconds_are_skipped_and_exact_boundary_starts_new_bucket() {
+        assert_eq!(
+            indices(&sample(&[0, 500, 999, 1000, 4500, 4999], 1, 1000)),
+            vec![1, 2, 3, 4, 5]
+        );
+    }
+    #[test]
+    fn duplicate_pts_keep_final_actual_frame_and_distinct_indices() {
+        let selected = sample(&[-900, -400, -400], 1, 1000);
+        assert_eq!(indices(&selected), vec![1, 2]);
+        assert_eq!(selected[0]["pts"], "-400");
+        assert_eq!(selected[1]["pixelSha256"], row(2, -400, 500)["pixelSha256"]);
+    }
+    #[test]
+    fn selected_rows_preserve_exact_inventory_identity_and_per_bucket_bound() {
+        let pts: Vec<i64> = (0..1000).map(|i| i * 13).collect();
+        let selected = sample(&pts, 1, 1000);
+        let mut counts = BTreeMap::new();
+        for selected_row in &selected {
+            let i = selected_row["frameIndex"].as_u64().unwrap();
+            let mut original = row(i, pts[i as usize], pts[i as usize] as u64);
+            original["reasons"] = selected_row["reasons"].clone();
+            assert_eq!(&original, selected_row);
+            *counts
+                .entry(selected_row["timestampMs"].as_u64().unwrap() / 1000)
+                .or_insert(0) += 1;
+        }
+        assert!(counts.values().all(|n| *n <= 2));
+        assert_eq!(selected.last().unwrap()["frameIndex"], 999);
+    }
+    #[test]
+    fn invalid_time_order_inventory_and_timebase_fail_closed() {
+        assert!(SelectorCore::new(0, 1).is_err());
+        assert!(SelectorCore::new(1, 0).is_err());
+        assert!(SelectorCore::new(1, 1000).unwrap().finish().is_err());
+        let mut core = SelectorCore::new(1, 1000).unwrap();
+        assert!(core.push(row(1, 0, 0)).is_err());
+        core.push(row(0, 0, 0)).unwrap();
+        assert!(core.push(row(1, 1, 2)).is_err());
+        core.push(row(1, 1, 1)).unwrap();
+        assert!(core.push(row(2, 0, 0)).is_err());
+    }
+    #[test]
+    fn sub_millisecond_reverse_pts_and_overflow_are_rejected() {
+        let mut core = SelectorCore::new(1, 1000000).unwrap();
+        core.push(row(0, 0, 0)).unwrap();
+        core.push(row(1, 2, 0)).unwrap();
+        assert!(core.push(row(2, 1, 0)).is_err());
+        let mut core = SelectorCore::new(u64::MAX, 1).unwrap();
+        core.push(row(0, i64::MIN, 0)).unwrap();
+        assert!(core.push(row(1, i64::MAX, 0)).is_err());
+    }
+    #[test]
+    fn policy_is_versioned_hashed_and_disclaims_transient_coverage() {
+        let mut descriptor = policy();
+        assert_eq!(descriptor["id"], POLICY_ID);
+        assert_eq!(descriptor["version"], 3);
+        assert_eq!(descriptor["adaptiveExtras"], false);
+        assert!(
+            descriptor["coverageUncertainty"]
+                .as_str()
+                .unwrap()
+                .contains("missed")
+        );
+        let sha = descriptor
+            .as_object_mut()
+            .unwrap()
+            .remove("sha256")
+            .unwrap();
+        assert_eq!(
+            sha,
+            format!("{:x}", Sha256::digest(descriptor.to_string().as_bytes()))
+        );
+        assert!(descriptor.get("pulseEdgeFlipPermille").is_none());
     }
 }

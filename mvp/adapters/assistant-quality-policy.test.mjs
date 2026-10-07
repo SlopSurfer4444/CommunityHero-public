@@ -29,5 +29,5 @@ test('both preparation stages receive exact-point constraints and versioned prov
     assert.match(instructions,/not already answered by supplied context/);
     assert.match(instructions,/Absence of a question alone is not a\s+reason to close/);
   }
-  assert.equal(generationMetadata('input',true).promptVersion,'communityhero-drafting-v14-imported-rule-semantics');
+  assert.equal(generationMetadata('input',true).promptVersion,'communityhero-drafting-v19-intent-scoped-evidence');
 });

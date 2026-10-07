@@ -42,6 +42,7 @@ function resolvePaths(account,{
   env=process.env,conveyorRoot,providerRoot,providerRuntime,providerConfig,accountCard,providerNode:nodeOverride,
 }={},enforcePortable=true) {
   const definition=accountDefinition(account);
+  if(enforcePortable&&process.platform!=='win32'&&env.COMMUNITYHERO_RUNTIME_MODE!=='portable')reject('SCOPE_UNAVAILABLE');
   if(enforcePortable&&env.COMMUNITYHERO_RUNTIME_MODE!==undefined&&env.COMMUNITYHERO_RUNTIME_MODE!=='portable')reject('INVALID_RUNTIME_MODE');
   if(enforcePortable&&env.COMMUNITYHERO_RUNTIME_MODE==='portable'&&[
     [conveyorRoot,env.COMMUNITYHERO_CONVEYOR_ROOT,env.COMMUNITYHERO_CONVEYOR_REPO],
@@ -114,7 +115,10 @@ export async function validateScope(account,{paths=resolveAdapterPaths(account),
 
 // Compatibility exports for LikeAvto-only adapters. New account-aware code must
 // call resolveAdapterPaths(request.account) instead of importing these defaults.
-const legacy=resolvePaths('likeavto',{},false);
+// Windows-only compatibility exports must not try to resolve a C: drive when
+// merely importing an account-aware adapter on Linux. Portable callers supply
+// all paths explicitly through resolveAdapterPaths.
+const legacy=process.platform==='win32'?resolvePaths('likeavto',{},false):Object.freeze({});
 export const conveyorRepo=legacy.conveyorRepo;
 export const providerRepo=legacy.providerRepo;
 export const runtime=legacy.runtime;

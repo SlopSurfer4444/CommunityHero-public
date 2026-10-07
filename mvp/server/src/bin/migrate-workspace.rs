@@ -279,6 +279,9 @@ async fn apply(db: &mut PgConnection, workspace: &str, source: &Value) -> Result
     sqlx::raw_sql(include_str!("../../migrations/0003_history_guards.sql"))
         .execute(&mut *tx)
         .await?;
+    sqlx::raw_sql(include_str!("../../migrations/0004_feedback_payload_id.sql"))
+        .execute(&mut *tx)
+        .await?;
     let existing = sqlx::query("SELECT i.source_sha256,i.payload::text,i.schema_version FROM communityhero.workspaces w JOIN communityhero.migration_imports i ON i.id=w.import_id WHERE w.id=$1").bind(workspace).fetch_optional(&mut *tx).await?;
     if let Some(existing) = existing {
         let previous: Value = serde_json::from_str(existing.get::<&str, _>("payload"))?;

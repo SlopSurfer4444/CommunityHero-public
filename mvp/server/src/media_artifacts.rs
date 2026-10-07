@@ -16,6 +16,10 @@ const BUFFER_BYTES: usize = 64 * 1024;
 const MAX_JSONL_LINE_BYTES: usize = 8 * 1024 * 1024;
 const MAX_JSONL_RANGE: usize = 10_000;
 const MAX_JSONL_RANGE_BYTES: usize = 32 * 1024 * 1024;
+const MAX_ASR_SIDECAR_BYTES: u64 = 4 * 1024 * 1024;
+// Raw ASR text may expand sixfold when JSON escapes control characters.
+const MAX_ASR_OUTPUT_BYTES: u64 = 32 * 1024 * 1024;
+const MAX_ASR_ATTEMPTS: usize = 10_000;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ArtifactRef {
@@ -65,6 +69,9 @@ pub struct BackupObject {
 pub struct BackupDeclaration {
     pub root: PathBuf,
     pub objects: Vec<BackupObject>,
+    /// Immutable capture slots, including incomplete output awaiting recovery.
+    /// These paths are declarations, not CAS identifiers or replay authority.
+    pub asr_attempts: Vec<BackupObject>,
 }
 
 impl ArtifactStore {
@@ -240,11 +247,13 @@ impl ArtifactStore {
         Ok(values)
     }
 
-    /// Exact backup inventory for caller-supplied references. No store-wide
-    /// scan or garbage collection is implied by this declaration.
+    /// Backup caller references plus declared ASR capture slots and their CAS
+    /// closure. Capture can precede a failed DB commit, so DB references alone
+    /// do not cover it. No CAS-wide scan or garbage collection is implied.
     pub fn backup_declaration(&self, references: &[ArtifactRef]) -> io::Result<BackupDeclaration> {
         let mut unique = BTreeMap::<String, ArtifactRef>::new();
-        for reference in references {
+        let (asr_attempts, captured_references) = self.asr_backup_inventory()?;
+        for reference in references.iter().chain(captured_references.iter()) {
             validate_ref(reference)?;
             if let Some(previous) = unique.insert(reference.sha256.clone(), reference.clone()) {
                 if previous.bytes != reference.bytes {
@@ -265,7 +274,119 @@ impl ArtifactStore {
         Ok(BackupDeclaration {
             root: self.root.clone(),
             objects,
+            asr_attempts,
         })
+    }
+
+    fn asr_backup_inventory(&self) -> io::Result<(Vec<BackupObject>, Vec<ArtifactRef>)> {
+        let root = self.root.join("asr-attempts");
+        reject_reparse_components(&root)?;
+        match fs::symlink_metadata(&root) {
+            Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok((vec![], vec![])),
+            Err(error) => return Err(error),
+            Ok(metadata) if !metadata.is_dir() => return Err(invalid("ASR attempts must be a directory")),
+            Ok(_) => {}
+        }
+        let mut inventory = Vec::new();
+        let mut references = Vec::new();
+        let mut attempts = 0_usize;
+        for entry in fs::read_dir(&root)? {
+            let entry = entry?;
+            attempts += 1;
+            if attempts > MAX_ASR_ATTEMPTS {
+                return Err(invalid("ASR backup attempt count exceeds limit"));
+            }
+            let attempt = entry.path();
+            reject_reparse_components(&attempt)?;
+            let attempt_key = entry.file_name().into_string().map_err(|_| invalid("Invalid ASR attempt name"))?;
+            validate_ref(&ArtifactRef { sha256: attempt_key.clone(), bytes: 0 })?;
+            if !fs::symlink_metadata(&attempt)?.is_dir() {
+                return Err(invalid("ASR attempt must be a directory"));
+            }
+            for sidecar in fs::read_dir(&attempt)? {
+                let sidecar = sidecar?;
+                let name = sidecar.file_name().into_string().map_err(|_| invalid("Invalid ASR sidecar name"))?;
+                if !valid_asr_sidecar_name(&name) {
+                    return Err(invalid("Unexpected ASR sidecar member"));
+                }
+                let path = sidecar.path();
+                let mut file = self.open_object(&path)?;
+                let expected_bytes = file.metadata()?.len();
+                if expected_bytes > MAX_ASR_SIDECAR_BYTES {
+                    return Err(invalid("ASR sidecar exceeds byte limit"));
+                }
+                let mut bytes = Vec::new();
+                Read::by_ref(&mut file).take(MAX_ASR_SIDECAR_BYTES + 1).read_to_end(&mut bytes)?;
+                if bytes.len() as u64 > MAX_ASR_SIDECAR_BYTES || bytes.len() as u64 != expected_bytes
+                    || file.metadata()?.len() != expected_bytes {
+                    return Err(invalid("ASR sidecar changed during backup declaration"));
+                }
+                inventory.push(BackupObject {
+                    reference: ArtifactRef { sha256: format!("{:x}", Sha256::digest(&bytes)), bytes: expected_bytes },
+                    relative_path: path.strip_prefix(&self.root).map_err(|_| invalid("ASR sidecar outside store"))?.to_owned(),
+                });
+                // Preserve torn captures as evidence. Only parsed declared
+                // references add CAS closure; backup never admits ASR reuse.
+                if let Ok(value) = serde_json::from_slice::<Value>(&bytes) {
+                    if value.get("result").is_none() && value.get("segment").is_none() { continue; }
+                    let binding = &value["binding"];
+                    validate_asr_binding(binding)?;
+                    if value["schemaVersion"] != 1 || format!("{:x}", Sha256::digest(json!([binding["companyId"], binding["manifestKey"]]).to_string().as_bytes())) != attempt_key {
+                        return Err(invalid("ASR sidecar binding differs from declared attempt"));
+                    }
+                    if name == "full.json" {
+                        if let Some(result) = value.get("result") {
+                            let manifest = ArtifactRef::from_json(&result["manifest"])?;
+                            let normalized = ArtifactRef::from_json(&result["normalizedOutput"])?;
+                            let normalized_value = self.read_asr_backup_document(&normalized, binding, None)?;
+                            if !normalized_value["audio"].is_object() { return Err(invalid("ASR full output needs audio")); }
+                            references.push(normalized);
+                            let manifest_value = self.read_asr_backup_document(&manifest, binding, None)?;
+                            references.push(manifest);
+                            if manifest_value["normalizedOutput"] != result["normalizedOutput"] { return Err(invalid("ASR full output differs from manifest")); }
+                            references.push(ArtifactRef::from_json(&manifest_value["normalizedOutput"])?);
+                            let segments = manifest_value["segments"].as_array().ok_or_else(|| invalid("ASR manifest needs segments"))?;
+                            if segments.len() > 16 { return Err(invalid("ASR manifest segment count exceeds limit")); }
+                            for segment in segments {
+                                self.append_asr_segment_references(segment, binding, &mut references)?;
+                            }
+                        } else { return Err(invalid("ASR full sidecar needs result")); }
+                    } else if let Some(segment) = value.get("segment") {
+                        if segment["outputBinding"] != *binding || name != format!("segment-{:03}.json", segment["index"].as_u64().ok_or_else(|| invalid("ASR segment needs index"))?) {
+                            return Err(invalid("ASR segment differs from declared slot"));
+                        }
+                        self.append_asr_segment_references(segment, binding, &mut references)?;
+                    } else { return Err(invalid("ASR segment sidecar needs segment")); }
+                }
+            }
+        }
+        inventory.sort_by(|left, right| left.relative_path.cmp(&right.relative_path));
+        Ok((inventory, references))
+    }
+
+    fn read_asr_backup_document(&self, reference: &ArtifactRef, binding: &Value, index: Option<u64>) -> io::Result<Value> {
+        let value: Value = serde_json::from_slice(&self.read_bytes(reference, MAX_ASR_OUTPUT_BYTES)?).map_err(io::Error::other)?;
+        if value["schemaVersion"] != 1 || value["binding"] != *binding || index.is_some_and(|index| value["index"] != index) {
+            return Err(invalid("ASR CAS output binding differs from declaration"));
+        }
+        Ok(value)
+    }
+
+    fn append_asr_segment_references(&self, segment: &Value, binding: &Value, references: &mut Vec<ArtifactRef>) -> io::Result<()> {
+        let original = &segment["outputBinding"];
+        validate_asr_binding(original)?;
+        // Recovered segments may retain an earlier fenced owner/attempt.
+        for key in ["companyId", "verifiedFile", "specSha256", "segments", "durationMs"] {
+            if original[key] != binding[key] { return Err(invalid("ASR segment immutable identity changed")); }
+        }
+        let index = segment["index"].as_u64().filter(|index| *index < 16).ok_or_else(|| invalid("ASR segment index exceeds limit"))?;
+        for field in ["rawOutput", "normalizedOutput"] {
+            let reference = ArtifactRef::from_json(&segment[field])?;
+            let value = self.read_asr_backup_document(&reference, original, Some(index))?;
+            if !value["text"].is_string() { return Err(invalid("ASR segment output needs text")); }
+            references.push(reference);
+        }
+        Ok(())
     }
 
     fn begin(&self) -> io::Result<RawWriter> {
@@ -417,6 +538,21 @@ fn validate_ref(reference: &ArtifactRef) -> io::Result<()> {
     Ok(())
 }
 
+fn valid_asr_sidecar_name(name: &str) -> bool {
+    if name == "full.json" { return true; }
+    name.strip_prefix("segment-").and_then(|name| name.strip_suffix(".json"))
+        .is_some_and(|index| index.len() == 3 && index.bytes().all(|c| c.is_ascii_digit())
+            && index.parse::<usize>().is_ok_and(|index| index < 16))
+}
+
+fn validate_asr_binding(binding: &Value) -> io::Result<()> {
+    for key in ["companyId", "manifestKey", "attemptId", "owner", "specSha256"] {
+        if binding[key].as_str().is_none_or(str::is_empty) { return Err(invalid("ASR capture binding is incomplete")); }
+    }
+    if binding["epoch"].as_u64().is_none() { return Err(invalid("ASR capture binding needs epoch")); }
+    Ok(())
+}
+
 fn compare_content(reference: &ArtifactRef, bytes: u64, hash: Sha256) -> io::Result<()> {
     if bytes != reference.bytes || format!("{:x}", hash.finalize()) != reference.sha256 {
         return Err(io::Error::new(
@@ -471,6 +607,123 @@ fn is_windows_reparse(_metadata: &fs::Metadata) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn asr_binding(company: &str) -> Value {
+        json!({"companyId":company,"manifestKey":"immutable-analysis-key","attemptId":"attempt-1","owner":"worker-1","epoch":1,
+            "verifiedFile":{"sha256":"a".repeat(64),"bytes":1234,"receiptSha256":"b".repeat(64)},"specSha256":"c".repeat(64),
+            "segments":[{"index":0,"startMs":0,"endMs":1000}],"durationMs":1000})
+    }
+
+    fn asr_segment(store: &ArtifactStore, binding: &Value) -> Value {
+        let raw = store.put_bytes(json!({"schemaVersion":1,"binding":binding,"index":0,"text":"raw paid words"}).to_string().as_bytes()).unwrap();
+        let normalized = store.put_bytes(json!({"schemaVersion":1,"binding":binding,"index":0,"text":"normalized paid words"}).to_string().as_bytes()).unwrap();
+        json!({"index":0,"outputBinding":binding,"rawOutput":raw.to_json(),"normalizedOutput":normalized.to_json()})
+    }
+
+    fn asr_sidecar(store: &ArtifactStore, binding: &Value, name: &str, bytes: &[u8]) -> PathBuf {
+        let key = format!("{:x}", Sha256::digest(json!([binding["companyId"],binding["manifestKey"]]).to_string().as_bytes()));
+        let dir = store.root().join("asr-attempts").join(key);
+        fs::create_dir_all(&dir).unwrap();
+        let path = dir.join(name);fs::write(&path, bytes).unwrap();path
+    }
+
+    #[test]
+    fn backup_captures_asr_before_database_commit_and_excludes_file_metadata_roots() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = ArtifactStore::open(&dir.path().join("artifacts")).unwrap();
+        let binding = asr_binding("company-a");
+        let segment = asr_segment(&store, &binding);
+        let bytes = json!({"schemaVersion":1,"binding":binding,"segment":segment}).to_string().into_bytes();
+        let path = asr_sidecar(&store,&binding,"segment-000.json",&bytes);
+        let declaration = store.backup_declaration(&[]).unwrap();
+        assert_eq!(declaration.objects.len(),2);
+        assert_eq!(declaration.asr_attempts.len(),1);
+        assert_eq!(declaration.asr_attempts[0].relative_path.as_path(),path.strip_prefix(store.root()).unwrap());
+        assert_eq!(declaration.asr_attempts[0].reference.bytes,bytes.len() as u64);
+        assert_eq!(declaration.asr_attempts[0].reference.sha256,format!("{:x}",Sha256::digest(&bytes)));
+        assert!(!declaration.objects.iter().any(|object|object.reference.sha256 == "a".repeat(64)));
+        let raw = ArtifactRef::from_json(&segment["rawOutput"]).unwrap();
+        fs::write(store.path(&raw).unwrap(), b"changed paid words").unwrap();
+        assert!(store.backup_declaration(&[]).is_err());
+    }
+
+    #[test]
+    fn backup_full_output_recovers_original_segment_closure_without_segment_sidecar() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = ArtifactStore::open(&dir.path().join("artifacts")).unwrap();
+        let original = asr_binding("company-a");
+        let segment = asr_segment(&store,&original);
+        let mut binding = original.clone();
+        binding["manifestKey"] = json!("recovery-manifest");binding["attemptId"] = json!("attempt-2");binding["owner"] = json!("worker-2");binding["epoch"] = json!(2);
+        let normalized = store.put_bytes(json!({"schemaVersion":1,"binding":binding,"audio":{"text":"complete"}}).to_string().as_bytes()).unwrap();
+        let manifest = store.put_bytes(json!({"schemaVersion":1,"binding":binding,"segments":[segment],"normalizedOutput":normalized.to_json()}).to_string().as_bytes()).unwrap();
+        let closure = json!({"schemaVersion":1,"binding":binding,"result":{"manifest":manifest.to_json(),"normalizedOutput":normalized.to_json()}});
+        asr_sidecar(&store,&binding,"full.json",closure.to_string().as_bytes());
+        let declaration = store.backup_declaration(&[manifest]).unwrap();
+        assert_eq!(declaration.objects.len(),4);
+        assert_eq!(declaration.asr_attempts.len(),1);
+    }
+
+    #[test]
+    fn backup_bounds_sidecars_separately_from_json_escaped_paid_output() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = ArtifactStore::open(&dir.path().join("artifacts")).unwrap();
+        let binding = asr_binding("company-a");
+        let mut segment = asr_segment(&store, &binding);
+        let escaped = json!({"schemaVersion":1,"binding":binding,"index":0,"text":"\0".repeat(1024*1024)}).to_string();
+        assert!(escaped.len() as u64 > MAX_ASR_SIDECAR_BYTES);
+        let raw = store.put_bytes(escaped.as_bytes()).unwrap();segment["rawOutput"] = raw.to_json();
+        asr_sidecar(&store,&binding,"segment-000.json",json!({"schemaVersion":1,"binding":binding,"segment":segment}).to_string().as_bytes());
+        let declaration = store.backup_declaration(&[]).unwrap();
+        assert_eq!(declaration.objects.len(),2);assert_eq!(declaration.asr_attempts.len(),1);
+    }
+
+    #[test]
+    fn backup_preserves_torn_asr_evidence_but_rejects_large_or_undeclared_slots() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = ArtifactStore::open(&dir.path().join("artifacts")).unwrap();
+        let binding = asr_binding("company-a");
+        let torn = asr_sidecar(&store,&binding,"segment-015.json",b"{\"binding\":");
+        let declaration = store.backup_declaration(&[]).unwrap();
+        assert!(declaration.objects.is_empty());assert_eq!(declaration.asr_attempts.len(),1);
+        assert_eq!(declaration.asr_attempts[0].reference.bytes,11);
+        let invalid_slot = torn.parent().unwrap().join("segment-016.json");
+        fs::write(&invalid_slot,b"{}").unwrap();assert!(store.backup_declaration(&[]).is_err());fs::remove_file(invalid_slot).unwrap();
+        let large = torn.parent().unwrap().join("full.json");
+        File::create(&large).unwrap().set_len(MAX_ASR_SIDECAR_BYTES+1).unwrap();
+        assert!(store.backup_declaration(&[]).is_err());
+    }
+
+    #[test]
+    fn backup_rejects_cross_company_and_attempt_hash_retargeting() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = ArtifactStore::open(&dir.path().join("artifacts")).unwrap();
+        let company_a = asr_binding("company-a");let company_b = asr_binding("company-b");
+        let segment = asr_segment(&store,&company_b);
+        let closure = json!({"schemaVersion":1,"binding":company_a,"segment":segment});
+        let path = asr_sidecar(&store,&company_a,"segment-000.json",closure.to_string().as_bytes());
+        assert!(store.backup_declaration(&[]).is_err());fs::remove_file(path).unwrap();
+        let mut segment = asr_segment(&store,&company_b);segment["outputBinding"] = company_a.clone();
+        let closure = json!({"schemaVersion":1,"binding":company_a,"segment":segment});
+        let path = asr_sidecar(&store,&company_a,"segment-000.json",closure.to_string().as_bytes());
+        assert!(store.backup_declaration(&[]).is_err());fs::remove_file(path).unwrap();
+        let segment = asr_segment(&store,&company_a);
+        let closure = json!({"schemaVersion":1,"binding":company_a,"segment":segment});
+        asr_sidecar(&store,&company_b,"segment-000.json",closure.to_string().as_bytes());
+        assert!(store.backup_declaration(&[]).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn backup_rejects_asr_sidecar_symlink() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = ArtifactStore::open(&dir.path().join("artifacts")).unwrap();
+        let binding = asr_binding("company-a");
+        let path = asr_sidecar(&store,&binding,"full.json",b"{");fs::remove_file(&path).unwrap();
+        let external = dir.path().join("external.json");fs::write(&external,b"private").unwrap();
+        std::os::unix::fs::symlink(external,path).unwrap();
+        assert!(store.backup_declaration(&[]).is_err());
+    }
 
     #[test]
     fn immutable_replay_and_corruption_fail_closed() {

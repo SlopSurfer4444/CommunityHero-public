@@ -9,20 +9,80 @@ use std::{
     time::Duration,
 };
 
+#[path="storage_pg_writer.rs"]
+mod pg_writer;
+
 const WORKSPACE: &str = "local-pilot";
 const LEASE: i64 = 438772116;
+#[path="storage_predecessor_recovery.rs"]
+mod predecessor_recovery_storage;
+pub(crate) use predecessor_recovery_storage::{capture_predecessor,import_predecessor};
 #[path = "storage_reads.rs"]
 mod reads;
+pub(crate) use reads::KnowledgeHeadsQuery;
+#[path = "storage_media_gate_context.rs"]
+mod media_gate_context;
+pub(crate) use media_gate_context::MediaGateReadBudget;
+#[path = "storage_source_export.rs"]
+mod source_export;
 #[path = "storage_writes.rs"]
 mod writes;
+#[path = "storage_source_snapshot.rs"]
+mod source_snapshot;
+pub(crate) use source_snapshot::SourceReadIntent;
+#[path = "storage_operation_evidence.rs"]
+mod operation_evidence;
+#[path = "storage_connection_gate.rs"]
+mod connection_gate_storage;
+pub(crate) use operation_evidence::OperationEvidenceUpdate;
+#[path = "storage_operation_outcome.rs"]
+mod operation_outcome;
+#[path = "storage_readback.rs"]
+mod readback_recovery_storage;
 #[path = "storage_assistant.rs"]
 mod assistant;
 #[path = "storage_media.rs"]
 mod storage_media;
+#[path = "storage_media_analysis_read.rs"]
+mod media_analysis_read;
+#[path = "storage_media_validation.rs"]
+mod media_validation;
+pub(crate) use media_validation::{MediaValidationMode,MediaValidationScope};
+#[path = "storage_media_status.rs"]
+mod media_status;
 #[path = "storage_preparation.rs"]
 mod preparation;
+#[cfg(test)]
+pub(crate) use preparation::writer_v51_fixture_db;
+#[path = "storage_local_admission.rs"]
+mod local_admission;
 #[path = "storage_rules.rs"]
 mod rules;
+#[path = "storage_bounded_review.rs"]
+mod bounded_review;
+#[path = "storage_operator_batch.rs"]
+mod operator_batch;
+#[path = "storage_hot_admission.rs"]
+mod hot_admission;
+pub(crate) use hot_admission::AdmissionScope;
+#[path="storage_scope_context.rs"]
+mod scope_context;
+#[path="storage_proposal_edit.rs"]
+mod proposal_edit;
+#[path = "storage_conductor_admission.rs"]
+mod conductor_admission;
+#[path = "storage_conductor_bootstrap.rs"]
+mod conductor_bootstrap;
+#[path = "storage_runtime_lifecycle.rs"]
+mod runtime_lifecycle;
+#[path = "storage_bootstrap_ledger.rs"]
+mod bootstrap_ledger;
+pub(crate) use bootstrap_ledger::read_bootstrap_ledger_snapshot;
+#[cfg(test)]
+#[path = "storage_fixture_snapshot.rs"]
+mod fixture_snapshot;
+#[cfg(test)]
+pub(crate) use fixture_snapshot::{read_native_fixture_workspace_snapshot,read_native_fixture_backend_cessation};
 const TABLES: [&str; 13] = [
     "posts",
     "branches",
@@ -147,6 +207,28 @@ impl Database {
         &self,
         f: impl FnOnce(&mut Value) -> ApiResult<T>,
     ) -> ApiResult<(T, bool)> {
+        self.change_observed_mode(f, false).await
+    }
+
+    /// The only storage path allowed to introduce retained recovery proofs.
+    /// It invokes the typed owner-authorized reducer itself on the complete
+    /// workspace inside the ordinary SQLite/PG transaction and history guards.
+    pub(super) async fn commit_retained_paid_recovery_observed(
+        &self, actor: &crate::operator_auth::Actor,
+        installed: &crate::retained_paid_recovery::InstalledCapture, body: &Value,
+        expected_runtime: &crate::runtime_lifecycle::RuntimeIdentity,
+    ) -> ApiResult<(Value, bool)> {
+        self.change_observed_mode(|d| {
+            crate::runtime_lifecycle::current_owner(d,expected_runtime)?;
+            crate::retained_paid_recovery::commit(d, actor, installed, body)
+        }, true).await
+    }
+
+    async fn change_observed_mode<T>(
+        &self,
+        f: impl FnOnce(&mut Value) -> ApiResult<T>,
+        allow_retained_recovery_delta: bool,
+    ) -> ApiResult<(T, bool)> {
         match self {
             Self::Sqlite(pool) => {
                 let mut tx = pool.begin().await?;
@@ -158,9 +240,28 @@ impl Database {
                 normalize(&mut value);
                 let before = value.clone();
                 let result = f(&mut value)?;
-                crate::db_guards::validate_change(&before, &value)?;
+                crate::db_guards::validate_change_mode(&before, &value, allow_retained_recovery_delta)?;
                 immutable_versions(&before, &value)?;
                 validate_knowledge(&value)?;
+                if value["account"] != before["account"] {
+                    // A fresh SQLite file starts with the legacy LikeAvto
+                    // placeholder. Permit only the explicit pristine profile
+                    // bootstrap; a populated or bound database keeps its owner.
+                    let selected = crate::accounts::Profile::from_workspace(&value)?;
+                    let mut bootstrapped = before.clone();
+                    crate::accounts::initialize(&mut bootstrapped, selected)?;
+                    if value["account"] != bootstrapped["account"]
+                        || value["connectorBinding"] != bootstrapped["connectorBinding"]
+                        || value["settings"]["provider"] != bootstrapped["settings"]["provider"]
+                    {
+                        return Err(internal("Workspace account is immutable"));
+                    }
+                }
+                if value["connectorBinding"] != before["connectorBinding"] {
+                    // A connector may be replaced within its company, but a
+                    // foreign binding cannot become the workspace route.
+                    crate::active_binding(&value)?;
+                }
                 if value == before {
                     tx.commit().await?;
                     return Ok((result, false));
@@ -174,31 +275,42 @@ impl Database {
             }
             Self::Postgres { writer, .. } => {
                 let pool_wait = crate::performance::Span::new("workspace.change.pool_wait");
-                let mut tx = writer.begin().await?;
+                let mut connection=writer.acquire().await?;
+                let mut tx=sqlx::Connection::begin(&mut *connection).await?;
                 drop(pool_wait);
+                let mut before=Value::Null;
+                let mut after=Value::Null;
+                let mut metadata_after=Value::Null;
+                let mut persistence=None;
+                let outcome:ApiResult<_>=async {
                 let lock_wait = crate::performance::Span::new("workspace.change.row_lock_wait");
                 sqlx::query("SELECT id FROM communityhero.workspaces WHERE id=$1 FOR UPDATE")
                     .bind(WORKSPACE)
                     .fetch_one(&mut *tx)
                     .await?;
+                #[cfg(test)] crate::performance::r3_sql_read();
                 drop(lock_wait);
                 let load = crate::performance::Span::new("workspace.change.load");
-                let before = read_postgres(&mut tx).await?;
+                before = read_postgres(&mut tx).await?;
                 drop(load);
                 let domain = crate::performance::Span::new("workspace.change.clone_and_domain");
-                let mut after = before.clone();
+                after = before.clone();
                 let result = f(&mut after)?;
                 drop(domain);
                 let validation = crate::performance::Span::new("workspace.change.validation");
-                crate::db_guards::validate_change(&before, &after)?;
+                crate::db_guards::validate_change_mode(&before, &after, allow_retained_recovery_delta)?;
                 if after == before {
-                    tx.commit().await?;
                     return Ok((result, false));
                 }
                 validate(&after)?;
                 immutable_versions(&before, &after)?;
                 if after["account"] != before["account"] {
                     return Err(internal("Workspace account is immutable"));
+                }
+                if after["connectorBinding"] != before["connectorBinding"] {
+                    // Provider replacement is allowed within the same account;
+                    // an unrelated company's binding is never a valid route.
+                    crate::active_binding(&after)?;
                 }
                 for table in TABLES {
                     let old = rows(&before, table)?;
@@ -211,7 +323,7 @@ impl Database {
                     }
                 }
                 drop(validation);
-                let _persist = crate::performance::Span::new("workspace.change.persist_and_commit");
+                persistence=Some(crate::performance::Span::new("workspace.change.persist_and_commit"));
                 for table in TABLES {
                     let columns = projection(table);
                     // Every interpolated identifier comes from constants in this module.
@@ -243,20 +355,27 @@ impl Database {
                             query = query.bind(value[*key].as_str());
                         }
                         query.execute(&mut *tx).await?;
+                        #[cfg(test)] crate::performance::r3_sql_write();
                     }
                 }
-                let metadata = metadata(&after);
-                if metadata != self::metadata(&before) {
+                metadata_after = metadata(&after);
+                if metadata_after != self::metadata(&before) {
                     sqlx::query(
                         "UPDATE communityhero.workspaces SET metadata=$1::jsonb WHERE id=$2",
                     )
-                    .bind(metadata.to_string())
+                    .bind(metadata_after.to_string())
                     .bind(WORKSPACE)
                     .execute(&mut *tx)
                     .await?;
+                    #[cfg(test)] crate::performance::r3_sql_write();
                 }
-                tx.commit().await?;
                 Ok((result, true))
+                }.await;
+                let (outcome,completion)=pg_writer::settle(tx,outcome).await;
+                pg_writer::release(&mut connection,writer,completion).await;
+                drop(persistence);
+                drop(metadata_after);
+                outcome
             }
         }
     }
@@ -431,6 +550,10 @@ async fn read_postgres(connection: &mut PgConnection) -> ApiResult<Value> {
     .bind(WORKSPACE)
     .fetch_one(&mut *connection)
     .await?;
+    #[cfg(test)] crate::performance::r3_sql_read();
+    #[cfg(test)] let mut materialized=crate::performance::Span::new("workspace.projection.materialized");
+    #[cfg(test)] let mut materialized_rows=0usize;
+    #[cfg(test)] let mut materialized_bytes=record.try_get::<&str,_>("metadata")?.len();
     if record.try_get::<bool, _>("execution_enabled")? {
         return Err(internal("PostgreSQL pilot execution must remain disabled"));
     }
@@ -455,8 +578,10 @@ async fn read_postgres(connection: &mut PgConnection) -> ApiResult<Value> {
             .bind(WORKSPACE)
             .fetch_all(&mut *connection)
             .await?;
+        #[cfg(test)] { crate::performance::r3_sql_read(); materialized_rows+=records.len(); }
         let mut values = Vec::with_capacity(records.len());
         for (n, record) in records.into_iter().enumerate() {
+            #[cfg(test)] { materialized_bytes+=record.try_get::<&str,_>("payload")?.len(); }
             let payload = parse(record.try_get::<&str, _>("payload")?)?;
             if record.try_get::<i32, _>("ordinal")? != n as i32
                 || record.try_get::<&str, _>("id")? != text(&payload, "id")?
@@ -473,6 +598,7 @@ async fn read_postgres(connection: &mut PgConnection) -> ApiResult<Value> {
         value[table] = Value::Array(values);
     }
     validate(&value)?;
+    #[cfg(test)] { materialized.counts(materialized_rows,materialized_bytes,TABLES.len()); }
     Ok(value)
 }
 
@@ -544,13 +670,15 @@ fn validate(value: &Value) -> ApiResult<()> {
             check(proposal, "id", "proposals", true)?;
         }
     }
+    // IDs and duplicate checks above have already validated these keys. Build
+    // the inverse lookup once rather than scanning every retained version for
+    // each entry while holding the workspace writer.
+    let knowledge_versions: HashMap<&str, &Value> = rows(value,"knowledge_versions")?
+        .iter().map(|version|(version["id"].as_str().unwrap(),version)).collect();
     for record in rows(value, "knowledge_entries")? {
         check(record, "sourceMaterialId", "materials", false)?;
         check(record, "currentVersionId", "knowledge_versions", true)?;
-        let version = rows(value, "knowledge_versions")?
-            .iter()
-            .find(|v| v["id"] == record["currentVersionId"])
-            .unwrap();
+        let version = knowledge_versions[record["currentVersionId"].as_str().unwrap()];
         if version["entryId"] != record["id"] {
             return Err(internal(
                 "Knowledge current version belongs to another entry",
@@ -580,12 +708,11 @@ mod performance_tests {
             .await
             .unwrap();
         let (events, _) = broadcast::channel(32);
-        (
-            crate::App {
-                account:crate::accounts::Profile::LikeAvto,
+        let app = crate::App {lifecycle_task_count: Default::default(), lifecycle_admission: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto)), lifecycle_owner: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto).identity().clone()), lifecycle_provider_token: Default::default(), lifecycle_work: Default::default(), media_discovery: Default::default(),preparation_wake: Default::default(),provider_session: Default::default(),
+                account:crate::accounts::Profile::LikeAvto,navigation:crate::account_navigation::Navigation::root(),
                 db: Database::Sqlite(pool),
                 gate: Arc::new(crate::writer_gate::WriterGate::default()), execution_gate: Arc::new(Mutex::new(())),
-        assistant_gate: Arc::new(Mutex::new(())),
+        preparation_workers: Default::default(),editorial_gate: Default::default(),assistant_gate: Arc::new(Mutex::new(())),
         assistant_chat_gate: Arc::new(Mutex::new(())),
                 events,
                 csrf: "test-csrf".into(),
@@ -596,9 +723,9 @@ mod performance_tests {
                 bridge: PathBuf::new(),
                 node: PathBuf::new(),
                 tasks: Arc::new(Mutex::new(HashMap::new())),bootstrap_cache:Arc::new(crate::bootstrap_cache::Cache::default()),
-            },
-            folder,
-        )
+            };
+        crate::runtime_lifecycle_app::initialize_app_fixture(&app).await.unwrap();
+        (app, folder)
     }
 
     #[tokio::test]
@@ -672,7 +799,10 @@ mod performance_tests {
             d["materials"] = json!([{"id":"material","text":"Keep"}]);
             let mut jobs = vec![];
             for (n, status) in ["running","queued","unknown","interrupted"].iter().enumerate() {
-                jobs.push(json!({"id":format!("active-{n}"),"status":status}));
+                // Explicit empty response fields distinguish wire shaping from
+                // loss of the opaque recovery checkpoint retained by full-row equality.
+                jobs.push(json!({"id":format!("active-{n}"),"kind":"assistant","purpose":"discussion","refId":"item","status":status,
+                    "prepareBundle":null,"result":{"visualProgress":null,"recoveryCheckpoint":{"outputRef":format!("retained-{n}"),"receiptSha256":"a".repeat(64)}}}));
             }
             for n in 0..450 {
                 jobs.push(json!({"id":format!("finished-{n}"),"status":"completed","prepareBundle":{"id":"bundle","digest":"digest","request":{"text":"x".repeat(1000)}}}));
@@ -688,6 +818,7 @@ mod performance_tests {
         assert_eq!(view["jobs"].as_array().unwrap().len(), 204);
         assert_eq!(view["jobs"][0]["status"], "running");
         assert_eq!(view["jobs"][3]["status"], "interrupted");
+        assert_eq!(&view["jobs"].as_array().unwrap()[..4], &before["jobs"].as_array().unwrap()[..4]);
         assert_eq!(view["jobs"][4]["id"], "finished-250");
         assert_eq!(view["jobs"][203]["id"], "finished-449");
         assert_eq!(view["historyMetadata"]["jobs"]["omitted"], 250);
@@ -742,13 +873,16 @@ impl Database {
             }
             Self::Postgres { writer, .. } => {
                 let mut tx = writer.begin().await?;
-                let row=sqlx::query("SELECT account,execution_enabled FROM communityhero.workspaces WHERE id=$1 FOR UPDATE").bind(WORKSPACE).fetch_one(&mut *tx).await?;
+                let row=sqlx::query("SELECT account,execution_enabled,metadata ? 'runtimeLifecycle' AS has_runtime_lifecycle,(metadata->'runtimeLifecycle')::text AS runtime_lifecycle FROM communityhero.workspaces WHERE id=$1 FOR UPDATE").bind(WORKSPACE).fetch_one(&mut *tx).await?;
                 if row.try_get::<bool, _>("execution_enabled")? {
                     return Err(internal("PostgreSQL pilot execution must remain disabled"));
                 }
                 let payload: Option<String>=sqlx::query_scalar("SELECT payload::text FROM communityhero.items WHERE workspace_id=$1 AND id=$2 FOR UPDATE").bind(WORKSPACE).bind(key).fetch_optional(&mut *tx).await?;
                 let item = parse(&payload.ok_or_else(|| internal("Item not found"))?)?;
                 let mut before = serde_json::json!({"account":row.try_get::<String,_>("account")?,"items":[item]});
+                if row.try_get::<bool,_>("has_runtime_lifecycle")? {
+                    before["runtimeLifecycle"]=parse(row.try_get::<&str,_>("runtime_lifecycle")?)?;
+                }
                 for table in ["operations", "proposals", "feedback"] {
                     let statement = format!(
                         "SELECT payload::text FROM communityhero.{table} WHERE workspace_id=$1 AND item_id=$2 ORDER BY ordinal"
@@ -796,6 +930,11 @@ fn item_scope(workspace: &Value, key: &str) -> ApiResult<Value> {
         .find(|v| v["id"].as_str() == Some(key))
         .ok_or_else(|| internal("Item not found"))?;
     let mut scope = serde_json::json!({"account":workspace["account"],"items":[item]});
+    // Capture::with checks the fixed native owner against CURRENT locked
+    // metadata. Retain full lifecycle state and exact key presence only.
+    if let Some(lifecycle)=workspace.get("runtimeLifecycle") {
+        scope["runtimeLifecycle"]=lifecycle.clone();
+    }
     for table in ["operations", "proposals", "feedback"] {
         scope[table] = Value::Array(
             rows(workspace, table)?
@@ -808,7 +947,8 @@ fn item_scope(workspace: &Value, key: &str) -> ApiResult<Value> {
     Ok(scope)
 }
 fn validate_item_scope(before: &Value, after: &Value) -> ApiResult<()> {
-    if after.as_object().map(|v| v.len()) != Some(5)
+    if after.as_object().map(|v| v.len()) != Some(5+usize::from(before.get("runtimeLifecycle").is_some()))
+        || after.get("runtimeLifecycle") != before.get("runtimeLifecycle")
         || after["account"] != before["account"]
         || after["operations"] != before["operations"]
         || after["proposals"] != before["proposals"]
@@ -907,3 +1047,11 @@ mod knowledge_storage_tests {
         assert!(!db.change_item_observed("one", |_| Ok(())).await.unwrap().1);
     }
 }
+
+#[cfg(test)]
+#[path="post_network_transition_pg_tests.rs"]
+mod post_network_transition_pg_tests;
+
+#[cfg(test)]
+#[path="storage_item_lifecycle_tests.rs"]
+mod item_lifecycle_tests;

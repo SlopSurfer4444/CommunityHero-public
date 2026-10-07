@@ -1,10 +1,13 @@
 import {bindEmojiPicker,emojiButton} from './emoji-picker.js';
+import {workspaceBasePath,workspacePath} from './workspace-path.js';
+import {createWorkspaceGenerationFence} from './workspace-generation.js';
 import {assistantDraftCandidates,candidateDraftPatch} from './assistant-candidates.js';
 import {startsFreshDiscussion} from './assistant-intent.js';
 // Local MVP bridge for the original workshop surface. No social action is sent
 // except from the explicit final button in the exact-proposal review dialog.
 import {captureChatReading,restoreChatReading} from './assistant-reading.js';
 import {publicationTitle} from './workspace-presentation.js';
+import {queueCoveragePresentation} from './queue-coverage.js';
 import {mediaPreparationHold,assertMediaReady,reviewMediaHold} from './preparation-readiness.js';
 import {activeInstructions,chronologicalHistory} from './active-instructions.js';
 import {postTranscripts} from './post-transcripts.js';
@@ -17,7 +20,7 @@ const asText = value => value == null ? '' : String(value);
 const ordinaryText = value => asText(value).replace(/Angry[.\s]*Space/gi,'сервис').replace(/у провайдера/gi,'в соцсети');
 const labels = {attention:'Нужно участие',prepared:'Подготовлено',waiting:'Ждём',closed:'Закрыто'};
 const actionLabels = {reply_and_close:'Ответить и закрыть',close:'Закрыть без ответа'};
-const jobLabels = {sync:'Синхронизация',assistant:'Ответ ассистента',materials:'Импорт материалов',media:'Обработка медиа',execute:'Выполнение',reconcile:'Сверка'};
+const jobLabels = {sync:'Синхронизация',assistant:'Ответ ассистента',editorial_review:'Проверка ответа',materials:'Импорт материалов',media:'Обработка медиа',execute:'Выполнение',reconcile:'Сверка'};
 const statusLabels = {queued:'В очереди',running:'Выполняется',completed:'Завершено',failed:'Ошибка',cancelled:'Отменено',interrupted:'Прервано',unknown:'Исход неизвестен',succeeded:'Подтверждено',dispatching:'Отправляется',approved:'Одобрено',draft:'Черновик'};
 const time = value => {const date=new Date(value);return Number.isFinite(date.getTime())?date.toLocaleString('ru-RU',{dateStyle:'short',timeStyle:'short'}):'Время не указано';};
 const plain = value => {
@@ -27,6 +30,58 @@ const plain = value => {
   return decoder.value.replace(/\u00a0/g,' ').replace(/[\t ]+\n/g,'\n').trim();
 };
 const sourceUrl = value => /^https?:\/\//i.test(asText(value)) ? asText(value) : '';
+
+// A UI exception is available only for the exact saved case inspected by a person.
+export function missingMediaWaiverEligibility({proposal,latest,context,operator,item,loadedItem,draft}={}) {
+  if(!operator?.id||operator.id==='local-owner'||typeof operator.name!=='string'||!operator.name.trim()||context?.canOverrideMissingMedia!==true)
+    return {allowed:false,reason:context?.overrideUnavailableReason||'Нужна личная сессия с разрешением на исключение для этого случая.'};
+  if(!proposal||!latest||!['reply_and_close','close'].includes(proposal.kind)||latest.status!=='draft'
+    ||latest.id!==proposal.id||latest.itemId!==proposal.itemId||latest.kind!==proposal.kind||latest.revision!==proposal.revision||latest.text!==proposal.text)
+    return {allowed:false,reason:'Предложение изменилось. Откройте проверку его новой сохранённой версии.'};
+  if(!item||!loadedItem||item.id!==loadedItem.id||item.revision!==loadedItem.revision
+    ||item.contextEvidenceDigest!==loadedItem.contextEvidenceDigest||item.branchContextDigest!==loadedItem.branchContextDigest)
+    return {allowed:false,reason:'Контекст комментария изменился. Обновите проверку.'};
+  if(proposal.kind==='reply_and_close'&&(draft!==proposal.text||!proposal.text?.trim())||proposal.kind==='close'&&proposal.text!=='')
+    return {allowed:false,reason:'Текст отличается от сохранённого предложения. Сначала сохраните и проверьте новую версию.'};
+  if(context?.version!==1||context.strict!==true||context.status!=='missing'||context.proposalId!==proposal.id
+    ||context.proposalRevision!==proposal.revision||typeof context.contextDigest!=='string'||!context.contextDigest)
+    return {allowed:false,reason:'Загрузите актуальную проверку отсутствующего медиаконтекста.'};
+  const missing=Array.isArray(context.requirements)?context.requirements.filter(row=>row.ready!==true):[];
+  if(!missing.length||!Array.isArray(context.attempts)||!missing.every(row=>typeof row.sourceId==='string'&&row.sourceId&&context.attempts.some(attempt=>attempt.status==='failed'&&attempt.sourceId===row.sourceId)))
+    return {allowed:false,reason:'Сначала нужна неудачная попытка получения каждого недостающего источника.'};
+  return {allowed:true,reason:''};
+}
+export function proposalHasPhotos(snapshot,proposal){
+  const item=snapshot?.items?.find(row=>row.id===proposal?.itemId);if(!item)return false;
+  const post=snapshot?.posts?.find(row=>row.id===item.postId||item.postKey&&row.postKey===item.postKey);
+  return [item,post].some(row=>Array.isArray(row?.attachments)&&row.attachments.some(attachment=>
+    ['photo','image','sticker'].includes(attachment?.type)||asText(attachment?.mime).startsWith('image/')))
+    ||Array.isArray(item.commentAttachments)&&item.commentAttachments.some(attachment=>['photo','image','sticker'].includes(attachment?.type)||asText(attachment?.mime).startsWith('image/'));
+}
+const mediaCaptionFor=(captions,key)=>typeof key==='string'&&Object.hasOwn(captions,key)?captions[key]:'';
+export function mediaRequirementCaption(requirement={}){
+  const kind=mediaCaptionFor({image:'Фотография',media_context:'Видео или аудио',comment_media:'Вложение комментария',unknown_media:'Вложение'},requirement.kind)||'Медиаконтекст';
+  if(requirement.ready===true)return `${kind}: контекст доступен для проверки.`;
+  const reason=mediaCaptionFor({image_evidence_missing:'Изображение пока недоступно для проверки.',complete_source_audio_missing:'Полная расшифровка пока недоступна.',
+    multi_asset_audio_coverage_unproven:'Контекст всех вложений ещё не подтверждён.',attachment_metadata_unavailable:'Данные о вложениях пока недоступны. Обновите проверку.',
+    attachment_modality_unverified:'Тип вложения ещё не определён.',comment_media_context_unproven:'Контекст вложения комментария ещё не подтверждён.'},requirement.reason)
+    ||'Контекст пока недоступен. Посмотрите попытки восстановления ниже.';
+  return `${kind}: ${reason}`;
+}
+export function mediaAttemptCaption(attempt={},index=0){
+  const status=mediaCaptionFor({queued:'Ожидает обработки',running:'Выполняется',processing:'Выполняется',failed:'Завершилась ошибкой',
+    completed:'Обработка завершена',succeeded:'Обработка завершена',cancelled:'Отменена',interrupted:'Прервана'},attempt.status)||'Состояние не подтверждено';
+  const phase=mediaCaptionFor({acquisition:'получение файла',download:'скачивание файла',validation:'проверка файла',binding:'сверка источника',
+    cached_audio:'обработка сохранённого аудио',asr:'расшифровка звука',transcription:'расшифровка звука',ocr:'чтение текста с изображения'},attempt.phase);
+  const failure=attempt.status==='failed'?(mediaCaptionFor({source_download_failed_network:'Ошибка соединения при скачивании файла.',download_failed:'Файл не удалось скачать.',
+    source_download_failed_timeout:'Истекло время скачивания файла.',timeout:'Истекло время получения контекста.',image_budget_exceeded:'Достигнут лимит изображений для одной проверки.',
+    unsupported_format:'Формат файла пока не поддерживается.',image_evidence_missing:'Изображение недоступно для проверки.',
+    image_network:'Ошибка соединения при получении изображения.',image_tls:'Защищённое соединение с источником изображения недоступно.',
+    image_unavailable:'Изображение у источника пока недоступно.',image_source_timeout:'Истекло время получения изображения.',
+    image_unsupported_format:'Формат изображения пока не поддерживается.'},attempt.failureClass)
+    ||'Не удалось завершить получение контекста.'):'';
+  return `Попытка ${index+1}: ${status}${phase?` · ${phase}`:''}.${failure?` ${failure}`:''}`;
+}
 
 export function freezeAssistantContext(context = {}) {
   return Object.freeze({...context,itemIds:Object.freeze([...new Set((context.itemIds||[context.itemId]).filter(id=>typeof id==='string'&&id))])});
@@ -41,6 +96,37 @@ export function currentContextProposals(snapshot, context) {
   }).reverse();
 }
 export const submitsAssistantMessage = event => event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229;
+export const operationReplyText = operation => operation?.action?.reply||operation?.action?.text||'';
+const bindingFields=['id','workspaceId','accountId','connector','revision','providerAccountId'];
+function sameConnection(left,right,account){
+  return !!left&&!!right&&typeof account==='string'&&account===left.accountId
+    &&bindingFields.every(key=>left[key]!=null&&left[key]!==''&&left[key]===right[key]);
+}
+export function confirmedOperationReply(snapshot,item){
+  if(!snapshot||!item||item.providerStatus!=='closed')return null;
+  const binding=item.connectorBinding||snapshot.connectorBinding;
+  const operations=(snapshot.operations||[]).filter(operation=>operation?.status==='succeeded'&&operation.itemId===item.id
+    &&operation.action?.action==='reply_and_close'&&typeof operationReplyText(operation)==='string'&&operationReplyText(operation).trim()
+    &&sameConnection(binding,operation.target?.connectorBinding,snapshot.account)
+    &&['id','objectId','itemId','postKey','conversationKey'].every(key=>item[key]!=null&&item[key]===operation.target[key])
+    &&['objectId','itemId','conversationKey'].every(key=>operation.action[key]===item[key]));
+  const operation=operations.at(-1);
+  if(!operation)return null;
+  const messages=(snapshot.branches||[]).find(branch=>branch.id===item.branchId)?.messages||[];
+  const target=messages.find(message=>message.id===item.targetId);
+  const baseline=operation.action.readbackEvidence?.baselineReplyIds;
+  const expected=operation.action.readbackEvidence?.expectedReplyId;
+  if(target&&(Array.isArray(baseline)||typeof expected==='string')){
+    const providerTarget=item.providerItemId||item.itemId;
+    const direct=messages.some(message=>message.role==='brand'&&!message.deleted&&!message.unavailable
+      &&message.providerObjectId===item.objectId&&typeof message.providerItemId==='string'
+      &&(message.replyToProviderItemId===providerTarget&&(!message.parentId||message.parentId===target.id)
+        ||!message.replyToProviderItemId&&message.parentId===target.id)
+      &&(typeof expected==='string'?message.providerItemId===expected:Array.isArray(baseline)&&!baseline.includes(message.providerItemId)));
+    if(direct)return null;
+  }
+  return {operationId:operation.id,text:operationReplyText(operation),at:operation.updatedAt||operation.createdAt||null};
+}
 // Durable failure receipts survive a reload without reviving a submitted run.
 export function discussionFailures(snapshot,convo) {
   const actor=snapshot?.operator?.id;if(!actor||!convo?.id)return [];
@@ -54,17 +140,71 @@ export function discussionFailures(snapshot,convo) {
   }
   return failures.reverse();
 }
-export function normalizeMvpItem(item, proposals = [], now = Date.now(), localState = {}) {
+// A saved user message and its exact job are enough to recover progress after
+// the browser's provisional send receipt has been cleared or the page reloads.
+export function discussionOutstandingJob(snapshot,convo) {
+  const actor=snapshot?.operator?.id;if(!actor||!convo?.id)return null;
+  const userIds=new Set((convo.messages||[]).filter(message=>message.role==='user'&&typeof message.id==='string').map(message=>message.id));
+  const answered=new Set((convo.messages||[]).filter(message=>message.role==='assistant').map(message=>message.prepareRunId));
+  return [...(snapshot.jobs||[])].reverse().find(job=>job.kind==='assistant'&&job.purpose==='discussion'
+    &&job.operatorId===actor&&job.refId===convo.id&&userIds.has(job.sourceUserMessageId)
+    &&['queued','running','completed'].includes(job.status)&&!answered.has(job.id))||null;
+}
+export function syncCoverageLabel(sync={},mode='open') {
+  const row=mode==='open'?sync.openCoverage:sync.scan?.closed;
+  const scope=mode==='closed'&&sync.scan?.window?.since&&sync.scan?.window?.until
+    ?`Период: ${time(sync.scan.window.since)} — ${time(sync.scan.window.until)}. `:'';
+  if(!row||mode==='open'&&row.scope!=='all-open')return `${scope}Полнота обхода пока не подтверждена.`;
+  if(row.invalidatedAt||sync.scan?.invalidatedAt)return `${scope}Результат обхода устарел. Обновляем список.`;
+  const accounting=row.accounting;
+  const count=value=>Number.isSafeInteger(value)&&value>=0;
+  const counted=accounting?.version===1&&['trackedUnique','importedUnique','unresolvedUnique','unverifiedPages'].every(key=>count(accounting[key]))
+    &&typeof accounting.overflow==='boolean'&&accounting.importedUnique+accounting.unresolvedUnique===accounting.trackedUnique;
+  const contextProof=counted&&accounting.unresolvedUnique===0&&accounting.unverifiedPages===0&&!accounting.overflow&&row.contextComplete===true;
+  const complete=row.traversalComplete===true&&contextProof&&row.coverageComplete===true&&!(row.unknownDates>0);
+  const traversal=row.traversalComplete===true?'Обход страниц завершён.':'Обход страниц ещё не завершён.';
+  const context=complete?' Полнота контекстов подтверждена в этом проходе.':!counted?' Учёт контекстов пока не подтверждён.':
+    ` Контексты: ${accounting.importedUnique} из ${accounting.trackedUnique}; требуют проверки: ${accounting.unresolvedUnique}.`;
+  const limit=accounting?.overflow?' Достигнут лимит учёта; полнота не подтверждена.':'';
+  const dates=row.unknownDates>0?` Без подтверждённой даты: ${row.unknownDates}.`:'';
+  return `${scope}${traversal}${context}${limit}${dates} Очередь может меняться во время обхода.`;
+}
+
+export function normalizeMvpItem(item, proposals = [], now = Date.now(), localState = {}, operations = []) {
   const proposal=[...proposals].reverse().find(p=>p.itemId===item.id&&['draft','approved','dispatching'].includes(p.status)
+    &&(p.kind==='close'||p.kind==='reply_and_close'&&typeof p.text==='string'&&p.text.trim())
     &&p.itemRevision===item.revision&&p.contextEvidenceDigest===item.contextEvidenceDigest&&p.branchContextDigest===item.branchContextDigest);
-  const savedProposals=!proposal?[...proposals].reverse().filter(p=>p.itemId===item.id&&p.kind==='reply_and_close'&&p.text&&['stale','draft','approved','dispatching'].includes(p.status)):[];
+  const savedProposals=!proposal?[...proposals].reverse().filter(p=>p.itemId===item.id
+    &&(p.kind==='close'||p.kind==='reply_and_close'&&typeof p.text==='string'&&p.text.trim())
+    &&['stale','draft','approved','dispatching','failed','unknown'].includes(p.status)):[];
   const previousProposal=savedProposals.find(p=>p.id===item.autoPreparation?.savedProposalId)||savedProposals[0];
   const displayedProposal=proposal||previousProposal;
   const serverWorkflow=item.workflow||item.view||'attention',serverDraft=item.draft||'';
-  const stalePrepared=serverWorkflow==='prepared'&&!item.draftEdited&&item.autoPreparation?.status==='prepared'&&!serverDraft.trim()&&!proposal;
+  const operation=operations.filter(op=>op.itemId===item.id&&(!previousProposal||op.proposalId===previousProposal.id)&&(!item.connectorBinding
+    ||sameConnection(item.connectorBinding,op.target?.connectorBinding,item.connectorBinding.accountId))).at(-1);
+  const unresolved=operations.find(op=>{
+    if(op.itemId!==item.id||op.status!=='unknown')return false;
+    const account=item.connectorBinding?.accountId||item.account;
+    const operationAccount=op.target?.connectorBinding?.accountId||op.account;
+    // UNKNOWN belongs to the stable canonical recipient, including historical
+    // binding revisions and legacy rows. Only explicit foreign-company evidence
+    // can exclude it; incomplete metadata cannot authorize another sender.
+    return !(typeof account==='string'&&account&&typeof operationAccount==='string'&&operationAccount&&account!==operationAccount);
+  });
+  const dispositionStatus=unresolved?'unknown':!proposal&&['failed','unknown'].includes(previousProposal?.status)?previousProposal.status:null;
+  const failureReason=operation?.evidence?.code==='fresh_context_read_failed'?'Не удалось получить актуальный комментарий из соцсети.':
+    operation?.evidence?.code==='local_context_read_failed'?'Не удалось проверить сохранённый контекст комментария.':
+    operation?.evidence?.code==='fresh_context_schema_invalid'?'Соцсеть вернула неполный контекст комментария.':'Проверка действия завершилась ошибкой. Подробности сохранены в истории действий.';
+  const preparationDisposition=dispositionStatus==='unknown'?{status:'unknown',label:'Результат действия неизвестен',
+    detail:'Текст сохранён. Сначала нужно проверить результат в истории действий. Повторная отправка и закрытие недоступны.',blocksActions:true}:
+    dispositionStatus==='failed'?{status:'failed',label:operation?.evidence?.mutationOutcome==='not-attempted'&&operation?.evidence?.providerCallAttempted===false?'Действие не выполнялось':'Не удалось подтвердить выполнение',
+      detail:`${failureReason} Сохранённое решение требует новой проверки; предыдущее одобрение нельзя использовать повторно.`,blocksActions:false}:null;
+  const manualCleared=!!item.draftEdited&&!serverDraft.trim()||!!localState.manualEdited&&!String(localState.draft||'').trim();
+  const readyProposal=!!proposal&&(proposal.kind==='close'||!manualCleared);
+  const stalePrepared=serverWorkflow==='prepared'&&(!readyProposal&&(!serverDraft.trim()||manualCleared)||!!preparationDisposition?.blocksActions);
   const mediaHold=mediaPreparationHold(item);
   const workflow=stalePrepared||mediaHold&&serverWorkflow==='prepared'?'attention':serverWorkflow;
-  const decision=proposal?.kind==='close'?'no_reply':'reply';
+  const decision=(proposal||previousProposal)?.kind==='close'?'no_reply':'reply';
   const derivedDraft=!item.draftEdited&&!serverDraft&&displayedProposal?.kind==='reply_and_close'?displayedProposal.text||'':null;
   const staleGenerated=!!previousProposal&&derivedDraft!==null;
   const draft=serverDraft||derivedDraft||'';
@@ -74,18 +214,18 @@ export function normalizeMvpItem(item, proposals = [], now = Date.now(), localSt
   const awaiting=!manualDraft&&workflow==='attention'&&['new','inprogress'].includes(item.providerStatus)
     &&(!Number.isFinite(created)||created<=now);
   const pendingLabel=awaiting?(!Number.isFinite(observed)||now-observed>10*60*1000?'Проверяем статус':'Ожидает разбора'):'';
-  const preparationLabel=mediaHold?mediaHold.label:staleGenerated?'Сохранённый ответ требует проверки':stalePrepared?'Ответ требует повторной подготовки':preparation?.status==='queued'?(awaiting?'Ожидает разбора':''):
+  const preparationLabel=mediaHold?mediaHold.label:preparationDisposition?preparationDisposition.label:staleGenerated?'Сохранённый ответ требует проверки':stalePrepared?'Ответ требует повторной подготовки':preparation?.status==='queued'?(awaiting?'Ожидает разбора':''):
     ({running:'Ассистент готовит решение…',prepared:'Решение подготовлено',stale:'Сохранённое решение требует проверки',needs_attention:'Нужно участие оператора',error:'Не удалось подготовить решение'})[preparation?.status]||(!preparation?pendingLabel:'');
   const reason=ordinaryText(preparation?.reason||item.reason||item.contextNote||'Решение ещё не выбрано.');
-  const note=mediaHold?mediaHold.detail:ordinaryText(staleGenerated?['Сохранённый ответ требует проверки',preparation?.sourceChangeReason||'Текст сохранён'].join(' · '):stalePrepared?'Ответ требует повторной подготовки · Обсуждение изменилось':preparationLabel?[preparationLabel,preparation?.reason].filter(Boolean).join(' · '):'');
-  return {...item,view:workflow,decision,reason,contextNote:note||ordinaryText(item.contextNote),
+  const note=mediaHold?mediaHold.detail:ordinaryText(preparationDisposition?`${preparationDisposition.label} · ${preparationDisposition.detail}`:staleGenerated?['Сохранённый ответ требует проверки',preparation?.sourceChangeReason||'Текст сохранён'].join(' · '):stalePrepared?'Ответ требует повторной подготовки · Актуальное решение не найдено':preparationLabel?[preparationLabel,preparation?.reason].filter(Boolean).join(' · '):'');
+  return {...item,view:workflow,decision,preparationDisposition,reason,contextNote:note||ordinaryText(item.contextNote),
     attentionLabel:preparationLabel?note:ordinaryText(item.attentionLabel),draft,suggestions:[],
     initialState:{view:workflow,decision,draft,_serverRevision:Number(item.revision)||0,_serverDraft:serverDraft,_serverDraftEdited:!!item.draftEdited,
       _sourceProposalId:item.draftOrigin?.sourceProposalId||item.draftOrigin?.id||displayedProposal?.origin?.id||displayedProposal?.id||null,_sourceProposalRevision:item.draftOrigin?.sourceProposalRevision??item.draftOrigin?.revision??displayedProposal?.origin?.revision??displayedProposal?.revision??null,
       _sourceProposalKind:item.draftOrigin?.kind||displayedProposal?.origin?.kind||displayedProposal?.kind||null,
       _displayedProposalId:proposal?.id||null,
       _draftSessionId:item.draftOrigin?.draftSessionId||item.draftSessionId||null,
-      _derivedDraft:derivedDraft,_staleGenerated:staleGenerated,_serverDecision:decision,_preparationNote:note,note,revision:0,history:[],redo:[],chat:[],proposal:null}};
+      _derivedDraft:derivedDraft,_staleGenerated:staleGenerated,_preparationDisposition:preparationDisposition,_serverDecision:decision,_preparationNote:note,note,revision:0,history:[],redo:[],chat:[],proposal:null}};
 }
 
 export function mergeMvpItemState(state, item) {
@@ -99,6 +239,7 @@ export function mergeMvpItemState(state, item) {
   state._serverRevision=incoming._serverRevision;
   state._serverDraft=incoming._serverDraft;
   state._serverDraftEdited=incoming._serverDraftEdited;
+  state._preparationDisposition=incoming._preparationDisposition;
   if(!hasLocalDraft){
     state.draft=item.draft;state._derivedDraft=incoming._derivedDraft;state._staleGenerated=incoming._staleGenerated;
     if(state._sourceProposalId!==incoming._sourceProposalId||state._sourceProposalRevision!==incoming._sourceProposalRevision)state._draftSessionId=incoming._draftSessionId;
@@ -115,6 +256,8 @@ export function mergeMvpItemState(state, item) {
 }
 
 export function createMvpConnection(hooks) {
+  const basePath=workspaceBasePath(hooks.basePath);
+  const generationFence=createWorkspaceGenerationFence(hooks.operator?.storageGeneration);
   const assistantRuns=createAssistantRunTracker();
   const chatReading=new Map();
   let boundChat=null, boundChatKey=null, glassInputObserver=null;
@@ -124,7 +267,7 @@ export function createMvpConnection(hooks) {
     if(reading&&boundChatKey!==null)chatReading.set(boundChatKey,reading);
   }
   function restoreAssistantReading(){restoreChatReading(boundChat,chatReading.get(boundChatKey));}
-  let snapshot=null,events=null,poll=null,refreshing=null,dialog=null,sendingAssistant=false,assistantSubmission=null,refreshReviewReadiness=null;
+  let snapshot=null,events=null,poll=null,refreshing=null,dialog=null,sendingAssistant=false,assistantSubmission=null,assistantDelayTimer=null,refreshReviewReadiness=null;
   let instructionCatalog=null,instructionStatus='idle',instructionPending=null,instructionRequested=false;
   let detectChanges=createWorkspaceChangeTracker(),pendingPaint=false,refreshTimer=null,burstStarted=null,pendingRefresh=false,pendingRepaint=false,stopped=false;
   let appliedWorkspaceVersion=null,versionEndpoint=true,deltaEndpoint=true,pendingForce=false;
@@ -138,11 +281,13 @@ export function createMvpConnection(hooks) {
   const uniqueId=()=>globalThis.crypto.randomUUID();
   function requireActor(epoch){if(epoch!==actorEpoch)throw new Error('Пользователь изменился. Повторите действие в новой сессии.');}
   function acceptActor(raw){
+    if(hooks.account && raw.account!==hooks.account){leaveAccount();throw new Error('Аккаунт рабочего места изменился. Обновите страницу.');}
     const actorId=raw.operator?.id,saved=hooks.getSaved?.();
     const previous=snapshot?.operator?.id||saved?.mvpActorId||hooks.operator?.id;
     const changed=!!actorId&&!!previous&&actorId!==previous;
     if(changed){
       actorEpoch++;assistantChatEpoch++;sendingAssistant=false;assistantSubmission=null;
+      clearTimeout(assistantDelayTimer);assistantDelayTimer=null;
       assistantRuns.clear();assistantProgressSignature=null;
       for(const timer of draftTimers.values())clearTimeout(timer);
       draftTimers.clear();draftInFlight.clear();candidateInFlight.clear();chosen.clear();
@@ -157,7 +302,7 @@ export function createMvpConnection(hooks) {
       const boundActor=snapshot?.operator?.id||hooks.operator?.id||previous;
       if(actorId!==boundActor&&hooks.onActorChange?.(raw.operator)===true){stopped=true;sessionInvalidated=true;throw new Error('Пользователь изменился. Рабочее место перезагружается.');}
       if(saved){
-        for(const key of ['assistantSession','assistantContexts','mvpAiInput','mvpConversationId','mvpAssistantSubmission','mvpFeedbackSessionId','mvpFeedbackOutbox','mvpPresented',
+        for(const key of ['assistantSession','assistantContexts','mvpAiInput','mvpConversationId','mvpAssistantSubmission','mvpPendingProposalBatches','mvpPendingApprovals','mvpPendingEditorial','mvpFeedbackSessionId','mvpFeedbackOutbox','mvpPresented',
           'retainedSelection','overviewTopic','overviewInputs','overviewInstructions','overviewPreviews','overviewArrivalAt','queueArrivals','queueScroll','overviewScroll','exercise'])delete saved[key];
         saved.items={};saved.branches={};saved.selected=null;
       }
@@ -165,9 +310,9 @@ export function createMvpConnection(hooks) {
     if(actorId&&saved){saved.mvpActorId=actorId;if(changed)hooks.persist?.();}
     return changed;
   }
-  function lineage(item){
+  function lineage(item,{persist=true}={}){
     const state=hooks.stateFor(current(item)),saved=hooks.getSaved();
-    saved.mvpFeedbackSessionId||=uniqueId();state._draftSessionId||=uniqueId();hooks.persist?.();
+    saved.mvpFeedbackSessionId||=uniqueId();state._draftSessionId||=uniqueId();if(persist)hooks.persist?.();
     return {sessionId:saved.mvpFeedbackSessionId,draftSessionId:state._draftSessionId,
       ...(state._sourceProposalId&&Number.isInteger(state._sourceProposalRevision)?{sourceProposalId:state._sourceProposalId,sourceProposalRevision:state._sourceProposalRevision}:{})};
   }
@@ -207,9 +352,13 @@ export function createMvpConnection(hooks) {
   async function api(path,method='GET',body) {
     if(sessionInvalidated)throw new Error('Пользователь изменился. Рабочее место перезагружается.');
     const epoch=actorEpoch;
-    const response=await fetch(path,{method,cache:'no-store',credentials:'same-origin',headers:method==='GET'?undefined:csrfHeader(snapshot?.csrfToken||''),...(body===undefined?{}:{body:JSON.stringify(body)})});
+    const generationHeaders=generationFence.headers();
+    const headers=method==='GET'?Object.keys(generationHeaders).length?generationHeaders:undefined:{...csrfHeader(snapshot?.csrfToken||''),...generationHeaders};
+    const response=await fetch(workspacePath(path,basePath),{method,cache:'no-store',credentials:'same-origin',headers,...(body===undefined?{}:{body:JSON.stringify(body)})});
     const result=await response.json().catch(()=>({}));
     requireActor(epoch);
+    try{generationFence.observe(result,response,{initial:path==='/api/bootstrap'});}
+    catch(error){sessionInvalidated=true;leaveAccount();throw error;}
     if(!response.ok){const error=new Error(result.error||`Ошибка ${response.status}`);error.status=response.status;throw error;}
     return result;
   }
@@ -243,10 +392,12 @@ export function createMvpConnection(hooks) {
     }
     const now=Date.now();
     const localItems=hooks.getSaved?.()?.items||{};
-    const items=(raw.items||[]).map(item=>normalizeMvpItem(item,byItem.get(item.id)||[],now,localItems[item.id]));
+    const operationsByItem=new Map();
+    for(const operation of raw.operations||[]){if(!operationsByItem.has(operation.itemId))operationsByItem.set(operation.itemId,[]);operationsByItem.get(operation.itemId).push(operation);}
+    const items=(raw.items||[]).map(item=>normalizeMvpItem(item,byItem.get(item.id)||[],now,localItems[item.id],operationsByItem.get(item.id)||[]));
     const sourcePosts=raw.posts||[],materials=raw.materials||[];
     if(!projectedPosts||sourcePosts!==projectedPostsSource||materials!==projectedMaterialsSource||raw.account!==projectedAccount){
-      projectedPosts=sourcePosts.map(post=>({...post,title:publicationTitle({title:plain(post.title),text:plain(post.text),excerpt:plain(post.excerpt)}),excerpt:plain(post.excerpt||post.text).slice(0,180),text:plain(post.text),channel:post.channel||'LikeAvto',mediaNote:post.mediaNote||''}));
+      projectedPosts=sourcePosts.map(post=>({...post,title:publicationTitle({title:plain(post.title),text:plain(post.text),excerpt:plain(post.excerpt)}),excerpt:plain(post.excerpt||post.text).slice(0,180),text:plain(post.text),channel:post.channel||raw.account||'Сообщество',mediaNote:post.mediaNote||''}));
       for(const post of projectedPosts)post.transcripts=postTranscripts(post,sourcePosts,materials,raw.account);
       projectedPostsSource=sourcePosts;projectedMaterialsSource=materials;projectedAccount=raw.account;
     }
@@ -277,7 +428,7 @@ export function createMvpConnection(hooks) {
       const state=hooks.stateFor(item);
       mergeMvpItemState(state,item);
       if(item.workflow==='closed'){
-        state.closure=deriveClosure(item,raw.branches||[],raw.operations||[]);
+        state.closure=deriveClosure(item,raw.branches||[],raw.operations||[],raw.account);
       }
     }
     if(saved.selected&&!next.items.some(item=>item.id===saved.selected))saved.selected=null;
@@ -392,10 +543,11 @@ export function createMvpConnection(hooks) {
     if(events)return;
     stopped=false;
     globalThis.document?.addEventListener?.('visibilitychange',visibilityChanged);
-    events=new EventSource('/api/events');events.addEventListener('refresh',scheduleRefresh);
+    events=new EventSource(workspacePath('/api/events',basePath));events.addEventListener('refresh',scheduleRefresh);
     if(globalThis.document?.visibilityState!=='hidden')poll=setInterval(scheduleRefresh,15000);
   }
-  function stop(){assistantRuns.clear();assistantProgressSignature=null;glassInputObserver?.disconnect();glassInputObserver=null;stopped=true;globalThis.document?.removeEventListener?.('visibilitychange',visibilityChanged);events?.close();events=null;if(poll)clearInterval(poll);poll=null;clearTimeout(refreshTimer);refreshTimer=null;burstStarted=null;pendingRefresh=false;pendingRepaint=false;pendingForce=false;for(const timer of draftTimers.values())clearTimeout(timer);draftTimers.clear();}
+  function stop(){assistantRuns.clear();assistantProgressSignature=null;clearAssistantDelay();glassInputObserver?.disconnect();glassInputObserver=null;stopped=true;globalThis.document?.removeEventListener?.('visibilitychange',visibilityChanged);events?.close();events=null;if(poll)clearInterval(poll);poll=null;clearTimeout(refreshTimer);refreshTimer=null;burstStarted=null;pendingRefresh=false;pendingRepaint=false;pendingForce=false;for(const timer of draftTimers.values())clearTimeout(timer);draftTimers.clear();}
+  function leaveAccount(){sessionInvalidated=true;actorEpoch++;assistantChatEpoch++;stop();dialog?.remove();dialog=null;}
   async function guarded(work,success){try{const result=await work();if(success)notify(success);return result;}catch(error){notify(error.message||'Операция не выполнена');throw error;}}
   function current(item){return hooks.getData()?.items?.find(entry=>entry.id===item.id)||item;}
   function serverRevision(item){return hooks.stateFor(current(item))._serverRevision??current(item).revision;}
@@ -439,6 +591,7 @@ export function createMvpConnection(hooks) {
     assertMediaReady(current(item));
     const epoch=actorEpoch;
     const visible=hooks.stateFor(current(item));
+    if(visible._preparationDisposition?.blocksActions)throw new Error(visible._preparationDisposition.detail);
     if(kind==='reply_and_close'&&visible._staleGenerated&&!visible.manualEdited)throw new Error('Сначала проверьте сохранённый ответ или отредактируйте его.');
     if(kind==='reply_and_close'){await saveDraft(item);requireActor(epoch);text=hooks.stateFor(current(item)).draft||'';if(!text.trim())throw new Error('Для ответа нужен текст черновика.');}
     const target=current(item),state=hooks.stateFor(target),proposalText=kind==='close'?'':text;
@@ -454,10 +607,97 @@ export function createMvpConnection(hooks) {
   }
   async function prepareReply(item){return guarded(async()=>{const proposal=await createProposal(item,'reply_and_close');hooks.render?.();review([proposal.id]);return proposal;},'Ответ подготовлен. Проверьте его перед отправкой.');}
   async function closeOne(item){return guarded(async()=>{const proposal=await createProposal(item,'close','');hooks.render?.();review([proposal.id]);return proposal;});}
+  function batchProposalIds(receipt,body){
+    const results=receipt?.results;
+    if(receipt?.requestId!==body.requestId||!Array.isArray(results)||results.length!==body.proposals.length
+      ||!Number.isInteger(receipt.created)||!Number.isInteger(receipt.existing)||!Number.isInteger(receipt.rejected)
+      ||receipt.created+receipt.existing+receipt.rejected!==results.length)throw new Error('Ответ пакета неполный. Проверьте историю перед новым действием.');
+    const ids=[];
+    for(let index=0;index<results.length;index++){
+      const row=results[index],entry=body.proposals[index];
+      if(row?.index!==index||row.itemId!==entry.itemId)throw new Error('Ответ пакета не совпал с выбранными комментариями. Проверьте историю.');
+      if(row.status==='rejected')continue;
+      if(!['created','existing'].includes(row.status)||typeof row.proposalId!=='string'||!row.proposalId||!Number.isInteger(row.proposalRevision))
+        throw new Error('Ответ пакета неполный. Проверьте историю перед новым действием.');
+      ids.push(row.proposalId);
+    }
+    if(ids.length!==receipt.created+receipt.existing||results.filter(row=>row.status==='rejected').length!==receipt.rejected
+      ||new Set(ids).size!==ids.length)throw new Error('Ответ пакета неполный. Проверьте историю перед новым действием.');
+    return ids;
+  }
+  async function closeBatch(targets){
+    const epoch=actorEpoch,saved=hooks.getSaved(),itemIds=targets.map(item=>item.id);
+    const batchKey=JSON.stringify([...itemIds].sort()),batches=saved.mvpPendingProposalBatches||={};
+    let pending=batches[batchKey];
+    if(pending){
+      if(pending.actorId!==snapshot?.operator?.id||pending.kind!=='close')
+        throw new Error('Пользователь изменился. Повторите действие в новой сессии.');
+    }else{
+      if(Object.values(batches).some(batch=>batch.itemIds?.some(id=>itemIds.includes(id))))
+        throw new Error('Часть комментариев ещё требует сверки предыдущей группы. Повторите её выбор перед новым действием.');
+      const proposals=targets.map(item=>{
+        const target=current(item);assertMediaReady(target);
+        return {itemId:target.id,kind:'close',text:'',expectedRevision:serverRevision(target),...lineage(target,{persist:false}),eventId:uniqueId()};
+      });
+      pending={actorId:snapshot?.operator?.id,kind:'close',itemIds,body:{requestId:uniqueId(),proposals}};
+      batches[batchKey]=pending;hooks.persist?.();
+    }
+    const body=pending.body;
+    let receipt;
+    if(pending.submitted){
+      try{receipt=await api(`/api/proposals/batch/${encodeURIComponent(body.requestId)}`);}
+      catch(lookupError){
+        requireActor(epoch);
+        if(lookupError.status!==404)throw new Error(`Результат группы пока неизвестен. Повторите выбор для сверки. ${lookupError.message}`);
+        // This is a new operator action. Replaying the identical saved body and
+        // requestId is safe whether the original write later commits or not.
+        try{receipt=await api('/api/proposals/batch','POST',body);}
+        catch(error){
+          requireActor(epoch);
+          try{receipt=await api(`/api/proposals/batch/${encodeURIComponent(body.requestId)}`);}
+          catch(readbackError){throw new Error(`Результат группы пока неизвестен. Повторите выбор для сверки. ${readbackError.message}`);}
+        }
+      }
+    }else{
+      pending.submitted=true;hooks.persist?.();
+      try{receipt=await api('/api/proposals/batch','POST',body);}
+      catch(error){
+        requireActor(epoch);
+        if(error.status>=400&&error.status<500&&![408,429].includes(error.status)){
+          delete batches[batchKey];hooks.persist?.();throw error;
+        }
+        try{receipt=await api(`/api/proposals/batch/${encodeURIComponent(body.requestId)}`);}
+        catch(readbackError){
+          requireActor(epoch);
+          throw new Error(`Результат группы пока неизвестен. Повторите выбор для безопасной сверки. ${readbackError.message}`);
+        }
+      }
+    }
+    requireActor(epoch);
+    const ids=batchProposalIds(receipt,body);
+    await refresh({repaint:false});requireActor(epoch);
+    if(receipt.rejected){
+      delete batches[batchKey];hooks.persist?.();
+      const rejected=receipt.results.filter(row=>row.status==='rejected');
+      notify(`Группа подготовлена частично: ${ids.length} из ${itemIds.length}. Отклонено ${rejected.length}: ${ordinaryText(rejected[0].error||'проверьте историю')}.`);
+      return;
+    }
+    if(receipt.results.some((result,index)=>{
+      const proposal=(snapshot?.proposals||[]).find(row=>row.id===result.proposalId);
+      return !proposal||proposal.itemId!==body.proposals[index].itemId||proposal.revision!==result.proposalRevision
+        ||proposal.kind!=='close'||proposal.text!==''||proposal.status!=='draft';
+    })){
+      throw new Error('Созданные предложения не найдены при обновлении. Повторите выбор для сверки.');
+    }
+    hooks.render?.();review(ids);
+    delete batches[batchKey];hooks.persist?.();
+  }
   async function closeMany(items,kind='close'){
     const targets=[...new Map(items.map(item=>[item.id,item])).values()];
     if(!targets.length)return;
     if(targets.length>50)throw new Error('За один раз можно выбрать до 50 комментариев.');
+    for(const item of targets){const hold=hooks.stateFor(current(item))._preparationDisposition;if(hold?.blocksActions)throw new Error(hold.detail);}
+    if(kind==='close')return guarded(()=>closeBatch(targets));
     for(const item of targets)assertMediaReady(current(item));
     const created=[];
     try{for(const item of targets)created.push(await createProposal(item,kind,kind==='reply_and_close'?hooks.stateFor(item).draft:''));}
@@ -465,42 +705,324 @@ export function createMvpConnection(hooks) {
     hooks.render?.();review(created.map(row=>row.id));
   }
   function proposalRows(ids){return (snapshot?.proposals||[]).filter(row=>ids.includes(row.id)&&row.status==='draft');}
-  function review(ids){
+  function reviewActionHold(proposals,waivedIds=new Set()){
+    const mediaHold=reviewMediaHold(proposals.filter(row=>!waivedIds.has(row.id)),snapshot?.items||[]);if(mediaHold)return mediaHold;
+    for(const proposal of proposals){
+      const item=snapshot?.items?.find(item=>item.id===proposal.itemId);if(!item)continue;
+      const projected=normalizeMvpItem(item,(snapshot.proposals||[]).filter(row=>row.itemId===item.id),Date.now(),{},(snapshot.operations||[]).filter(row=>row.itemId===item.id));
+      if(projected.preparationDisposition?.blocksActions)return projected.preparationDisposition;
+    }
+    return null;
+  }
+  function review(ids,editorialRequestId){
     dialog?.remove();dialog=document.createElement('dialog');dialog.className='closure-dialog mvp-dialog mvp-review';
-    const rows=proposalRows(ids);const unique=new Set(rows.map(row=>row.itemId)).size===rows.length;
-    const mediaHold=reviewMediaHold(rows,snapshot?.items||[]);
+    const saved=hooks.getSaved(),epoch=actorEpoch,key=JSON.stringify([...ids].sort()),admissions=saved.mvpPendingApprovals||={};
+    let pending=admissions[key];
+    if(pending&&(pending.actorId!==snapshot?.operator?.id||pending.account!==snapshot?.account)){
+      dialog.remove();dialog=null;notify('Сохранённое одобрение относится к другой сессии.');return;
+    }
+    // Keep the reviewed text and revisions frozen, including across lost replies.
+    const editorialAdmissions=saved.mvpPendingEditorial||={};
+    const recoveredEditorial=editorialRequestId?Object.values(editorialAdmissions).find(entry=>entry.body.requestId===editorialRequestId&&entry.actorId===snapshot?.operator?.id&&entry.account===snapshot?.account):null;
+    const rows=structuredClone(pending?.rows||recoveredEditorial?.rows||proposalRows(ids)),refs=rows.map(row=>({id:row.id,revision:row.revision}));
+    const editorialRefs=rows.filter(row=>row.kind==='reply_and_close'||row.kind==='close'&&proposalHasPhotos(snapshot,row)).map(row=>({id:row.id,revision:row.revision}));
+    const needsPhotoAcquisition=rows.some(row=>proposalHasPhotos(snapshot,row));
+    const editorialKey=JSON.stringify([...editorialRefs].sort((a,b)=>a.id.localeCompare(b.id))),needsEditorial=editorialRefs.length>0;
+    let editorial=editorialAdmissions[editorialKey]||null;
+    if(editorial&&(editorial.actorId!==snapshot?.operator?.id||editorial.account!==snapshot?.account)){
+      dialog.remove();dialog=null;notify('Сохранённая проверка относится к другой сессии.');return;
+    }
+    const unique=new Set(rows.map(row=>row.itemId)).size===rows.length;
+    const mediaHold=reviewActionHold(rows);
     const valid=rows.length===ids.length&&rows.length>0&&rows.length<=50&&unique&&!mediaHold;
-    const cards=rows.map(row=>{const item=snapshot.items.find(i=>i.id===row.itemId);return `<article class="mvp-review-card"><div><strong>${esc(plain(item?.author||item?.title)||'Комментарий')}</strong><span>${esc(actionLabels[row.kind]||row.kind)}</span></div><p>${esc(plain(item?.text||item?.preview)||'Комментарий недоступен')}</p>${row.kind==='reply_and_close'?`<blockquote>${esc(row.text)}</blockquote>`:''}<small>${esc(time(item?.createdAt))}</small></article>`;}).join('');
-    dialog.innerHTML=`<header><h2>Проверить действия</h2><button type="button" class="icon-button" data-cancel aria-label="Закрыть">${icon('X')}</button></header><p class="mvp-warning">Проверьте ответы и адресатов. После подтверждения ответы будут опубликованы, комментарии — закрыты.</p><p data-media-readiness role="status" ${mediaHold?'':'hidden'}>${mediaHold?esc(mediaHold.detail):''}</p>${valid||mediaHold?'':'<p class="mvp-error">Выберите до 50 предложений, по одному действию для каждого комментария.</p>'}<div class="mvp-review-list">${cards}</div><footer><button type="button" data-cancel>Вернуться</button><button type="button" class="primary-close" data-confirm ${valid?'':'disabled'}>Подтвердить и выполнить ${rows.length}</button></footer>`;
+    const cards=rows.map(row=>{const item=snapshot.items.find(i=>i.id===row.itemId);return `<article class="mvp-review-card"><div><strong>${esc(plain(item?.author||item?.title)||'Комментарий')}</strong><span>${esc(actionLabels[row.kind]||row.kind)}</span></div><p>${esc(plain(item?.text||item?.preview)||'Комментарий недоступен')}</p>${row.kind==='reply_and_close'?`<blockquote>${esc(row.text)}</blockquote>`:''}<small>${esc(time(item?.createdAt))}</small><details class="mvp-media-context" data-media-proposal="${esc(row.id)}"><summary>Медиаконтекст и попытки восстановления</summary><div data-media-context-body><p>Проверка загружается при открытии этого случая.</p></div></details></article>`;}).join('');
+    dialog.innerHTML=`<header><h2>Проверить действия</h2><button type="button" class="icon-button" data-cancel aria-label="Закрыть">${icon('X')}</button></header><p class="mvp-warning">Проверьте ответы и адресатов. После подтверждения ответы будут опубликованы, комментарии — закрыты.</p><label><input type="checkbox" data-partial-approval> Одобрить доступную часть группы</label><p>При частичном одобрении сначала увидите принятые и удержанные действия. Выполнение потребует отдельного подтверждения.</p><p data-media-readiness role="status" ${mediaHold?'':'hidden'}>${mediaHold?esc(mediaHold.detail):''}</p>${valid||mediaHold?'':'<p class="mvp-error">Выберите до 50 предложений, по одному действию для каждого комментария.</p>'}<div class="mvp-review-list">${cards}</div><div data-editorial-result role="status" hidden></div><button type="button" data-editorial-readback hidden>Проверить состояние проверки</button><div data-admission-result role="status" hidden></div><footer><button type="button" data-cancel>Вернуться</button><button type="button" data-admission-readback hidden>Проверить результат одобрения</button><button type="button" data-admission-retire hidden>Проверить удержанные предложения заново</button><button type="button" class="primary-close" data-confirm ${valid?'':'disabled'}>Подтвердить и выполнить ${rows.length}</button></footer>`;
     const node=dialog;document.body.append(node);node.showModal();
-    let reviewBusy=false;
+    const partial=node.querySelector('[data-partial-approval]'),readback=node.querySelector('[data-admission-readback]'),retire=node.querySelector('[data-admission-retire]'),resultNode=node.querySelector('[data-admission-result]');
+    if(partial)partial.checked=pending?.body.admissionMode==='partial';
+    let reviewBusy=false,receipt=pending?.receipt||null;
+    const mediaDetails=new Map();
+    const mediaItem=row=>snapshot?.items?.find(item=>item.id===row.itemId);
+    const mediaLatest=row=>snapshot?.proposals?.find(proposal=>proposal.id===row.id);
+    const itemPin=item=>item?{id:item.id,revision:item.revision,contextEvidenceDigest:item.contextEvidenceDigest,branchContextDigest:item.branchContextDigest}:null;
+    const sameItem=(left,right)=>!!left&&!!right&&['id','revision','contextEvidenceDigest','branchContextDigest'].every(key=>left[key]===right[key]);
+    function mediaCaseKey(entry){
+      const latest=mediaLatest(entry.row),item=mediaItem(entry.row),state=hooks.getData()?.items?.find(item=>item.id===entry.row.itemId);
+      const draft=state?hooks.stateFor(state).draft:null;
+      return JSON.stringify([actorEpoch,snapshot?.account,snapshot?.operator?.id,latest?.id,latest?.revision,latest?.kind,latest?.text,itemPin(item),entry.context?.contextDigest,draft]);
+    }
+    function mediaEligibility(entry){
+      const shown=hooks.getData()?.items?.find(item=>item.id===entry.row.itemId);
+      return missingMediaWaiverEligibility({proposal:entry.row,latest:mediaLatest(entry.row),context:entry.context,operator:snapshot?.operator,
+        item:mediaItem(entry.row),loadedItem:entry.loadedItem,draft:shown?hooks.stateFor(shown).draft:null});
+    }
+    function reviewHold(proposals){
+      const waivedIds=new Set(proposals.filter(proposal=>{
+        const entry=mediaDetails.get(proposal.id),context=entry?.context,waiver=proposal.mediaContextWaiver;
+        return context?.version===1&&context.strict===true&&context.status==='waived'&&context.proposalId===proposal.id
+          &&context.proposalRevision===proposal.revision&&entry.row.text===proposal.text&&entry.row.kind===proposal.kind
+          &&sameItem(entry.loadedItem,itemPin(mediaItem(proposal)))&&waiver?.contextDigest===context.contextDigest&&waiver.proposalRevision===proposal.revision;
+      }).map(row=>row.id));
+      return reviewActionHold(proposals,waivedIds);
+    }
+    function updateMediaControls(entry){
+      const form=entry.details.querySelector('[data-media-waiver]');if(!form)return;
+      const check=form.querySelector('[data-media-confirm]'),reason=form.querySelector('[data-media-reason]'),button=form.querySelector('[data-media-save]');
+      if(entry.confirmedKey&&entry.confirmedKey!==mediaCaseKey(entry)){entry.confirmedKey=null;check.checked=false;reason.value='';}
+      const eligibility=mediaEligibility(entry),disabled=!entry.details.open||!eligibility.allowed||reviewBusy||entry.loading||!!pending;
+      check.disabled=disabled;reason.disabled=disabled;button.disabled=disabled||!check.checked||entry.confirmedKey!==mediaCaseKey(entry)||!reason.value.trim();
+      form.querySelector('[data-media-unavailable]').textContent=pending?'Одобрение уже создано. Исключение к нему не добавляется.':eligibility.reason;
+    }
+    function renderMedia(entry){
+      const body=entry.details.querySelector('[data-media-context-body]');
+      if(entry.loading){body.innerHTML='<p role="status">Проверяем этот медиаконтекст…</p>';return;}
+      const context=entry.context,labels={ready:'Готов',missing:'Отсутствует — действие удержано','not-required':'Не требуется',waived:'Персональное исключение сохранено'};
+      body.innerHTML=`${entry.error?`<p class="mvp-error" role="alert">${esc(ordinaryText(entry.error))}</p>`:''}${context?`<p role="status"><strong>${esc(labels[context.status]||'Неизвестно')}</strong> · версия ${esc(entry.row.revision)}</p><ul>${context.requirements.map(row=>`<li>${esc(mediaRequirementCaption(row))}</li>`).join('')}</ul><h4>Попытки восстановления</h4>${context.attempts.length?`<ul>${context.attempts.map((attempt,index)=>`<li>${esc(mediaAttemptCaption(attempt,index))}</li>`).join('')}</ul>`:'<p>Попытки восстановления не зарегистрированы.</p>'}${context.status==='waived'?`<p>Исключение сохранено только для этого предложения. ${esc(context.waiver?.reason||'')} Выполнение требует отдельного подтверждения.</p>`:''}${context.status==='missing'?`<form data-media-waiver><p data-media-unavailable></p><label class="mvp-media-confirm"><input type="checkbox" data-media-confirm> Я прочитал(а) требования и попытки восстановления и разрешаю рассмотреть этот конкретный случай без недостающего медиаконтекста.</label><label>Причина исключения<textarea data-media-reason rows="3" required aria-label="Причина исключения для этого случая"></textarea></label><button type="submit" data-media-save disabled>Сохранить исключение для этого случая</button></form>`:''}`:''}<button type="button" data-media-reload>Обновить проверку</button>`;
+      body.querySelector('[data-media-reload]')?.addEventListener('click',()=>{if(!reviewBusy)void loadMedia(entry);});
+      const form=body.querySelector('[data-media-waiver]');
+      form?.querySelector('[data-media-confirm]')?.addEventListener('change',event=>{entry.confirmedKey=event.target.checked?mediaCaseKey(entry):null;updateMediaControls(entry);});
+      form?.querySelector('[data-media-reason]')?.addEventListener('input',()=>updateMediaControls(entry));
+      form?.addEventListener('submit',async event=>{
+        event.preventDefault();if(!entry.details.open||reviewBusy||pending||!mediaEligibility(entry).allowed)return;
+        const check=form.querySelector('[data-media-confirm]'),reason=form.querySelector('[data-media-reason]').value.trim();
+        if(!check.checked||entry.confirmedKey!==mediaCaseKey(entry)||!reason)return;
+        requireActor(epoch);reviewBusy=true;entry.confirmedKey=null;check.checked=false;refreshReviewReadiness();
+        try{
+          await api(`/api/proposals/${encodeURIComponent(entry.row.id)}/media-context-waiver`,'POST',{
+            expectedProposalRevision:entry.row.revision,expectedContextDigest:entry.context.contextDigest,reason});requireActor(epoch);
+          await refresh({repaint:false});requireActor(epoch);await loadMedia(entry);
+          notify('Исключение сохранено для этого случая. Выполнение требует отдельного подтверждения.');
+        }catch(error){if(epoch===actorEpoch&&dialog===node){entry.error=error.message;entry.context=null;renderMedia(entry);}}
+        finally{reviewBusy=false;refreshReviewReadiness();}
+      });
+      updateMediaControls(entry);
+    }
+    async function loadMedia(entry){
+      if(entry.loading||dialog!==node)return;
+      entry.loading=true;entry.context=null;entry.confirmedKey=null;entry.error='';entry.loadedItem=itemPin(mediaItem(entry.row));renderMedia(entry);
+      try{
+        const context=await api(`/api/proposals/${encodeURIComponent(entry.row.id)}/media-context`);requireActor(epoch);
+        if(context.version!==1||context.strict!==true||context.proposalId!==entry.row.id||context.proposalRevision!==entry.row.revision
+          ||typeof context.contextDigest!=='string'||!context.contextDigest||!Array.isArray(context.requirements)||!Array.isArray(context.attempts)
+          ||!['ready','missing','not-required','waived'].includes(context.status)||!sameItem(entry.loadedItem,itemPin(mediaItem(entry.row))))throw Error('Предложение или контекст изменились. Откройте проверку новой версии.');
+        if(dialog===node)entry.context=context;
+      }catch(error){if(epoch===actorEpoch&&dialog===node)entry.error=error.message;}
+      finally{entry.loading=false;if(epoch===actorEpoch&&dialog===node){renderMedia(entry);refreshReviewReadiness();}}
+    }
+    node.querySelectorAll('[data-media-proposal]').forEach(details=>{
+      const row=rows.find(row=>row.id===details.dataset.mediaProposal);if(!row)return;
+      const entry={row,details,context:null,loadedItem:null,loading:false,error:'',confirmedKey:null};mediaDetails.set(row.id,entry);
+      details.addEventListener('toggle',()=>{if(details.open&&!entry.context&&!entry.loading)void loadMedia(entry);else if(!details.open){entry.confirmedKey=null;renderMedia(entry);}});
+    });
+    const editorialNode=node.querySelector('[data-editorial-result]'),editorialReadback=node.querySelector('[data-editorial-readback]');
+    const refKey=ref=>JSON.stringify({id:ref?.id,revision:ref?.revision});
+    function validateEditorialOutcome(result){
+      if(!result||!Array.isArray(result.accepted)||!Array.isArray(result.reused)||!Array.isArray(result.held))throw new Error('Результат проверки ответа неполный.');
+      const expected=new Set(editorial.body.proposals.map(refKey)),seen=new Set();
+      for(const ref of [...result.accepted,...result.held.map(row=>row.reference)]){
+        const key=refKey(ref);if(!expected.has(key)||seen.has(key))throw new Error('Результат проверки изменил выбранные версии.');seen.add(key);
+      }
+      const accepted=new Set(result.accepted.map(refKey)),reused=result.reused.map(refKey);
+      if(seen.size!==expected.size||new Set(reused).size!==reused.length||reused.some(key=>!accepted.has(key))
+        ||result.held.some(row=>!['revise','hold'].includes(row.decision)||typeof row.reason!=='string'||!row.reason.trim()
+          ||row.suggestedText!=null&&typeof row.suggestedText!=='string'))throw new Error('Результат проверки ответа неполный.');
+      return result;
+    }
+    function acceptEditorialJob(job){
+      if(!editorial||job?.id!==editorial.jobId||job.kind!=='editorial_review'||job.purpose!=='editorial_review'||job.refId!==editorial.body.requestId)
+        throw new Error('Задача проверки не связана с сохранённым запросом.');
+      editorial.status=job.status;
+      if(job.status==='completed'){editorial.outcome=validateEditorialOutcome(job.result);delete editorial.error;}
+      else if(['failed','cancelled','interrupted'].includes(job.status))editorial.error='Проверка ответа не завершена. Черновик сохранён; отправка недоступна.';
+      hooks.persist?.();
+    }
+    function editorialAccepted(){
+      if(!needsEditorial||receipt||pending)return true;
+      if(!editorial?.outcome)return false;
+      try{return !validateEditorialOutcome(editorial.outcome).held.length;}catch{return false;}
+    }
+    function renderEditorial(){
+      if(!editorialNode)return;
+      editorialNode.hidden=!needsEditorial||!!pending;
+      const outcome=editorial?.outcome;
+      editorialNode.innerHTML=!editorial?'<p>Перед отправкой проверим финальный текст ответа.</p>':
+        `<p>${editorial.error?esc(editorial.error):outcome?(outcome.held.length?'Ответ требует внимания. Измените черновик и проверьте новую версию.':'Проверка завершена. Подтвердите отправку.'):'Проверяем финальный ответ. Можно вернуться к работе; результат сохранится.'}</p><p>Запрос: ${esc(editorial.body.requestId)}</p>${(outcome?.held||[]).map(row=>`<p>${esc(row.reference.id)} · версия ${esc(row.reference.revision)}: ${row.decision==='revise'?'Нужна правка':'Удержано'} — ${esc(row.reason)}</p>${row.suggestedText?`<p>Предложенный вариант:</p><blockquote>${esc(row.suggestedText)}</blockquote>`:''}`).join('')}`;
+    }
+    function acceptEditorialAdmission(result){
+      if(result?.requestId!==editorial.body.requestId||typeof result.jobId!=='string'||!/^[A-Za-z0-9_-]{1,160}$/.test(result.jobId)||typeof result.replayed!=='boolean')
+        throw new Error('Приём проверки ответа не подтверждён. Запрос сохранён для сверки.');
+      editorial.jobId=result.jobId;hooks.persist?.();
+    }
+    async function lookupEditorial(){
+      if(!editorial.jobId){
+        const lookup=await api(`/api/local-admissions/editorial/${encodeURIComponent(editorial.body.requestId)}`);requireActor(epoch);
+        if(lookup.kind!=='editorial'||lookup.status!=='committed'||lookup.requestId!==editorial.body.requestId)
+          throw new Error('Результат запроса проверки пока неизвестен. Повторная проверка не запущена.');
+        acceptEditorialAdmission(lookup.result);
+      }
+      const job=await api(`/api/jobs/${encodeURIComponent(editorial.jobId)}`);requireActor(epoch);acceptEditorialJob(job);
+    }
+    async function startEditorial(){
+      if(editorial){await lookupEditorial();return;}
+      if(Object.values(editorialAdmissions).some(entry=>entry.actorId===snapshot?.operator?.id&&entry.account===snapshot?.account&&!entry.outcome
+        &&entry.body.proposals.some(ref=>editorialRefs.some(current=>refKey(ref)===refKey(current)))))
+        throw new Error('Этот ответ уже проверяется в другой группе. Откройте сохранённую проверку в истории.');
+      editorial={actorId:snapshot?.operator?.id,account:snapshot?.account,rows,body:{requestId:uniqueId(),proposals:editorialRefs}};
+      editorialAdmissions[editorialKey]=editorial;hooks.persist?.();
+      try{acceptEditorialAdmission(await api('/api/proposals/editorial-review','POST',editorial.body));requireActor(epoch);}
+      catch(error){requireActor(epoch);editorial.error=error.message;hooks.persist?.();await lookupEditorial();return;}
+      await lookupEditorial();
+    }
+    function validateReceipt(result){
+      if(!result||result.requestId!==pending.body.requestId)throw new Error('Результат одобрения не связан с сохранённым запросом.');
+      if(pending.body.admissionMode!=='partial'){
+        if(typeof result.id!=='string'||!result.id||result.status!=='approved')throw new Error('Результат одобрения неполный.');
+        return {...result,accepted:refs,held:[]};
+      }
+      const accepted=result.accepted,held=result.held;
+      if(!Array.isArray(accepted)||!Array.isArray(held))throw new Error('Результат частичного одобрения неполный.');
+      const expected=new Set(refs.map(ref=>JSON.stringify(ref))),seen=new Set();
+      for(const ref of [...accepted,...held.map(row=>row.reference)]){
+        const refKey=JSON.stringify({id:ref?.id,revision:ref?.revision});
+        if(!expected.has(refKey)||seen.has(refKey))throw new Error('Результат одобрения изменил проверенные предложения.');
+        seen.add(refKey);
+      }
+      if(seen.size!==refs.length||held.some(row=>typeof row.reason!=='string'||!row.reason||typeof row.message!=='string'||!Number.isInteger(row.httpStatus))
+        ||accepted.length&&(typeof result.id!=='string'||!result.id||result.status!=='approved')
+        ||!accepted.length&&(result.id!==null||result.status!=='held'))throw new Error('Результат частичного одобрения неполный.');
+      return result;
+    }
+    if(receipt){
+      try{receipt=validateReceipt(receipt);}
+      catch{receipt=null;delete pending.receipt;hooks.persist?.();}
+    }
+    function renderReceipt(){
+      if(!resultNode)return;
+      resultNode.hidden=!pending;
+      resultNode.innerHTML=!receipt?`<p>Результат одобрения пока неизвестен. Запрос: ${esc(pending?.body.requestId||'')}. Проверьте сохранённый результат перед выполнением.</p>`:
+        `<p>Принято: ${receipt.accepted.length} из ${refs.length}. Удержано: ${receipt.held.length}.</p>${receipt.accepted.length?`<p>К выполнению: ${receipt.accepted.map(ref=>`${esc(ref.id)} · версия ${esc(ref.revision)}`).join('; ')}.</p>`:''}${receipt.held.map(row=>`<p>${esc(row.reference.id)} · версия ${esc(row.reference.revision)}: ${esc(row.reason)} — ${esc(row.message)} (${esc(row.httpStatus)})</p>`).join('')}${pending?.executeSubmitted?'<p>Выполнение уже запрошено. Проверьте историю действий; повторная отправка недоступна.</p>':''}`;
+    }
+    function canRetireReceipt(){
+      if(!pending||pending.executeSubmitted||!receipt)return false;
+      if(receipt.status==='held'&&!receipt.accepted.length)return true;
+      return receipt.accepted.some(ref=>{
+        const proposal=(snapshot?.proposals||[]).find(row=>row.id===ref.id);
+        return !proposal||proposal.revision!==ref.revision||proposal.status==='stale';
+      });
+    }
     refreshReviewReadiness=()=>{
       if(dialog!==node)return;
-      const exact=proposalRows(ids),hold=reviewMediaHold(exact,snapshot?.items||[]);
-      const changed=exact.length!==rows.length||exact.some((p,i)=>p.id!==rows[i].id||p.revision!==rows[i].revision);
+      if(editorial?.jobId&&!pending){
+        const job=(snapshot?.jobs||[]).find(row=>row.id===editorial.jobId);
+        if(job)try{acceptEditorialJob(job);}catch(error){delete editorial.outcome;editorial.error=error.message;}
+      }
+      const selected=receipt?.accepted||refs,exact=selected.map(ref=>(snapshot?.proposals||[]).find(row=>row.id===ref.id));
+      const changed=exact.some((row,i)=>!row||row.revision!==selected[i].revision||!(receipt?['draft','approved']:['draft']).includes(row.status));
+      const hold=reviewHold(exact.filter(Boolean));
+      mediaDetails.forEach(updateMediaControls);
       const button=node.querySelector('[data-confirm]');
-      if(button)button.disabled=reviewBusy||!unique||!rows.length||rows.length!==ids.length||rows.length>50||changed||!!hold;
+      if(partial)partial.disabled=reviewBusy||!!pending;
+      if(readback){readback.hidden=!pending||!!receipt;readback.disabled=reviewBusy;}
+      if(retire){retire.textContent='Проверить предложения заново';retire.hidden=!canRetireReceipt();retire.disabled=reviewBusy||retire.hidden;}
+      if(editorialReadback){editorialReadback.hidden=!editorial||!!pending||!!editorial.outcome;editorialReadback.disabled=reviewBusy;}
+      if(button){
+        const acquirePhotos=needsPhotoAcquisition&&!editorial&&!pending;
+        button.disabled=reviewBusy||!unique||!rows.length||rows.length!==ids.length||rows.length>50||changed&&(!partial?.checked||!!receipt)
+          ||!!pending&&!receipt||!!pending?.executeSubmitted||!!receipt&&!receipt.accepted.length||!!hold&&!acquirePhotos&&(!partial?.checked||!!receipt)
+          ||needsEditorial&&!pending&&(changed||!!editorial&&!editorialAccepted());
+        button.textContent=receipt?`Выполнить принятые ${receipt.accepted.length}`:needsEditorial&&!pending&&!editorialAccepted()?'Проверить ответ':partial?.checked?`Одобрить доступные из ${rows.length}`:`Подтвердить и выполнить ${rows.length}`;
+      }
       const status=node.querySelector('[data-media-readiness]');
-      if(status){status.hidden=!hold;status.textContent=hold?.detail||'';}
+      if(status){status.hidden=!hold&&!changed;status.textContent=changed?'Предложения изменились. Проверьте их снова.':hold?.detail||'';}
+      renderReceipt();
+      renderEditorial();
     };
+    async function lookupReceipt(){
+      const lookup=await api(`/api/local-admissions/approval/${encodeURIComponent(pending.body.requestId)}`);requireActor(epoch);
+      if(lookup.status!=='committed'||lookup.kind!=='approval'||lookup.requestId!==pending.body.requestId)
+        throw new Error('Результат одобрения пока неизвестен. Повторный запрос одобрения не отправлен.');
+      receipt=validateReceipt(lookup.result);pending.receipt=receipt;hooks.persist?.();refreshReviewReadiness();
+    }
+    partial?.addEventListener?.('change',refreshReviewReadiness);
+    editorialReadback?.addEventListener?.('click',async()=>{
+      if(reviewBusy||!editorial||pending)return;
+      reviewBusy=true;refreshReviewReadiness();
+      try{await lookupEditorial();}catch(error){if(epoch===actorEpoch){editorial.error=error.message;hooks.persist?.();notify(error.message);}}
+      finally{reviewBusy=false;refreshReviewReadiness();}
+    });
+    retire?.addEventListener?.('click',()=>{
+      if(reviewBusy||!canRetireReceipt())return;
+      requireActor(epoch);
+      // Retire only a confirmed unexecuted checkpoint with no accepted actions
+      // or stale accepted refs. Preserve its immutable server receipt and require
+      // a new explicit review of current refs before another admission.
+      delete admissions[key];hooks.persist?.();node.close();review(ids);
+    });
+    readback?.addEventListener?.('click',async()=>{
+      if(reviewBusy||!pending||receipt)return;
+      reviewBusy=true;refreshReviewReadiness();
+      try{await lookupReceipt();}catch(error){notify(error.message);}
+      finally{reviewBusy=false;refreshReviewReadiness();}
+    });
     node.querySelectorAll('[data-cancel]').forEach(button=>button.addEventListener('click',()=>node.close()));
     node.addEventListener('close',()=>{node.remove();if(dialog===node)dialog=null;},{once:true});
     node.querySelector('[data-confirm]')?.addEventListener('click',async event=>{
+      if(reviewBusy||pending?.executeSubmitted)return;
       const button=event.currentTarget;reviewBusy=true;button.disabled=true;
-      try{const exact=proposalRows(ids);if(exact.length!==rows.length||exact.some((p,i)=>p.revision!==rows[i].revision))throw new Error('Предложения изменились. Проверьте их снова.');
-        const hold=reviewMediaHold(exact,snapshot?.items||[]);if(hold)throw new Error(hold.detail);
-        const approval=await api('/api/approvals','POST',{proposals:exact.map(row=>({id:row.id,revision:row.revision}))});
-        const latestHold=reviewMediaHold(exact,snapshot?.items||[]);if(latestHold)throw new Error(latestHold.detail);
-        await api(`/api/approvals/${encodeURIComponent(approval.id)}/execute`,'POST',{});
+      try{
+        requireActor(epoch);
+        const selected=receipt?.accepted||refs,exact=selected.map(ref=>(snapshot?.proposals||[]).find(row=>row.id===ref.id));
+        const changed=exact.some((row,i)=>!row||row.revision!==selected[i].revision||!(receipt?['draft','approved']:['draft']).includes(row.status));
+        if(!unique||!refs.length||refs.length!==ids.length||refs.length>50||changed&&(!partial?.checked||!!receipt))throw new Error('Предложения изменились. Проверьте их снова.');
+        if(needsEditorial&&!pending&&changed)throw new Error('Ответ изменился. Проверьте новую версию перед одобрением.');
+        // This explicit button acquires only actual photo attachments; it never admits an action through the media hold.
+        if(needsPhotoAcquisition&&!editorial&&!pending){await startEditorial();return;}
+        const hold=reviewHold(exact.filter(Boolean));if(hold&&(!partial?.checked||receipt))throw new Error(hold.detail);
+        if(!receipt){
+          if(pending){await lookupReceipt();return;}
+          if(Object.values(admissions).some(entry=>entry.rows?.some(row=>ids.includes(row.id))))throw new Error('Часть предложений ещё требует сверки предыдущего одобрения.');
+          if(needsEditorial&&!editorialAccepted()){await startEditorial();return;}
+          pending={actorId:snapshot?.operator?.id,account:snapshot?.account,rows,body:{requestId:uniqueId(),...(partial?.checked?{admissionMode:'partial'}:{}),proposals:refs}};
+          admissions[key]=pending;hooks.persist?.();refreshReviewReadiness();
+          try{receipt=validateReceipt(await api('/api/approvals','POST',pending.body));requireActor(epoch);pending.receipt=receipt;hooks.persist?.();}
+          catch(error){
+            requireActor(epoch);
+            if(error.status>=400&&error.status<500&&![408,429].includes(error.status)){delete admissions[key];pending=null;throw error;}
+            await lookupReceipt();return;
+          }
+          if(pending.body.admissionMode==='partial'){refreshReviewReadiness();return;}
+        }
+        if(!receipt.accepted.length)throw new Error('Все действия удержаны. Выполнение недоступно.');
+        const admitted=receipt.accepted.map(ref=>(snapshot?.proposals||[]).find(row=>row.id===ref.id));
+        if(admitted.some((row,i)=>!row||row.revision!==receipt.accepted[i].revision||!['draft','approved'].includes(row.status)))throw new Error('Принятые предложения изменились. Проверьте их снова.');
+        const latestHold=reviewHold(admitted);if(latestHold)throw new Error(latestHold.detail);
+        pending.executeSubmitted=true;hooks.persist?.();
+        const execution=await api(`/api/approvals/${encodeURIComponent(receipt.id)}/execute`,'POST',{});requireActor(epoch);
+        if(typeof execution?.jobId!=='string'||!/^[A-Za-z0-9_-]{1,160}$/.test(execution.jobId))
+          throw new Error('Приём выполнения не подтверждён. Запрос уже отправлен; проверьте результат в истории действий.');
+        delete admissions[key];hooks.persist?.();
+        delete editorialAdmissions[editorialKey];hooks.persist?.();
         node.close();chosen.clear();await refresh();notify('Выполнение запущено. Фактический исход появится в истории.');
-      }catch(error){reviewBusy=false;refreshReviewReadiness();notify(`${error.message} Проверьте историю; автоматически действие не повторяется.`);await refresh({repaint:false}).catch(()=>{});}
+      }catch(error){notify(`${error.message} Проверьте историю; автоматически действие не повторяется.`);if(epoch===actorEpoch)await refresh({repaint:false}).catch(()=>{});}
+      finally{reviewBusy=false;refreshReviewReadiness();}
     });
+    refreshReviewReadiness();
   }
   function conversation(){const id=hooks.getSaved().mvpConversationId;return snapshot?.conversations?.find(row=>row.id===id);}
   function assistantContext(){return freezeAssistantContext(hooks.currentAssistantContext?.()||{});}
   function persistAssistantSubmission(){
     hooks.getSaved().mvpAssistantSubmission=assistantSubmission?{...assistantSubmission}:null;
     hooks.persist?.();
+  }
+  function clearAssistantDelay(){clearTimeout(assistantDelayTimer);assistantDelayTimer=null;}
+  function trackAssistantDelay(submission){
+    clearAssistantDelay();
+    assistantDelayTimer=setTimeout(()=>{
+      assistantDelayTimer=null;
+      if(assistantSubmission!==submission||submission.phase!=='pending'||stopped)return;
+      submission.delayed=true;
+      if(!patchAssistantProgress())hooks.render?.({focusControl:'#ai-input'});
+    },12000);
   }
   function submissionReadback(raw,submission,actorId){
     const convo=raw.conversations?.find(row=>row.id===submission.conversationId);
@@ -547,6 +1069,7 @@ export function createMvpConnection(hooks) {
     sendingAssistant=true;
     const originalInput=asText(saved.mvpAiInput),inputCleared=originalInput.trim()===text;
     assistantSubmission={operatorId:snapshot?.operator?.id||hooks.operator?.id||'',conversationId:submittedChatId,text,phase:'pending',matchingCount:(convo?.messages||[]).filter(row=>row.role==='user'&&row.text===text).length};
+    trackAssistantDelay(assistantSubmission);
     // Save the exact message before clearing the editor. A reload during an
     // uncertain POST must leave copyable text, never trigger a replay.
     persistAssistantSubmission();
@@ -570,6 +1093,7 @@ export function createMvpConnection(hooks) {
       messagePostStarted=true;
       const result=await api(`/api/conversations/${encodeURIComponent(convo.id)}/messages`,'POST',{text,itemIds:[...context.itemIds],screen:context.screen,...(displayedDraft?{displayedDraft}:{})});
       assistantRuns.bind(runToken,result.jobId);
+      clearAssistantDelay();
       assistantSubmission.phase='accepted';assistantSubmission.jobId=result.jobId;assistantSubmission.jobReadbackPending=true;
       persistAssistantSubmission();
       sendingAssistant=false;
@@ -583,6 +1107,7 @@ export function createMvpConnection(hooks) {
       void refresh().catch(error=>notify(`Сообщение принято, но обновление задерживается: ${error.message}`));
       return result;
     }catch(error){
+      clearAssistantDelay();
       if(assistantRuns.current()?.token===runToken)assistantRuns.clear();
       if(epoch===actorEpoch){
         const sameChat=assistantChatEpoch===submittedChatEpoch&&(saved.mvpConversationId||'')===assistantSubmission?.conversationId;
@@ -618,24 +1143,31 @@ export function createMvpConnection(hooks) {
     const submission=assistantSubmission,visible=submission&&(hooks.getSaved().mvpConversationId||'')===submission.conversationId;
     const showLocal=visible&&
       (convo?.messages||[]).filter(row=>row.role==='user'&&row.text===submission.text).length<=submission.matchingCount;
-    const status=submission?.phase==='unknown'?'Исход не подтверждён. Проверьте обсуждение перед повтором.':
+    const status=submission?.phase==='pending'?`Ожидаем ассистента…${submission.delayed?' Ответ сервера задерживается; приём запроса ещё не подтверждён.':''}`:
+      submission?.phase==='unknown'?'Исход не подтверждён. Проверьте обсуждение перед повтором.':
       submission?.phase==='failed'?`Не принято: ${esc(ordinaryText(submission.error||'ошибка'))}`:'';
     const local=showLocal?`<div class="chat-entry user" role="status"><strong>Вы</strong><p>${esc(submission.text)}</p>${status?`<small>${status}</small>`:''}</div>`:'';
-    const run=assistantRuns.current(),jobId=run?.jobId||(visible&&submission.phase==='accepted'?submission.jobId:null);
+    const run=assistantRuns.current(),activeRun=run&&run.conversationId===convo?.id&&run.operatorId===snapshot?.operator?.id?run:null;
+    const recoveredJob=discussionOutstandingJob(snapshot,convo);
+    const jobId=activeRun?.jobId||(visible&&submission.phase==='accepted'?submission.jobId:null)||recoveredJob?.id;
     const knownJob=jobId&&snapshot?.jobs?.find(row=>row.id===jobId);
-    const job=jobId&&convo&&(!run||run.conversationId===convo.id&&run.operatorId===snapshot?.operator?.id)
+    const job=jobId&&convo
       ?snapshot?.jobs?.find(row=>row.id===jobId&&row.refId===convo.id&&(!snapshot?.operator?.id||row.operatorId===snapshot.operator.id)
-        &&(run||row.kind==='assistant'&&['queued','running'].includes(row.status))):null;
+        &&(activeRun||row.kind==='assistant'&&['queued','running','completed'].includes(row.status))):null;
     const hasFinalMessage=convo?.messages?.some(row=>row.role==='assistant'&&row.prepareRunId===jobId);
     const typing='<span class="assistant-typing">Ассистент печатает<span class="assistant-typing-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span></span>';
     const acknowledgedRun=visible&&submission.phase==='accepted'&&submission.jobReadbackPending&&submission.jobId
       &&submission.operatorId===snapshot?.operator?.id&&!knownJob;
     const failures=discussionFailures(snapshot,convo);
     const failureHtml=failures.map(({job,message})=>`<div class="chat-entry assistant" role="status"><strong>Ассистент</strong><p>Не удалось получить ответ ассистента. Запрос сохранён.</p><small>Запрос: ${esc(message.text.slice(0,160))}</small><button type="button" data-restore-failed-request="${esc(job.id)}">Вернуть запрос в поле</button></div>`).join('');
-    const progress=job?job.status==='queued'?'В очереди…':job.status==='running'?typing:job.status==='completed'?'Завершено. Обновляю ответ…':'Не удалось получить ответ ассистента. Запрос сохранён.':acknowledgedRun?typing:null;
-    return local+failureHtml+(progress&&!hasFinalMessage&&!failures.some(failure=>failure.job.id===jobId)?`<div class="chat-entry assistant" role="status"><strong>Ассистент</strong><p>${progress}</p>${toolResultsHtml(job?.toolResults)}</div>`:'');
+    const progress=job?job.status==='queued'?'В очереди…':job.status==='running'?typing:job.status==='completed'?'Задание завершено, но ответ пока не появился. Обновите обсуждение; повторно отправлять запрос не нужно.':null:acknowledgedRun?typing:null;
+    return local+failureHtml+(progress&&!hasFinalMessage&&!failures.some(failure=>failure.job.id===jobId)?`<div class="chat-entry assistant" role="status"><strong>Ассистент</strong><p>${progress}</p>${toolResultsHtml(job?.toolResults)}${job?.status==='completed'?'<button type="button" data-refresh-assistant>Обновить обсуждение</button>':''}</div>`:'');
   }
   function restoreFailedRequest(event){
+    if(event.target?.closest?.('[data-refresh-assistant]')?.dataset?.refreshAssistant!==undefined){
+      void refresh().catch(error=>notify(`Не удалось обновить обсуждение: ${error.message}`));
+      return;
+    }
     const button=event.target?.closest?.('[data-restore-failed-request]');if(!button)return;
     const failure=discussionFailures(snapshot,conversation()).find(entry=>entry.job.id===button.dataset.restoreFailedRequest);
     if(!failure||sendingAssistant)return;
@@ -781,14 +1313,26 @@ export function createMvpConnection(hooks) {
   }
   function openHistory(){
     const saved=hooks.getSaved(),order=saved.mvpHistoryOrder==='oldest'?'oldest':'newest';
+    const admissions=Object.values(saved.mvpPendingApprovals||{}).filter(row=>row.actorId===snapshot?.operator?.id&&row.account===snapshot?.account);
+    const editorialAdmissions=Object.values(saved.mvpPendingEditorial||{}).filter(row=>row.actorId===snapshot?.operator?.id&&row.account===snapshot?.account);
     const operations=chronologicalHistory(snapshot?.operations||[],order),jobs=chronologicalHistory(snapshot?.jobs||[],order);
-    const node=modal('История действий',`<div class="history-order"><label for="mvp-history-order">Порядок</label><select id="mvp-history-order"><option value="newest" ${order==='newest'?'selected':''}>Сначала новые</option><option value="oldest" ${order==='oldest'?'selected':''}>Сначала старые</option></select></div><div class="mvp-dialog-scroll"><h3>Операции</h3>${operations.map(op=>`<article class="mvp-history"><strong>${esc(actionLabels[op.action?.action]||'Действие')}</strong><span>${esc(statusLabels[op.status]||op.status)}</span><p>${esc(op.target?.author||op.itemId)} · ${esc(plain(op.action?.text||''))}</p><small>${esc(time(op.createdAt))}</small>${op.status==='unknown'?`<button data-reconcile="${esc(op.id)}">Сверить результат</button>`:''}</article>`).join('')||'<p>Действий пока не было.</p>'}<h3>Задачи</h3>${jobs.map(job=>`<div class="mvp-history"><strong>${esc(jobLabels[job.kind]||job.kind)}</strong><span>${esc(statusLabels[job.status]||job.status)}</span>${job.error?`<p>${esc(ordinaryText(job.error))}</p>`:''}</div>`).join('')||'<p>Задач пока нет.</p>'}</div>`);
+    const admissionCards=(admissions.length?`<h3>Одобрения, требующие проверки</h3>${admissions.map(row=>`<article class="mvp-history"><p>Запрос: ${esc(row.body.requestId)}</p><p>${row.receipt?`Принято: ${row.receipt.accepted.length}. Удержано: ${row.receipt.held.length}.`:'Результат одобрения пока неизвестен.'}</p><button data-approval-review="${esc(row.body.requestId)}">Вернуться к одобрению</button></article>`).join('')}`:'')+
+      (editorialAdmissions.length?`<h3>Проверки ответов</h3>${editorialAdmissions.map(row=>`<article class="mvp-history"><p>Запрос: ${esc(row.body.requestId)}</p><p>${row.outcome?(row.outcome.held.length?'Ответ требует внимания.':'Проверка завершена.'):'Проверка ожидает результата.'}</p><button data-editorial-review="${esc(row.body.requestId)}">Вернуться к проверке</button></article>`).join('')}`:'');
+    const node=modal('История действий',`<div class="history-order"><label for="mvp-history-order">Порядок</label><select id="mvp-history-order"><option value="newest" ${order==='newest'?'selected':''}>Сначала новые</option><option value="oldest" ${order==='oldest'?'selected':''}>Сначала старые</option></select></div><div class="mvp-dialog-scroll">${admissionCards}<h3>Операции</h3>${operations.map(op=>`<article class="mvp-history"><strong>${esc(actionLabels[op.action?.action]||'Действие')}</strong><span>${esc(statusLabels[op.status]||op.status)}</span><p>${esc(op.target?.author||op.itemId)} · ${esc(plain(operationReplyText(op)))}</p><small>${esc(time(op.createdAt))}</small>${op.status==='unknown'?`<button data-reconcile="${esc(op.id)}">Сверить результат</button>`:''}</article>`).join('')||'<p>Действий пока не было.</p>'}<h3>Задачи</h3>${jobs.map(job=>`<div class="mvp-history"><strong>${esc(jobLabels[job.kind]||job.kind)}</strong><span>${esc(statusLabels[job.status]||job.status)}</span>${job.error?`<p>${esc(ordinaryText(job.error))}</p>`:''}</div>`).join('')||'<p>Задач пока нет.</p>'}</div>`);
+    node.querySelectorAll('[data-approval-review]').forEach(button=>button.addEventListener('click',()=>{
+      const admission=admissions.find(row=>row.body.requestId===button.dataset.approvalReview);
+      if(admission)review(admission.rows.map(row=>row.id));
+    }));
+    node.querySelectorAll('[data-editorial-review]').forEach(button=>button.addEventListener('click',()=>{
+      const admission=editorialAdmissions.find(row=>row.body.requestId===button.dataset.editorialReview);
+      if(admission)review(admission.rows.map(row=>row.id),admission.body.requestId);
+    }));
     node.querySelector('#mvp-history-order').addEventListener('change',event=>{saved.mvpHistoryOrder=event.target.value;hooks.persist?.();openHistory();});
     node.querySelectorAll('[data-reconcile]').forEach(button=>button.addEventListener('click',async()=>{button.disabled=true;try{await api(`/api/operations/${encodeURIComponent(button.dataset.reconcile)}/reconcile`,'POST',{});node.close();await refresh();notify('Сверка запущена.');}catch(error){button.disabled=false;notify(error.message);}}));
   }
   function openSettings(){
     const sync=snapshot?.sync||{};
-    const coverage=mode=>{const row=sync[mode]||{};return row.coverage?.complete?'прочитаны все доступные страницы':`ограниченная выборка${row.hasMore?' · есть ещё страницы':''}`;};
+    const coverage=mode=>syncCoverageLabel(sync,mode);
     const retrying=sync.status==='error'||sync.background?.state==='backoff';
     const node=modal('Настройки и состояние',`<div class="mvp-dialog-scroll"><p>Аккаунт: ${esc(snapshot?.account||'LikeAvto')}. Пользователь: ${esc(hooks.operator?.name||'Владелец')}.</p>${hooks.operator?.role==='operator'?'<button id="operator-logout">Выйти</button>':''}<dl><dt>Отправка ответов</dt><dd>${snapshot?.settings?.externalWritesEnabled?'После вашего подтверждения':'Публикация пока выключена'}</dd><dt>Обновление комментариев</dt><dd>Автоматически в фоне</dd><dt>Открытые</dt><dd>${esc(coverage('open'))}</dd><dt>Закрытые</dt><dd>${esc(coverage('closed'))}</dd></dl>${retrying?'<p class="mvp-sync-note" role="status">Связь временно недоступна. Повторяем автоматически.</p>':''}<button id="mvp-backup">Создать резервную копию</button><p id="mvp-setting-result" role="status"></p></div>`);
     node.querySelector('#operator-logout')?.addEventListener('click',()=>hooks.logout?.());
@@ -806,6 +1350,13 @@ export function createMvpConnection(hooks) {
   }
   function bindExtras(){
     requestAnimationFrame(trackPresented);
+    const composer=document.querySelector('#shell .composer'),item=selected();
+    if(composer&&item&&mediaPreparationHold(current(item))&&!composer.querySelector('[data-selected-media-review]')){
+      const proposal=[...(snapshot?.proposals||[])].reverse().find(row=>row.itemId===item.id&&row.status==='draft'&&['reply_and_close','close'].includes(row.kind));
+      const button=document.createElement('button');button.type='button';button.className='text-action mvp-selected-media-review';button.dataset.selectedMediaReview='';
+      button.textContent=proposal?'Проверить медиаконтекст этого решения':'Для исключения нужно сохранённое предложение';button.disabled=!proposal;
+      button.addEventListener('click',()=>{if(proposal)review([proposal.id]);});composer.append(button);
+    }
     const nav=document.querySelector('#primary-navigation');
     if(!nav)return;
     // Use the workshop's own nav-view component, widths and collapse animation.
@@ -816,5 +1367,5 @@ export function createMvpConnection(hooks) {
     nav.querySelectorAll('[data-mvp-view]').forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();const action=button.dataset.mvpView;if(action==='history')openHistory();else if(action==='settings')openSettings();}));
   }
 
-  return {load,hydrate,refresh,start,stop,aiHtml,bindAi,rememberAssistantReading,restoreAssistantReading,sendAssistant,saveDraft,scheduleDraft,prepareReply,closeOne,closeMany,changeWorkflow,bindExtras,openMaterials,openHistory,openSettings,review,trackPresented,flushFeedback,instructionContext,loadInstructions,openInstructionEditor};
+  return {load,hydrate,refresh,start,stop,leaveAccount,aiHtml,bindAi,rememberAssistantReading,restoreAssistantReading,sendAssistant,saveDraft,scheduleDraft,prepareReply,closeOne,closeMany,changeWorkflow,bindExtras,openMaterials,openHistory,openSettings,review,trackPresented,flushFeedback,instructionContext,loadInstructions,openInstructionEditor,queueCoverage:view=>queueCoveragePresentation(snapshot?.sync,view),confirmedReply:item=>confirmedOperationReply(snapshot,item)};
 }

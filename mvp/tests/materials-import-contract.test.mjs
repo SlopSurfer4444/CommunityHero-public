@@ -38,9 +38,9 @@ test('malformed successful mutation is rejected once before any job or follow-up
   const calls = [];
   const client = new CommunityHeroClient({ account: 'baw-russia', fetchImpl: async (url, options) => {
     calls.push([url.pathname, options.method]);
-    const payload = url.pathname === '/api/bootstrap' ? { account: 'BAW Russia' } : url.pathname === '/api/session' ? { csrfToken: 'synthetic-csrf' } : { imported: 0 };
+    const payload = url.pathname === '/api/engine/status' ? { account: 'baw-russia', authority: 'shared-rust-engine' } : url.pathname === '/api/session' ? { csrfToken: 'synthetic-csrf' } : { imported: 0 };
     return new Response(JSON.stringify(payload), { status: 200 });
   } });
   await assert.rejects(client.importMaterials(), { code: 'UNKNOWN_MUTATION_OUTCOME' });
-  assert.deepEqual(calls, [['/api/bootstrap', 'GET'], ['/api/session', 'GET'], ['/api/materials/import', 'POST']]);
+  assert.deepEqual(calls, [['/api/engine/status', 'GET'], ['/api/session', 'GET'], ['/api/materials/import', 'POST']]);
 });

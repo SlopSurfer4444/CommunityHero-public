@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createMvpConnection,discussionFailures} from '../workshop/mvp-connection.js';
+import {createMvpConnection,discussionFailures,discussionOutstandingJob} from '../workshop/mvp-connection.js';
 const escape=value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 const job={id:'failed-job',kind:'assistant',purpose:'discussion',operatorId:'local-owner',refId:'chat',sourceUserMessageId:'user-one',status:'failed',error:'Assistant request is no longer owned and active'};
 const user={id:'user-one',role:'user',text:'Синтетический запрос <не html>'};
@@ -34,6 +34,40 @@ test('two exact failed requests remain separately attributable',()=>{
   const snapshot=raw(),second={...user,id:'user-two',text:'Другой запрос'};
   snapshot.conversations[0].messages.push(second);snapshot.jobs.push({...job,id:'second-job',sourceUserMessageId:second.id});
   assert.deepEqual(discussionFailures(snapshot,snapshot.conversations[0]).map(f=>[f.job.id,f.message.text]),[[job.id,user.text],['second-job',second.text]]);
+});
+
+test('durable discussion job restores progress after local receipt clears and remains actor-bound',async t=>{
+  const old=globalThis.fetch;t.after(()=>globalThis.fetch=old);
+  const active={...job,id:'running-job',status:'running',error:undefined};
+  let server={...raw(),jobs:[active]};
+  globalThis.fetch=async()=>({ok:true,json:async()=>server});
+  const saved={mvpConversationId:'chat'};
+  const connection=createMvpConnection({getSaved:()=>saved,currentAssistantContext:()=>({itemIds:[]}),esc:escape,icon:()=>''});
+  await connection.load();
+  assert.equal(discussionOutstandingJob(server,server.conversations[0])?.id,active.id);
+  assert.match(connection.aiHtml(),/Ассистент печатает/);
+  server={...server,jobs:[{...active,status:'queued'}]};connection.hydrate(server,{repaint:false});
+  assert.match(connection.aiHtml(),/В очереди/);
+  for(const patch of [{operatorId:'other'},{refId:'other'},{sourceUserMessageId:'missing'},{purpose:'auto_prepare'}]){
+    const foreign={...server,jobs:[{...active,...patch}]};
+    assert.equal(discussionOutstandingJob(foreign,foreign.conversations[0]),null);
+  }
+  connection.stop();
+});
+
+test('completed job without a message offers readback and disappears when its answer arrives',async t=>{
+  const old=globalThis.fetch;t.after(()=>globalThis.fetch=old);
+  const completed={...job,id:'completed-job',status:'completed',error:undefined};
+  const server={...raw(),jobs:[completed]};
+  globalThis.fetch=async()=>({ok:true,json:async()=>server});
+  const connection=createMvpConnection({getSaved:()=>({mvpConversationId:'chat'}),currentAssistantContext:()=>({itemIds:[]}),esc:escape,icon:()=>''});
+  await connection.load();
+  assert.match(connection.aiHtml(),/Задание завершено, но ответ пока не появился/);
+  assert.match(connection.aiHtml(),/data-refresh-assistant/);
+  server.conversations[0].messages.push({id:'reply',role:'assistant',prepareRunId:completed.id,text:'Ответ'});
+  connection.hydrate(server,{repaint:false});
+  assert.doesNotMatch(connection.aiHtml(),/Задание завершено, но ответ пока не появился/);
+  connection.stop();
 });
 
 test('explicit restore stages exact text without a POST, preserves nonempty editor and rechecks failure',async t=>{

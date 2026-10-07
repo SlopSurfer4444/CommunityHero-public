@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {EventEmitter} from 'node:events';
 import {createHash,randomUUID} from 'node:crypto';
-import {admitMediaVisionBatch,assertLocalVisionModel,localBackendConfig,manifestDigest,runLocalVisionBatch,runMediaVision,stableJson,
+import {admitMediaVisionBatch,assertLocalVisionModel,localBackendConfig,manifestDigest,mediaVisionOutputDiagnostic,runLocalVisionBatch,runMediaVision,stableJson,
   stageMediaVisionFrames,validateMediaVisionRequest} from './media-vision.mjs';
 import {prepareAssistantRequest} from './assistant.mjs';
 
@@ -74,6 +74,26 @@ test('exact batch union admits prices with units; empty, duplicate and uncertain
   ])assert.throws(()=>admitMediaVisionBatch(raw,expected),/MEDIA_VISION_OUTPUT_INVALID/);
 });
 
+test('failed output diagnosis identifies the violated contract without copying observed text',()=>{
+  const expected=[{id:'f1',sha256:'a'.repeat(64),timestampMs:0}];
+  const bad={frames:[{...none('f1'),text:['Private image text']}],summary:'Private summary'};
+  const diagnostic=mediaVisionOutputDiagnostic(bad,expected);
+  assert.deepEqual(diagnostic,{category:'none_with_content',expectedFrames:1,frameOffset:0});
+  assert.equal(JSON.stringify(diagnostic).includes('Private'),false);
+  assert.throws(()=>admitMediaVisionBatch(bad,expected),/MEDIA_VISION_OUTPUT_INVALID/);
+  assert.deepEqual(mediaVisionOutputDiagnostic({frames:[],summary:'x'},expected),
+    {category:'frame_count',expectedFrames:1,actualFrames:0});
+  for(const [field,value,issue] of [['raw','', 'empty'],['value',42,'type'],['unit',' '.repeat(3),'empty'],
+    ['currency','private'.repeat(20),'length'],['raw','secret\u0001','control'],['uncertain','false','type']]){
+    const frame=readable('f1');frame.numbers[0][field]=value;
+    const raw={frames:[frame],summary:'x'},report=mediaVisionOutputDiagnostic(raw,expected);
+    assert.deepEqual(report,{category:'number_shape',expectedFrames:1,frameOffset:0,numberOffset:0,numberField:field,numberIssue:issue});
+    assert.equal(JSON.stringify(report).includes('secret'),false);
+    assert.equal(JSON.stringify(report).includes('private'),false);
+    assert.throws(()=>admitMediaVisionBatch(raw,expected),/MEDIA_VISION_OUTPUT_INVALID/);
+  }
+});
+
 test('backend-neutral runner covers every exact frame in a private copy and marks unreadable incomplete',async()=>{
   const f=await fixture();try{
     const env={COMMUNITYHERO_MEDIA_VISION_LOCAL_ENDPOINT:'http://127.0.0.1:11434',
@@ -120,6 +140,77 @@ function fakeHttp(responses,calls){
     return req;
   };
 }
+function failedLocalHttp({status=500,body='{"error":"private text"}',event,requestError}={}){
+  return (_url,_options,callback)=>{
+    const req=new EventEmitter();req.setTimeout=()=>{};req.destroy=()=>{};
+    req.end=()=>queueMicrotask(()=>{
+      if(requestError){req.emit('error',Object.assign(new Error('private socket detail'),{code:requestError}));return;}
+      const res=new EventEmitter();res.statusCode=status;callback(res);
+      if(body!==null)res.emit('data',Buffer.from(body));
+      res.emit(event??'end');
+    });return req;
+  };
+}
+test('local HTTP failures retain bounded content-free stage/status and never admit an error body',async()=>{
+  const f=await fixture();try{
+    const local={endpoint:'http://127.0.0.1:11434',model:'synthetic-vlm:1'},frame=f.request.frames[0];
+    for(const status of [404,429,500,503]){
+      const body=JSON.stringify({error:'out of memory: private frame text /private/file?token=secret'}),diagnostic={};
+      await assert.rejects(runLocalVisionBatch([frame],local,100,{requestFn:failedLocalHttp({status,body}),diagnostic}),
+        error=>error.code==='MEDIA_VISION_BACKEND_UNAVAILABLE'&&error.localTransportDiagnostic.httpStatus===status);
+      assert.deepEqual(diagnostic.localTransport,{stage:'chat',category:'http_status',httpStatus:status,
+        responseBytes:Buffer.byteLength(body),responseSha256:sha(Buffer.from(body)),backendErrorCategory:'memory',networkCode:null});
+      assert.equal(JSON.stringify(diagnostic).includes('private'),false);
+      assert.equal(JSON.stringify(diagnostic).includes('secret'),false);
+    }
+    const diagnostic={};
+    await assert.rejects(runLocalVisionBatch([frame],local,100,{requestFn:failedLocalHttp({status:200,body:'{private invalid json'}),diagnostic}),
+      {code:'MEDIA_VISION_BACKEND_UNAVAILABLE'});
+    assert.equal(diagnostic.localTransport.category,'invalid_json');
+    assert.equal(diagnostic.localTransport.httpStatus,200);
+    await assert.rejects(assertLocalVisionModel({...local,digest:'e'.repeat(64)},
+      {requestFn:failedLocalHttp({status:503}),timeoutMs:100}),error=>error.localTransportDiagnostic.stage==='tags'&&error.localTransportDiagnostic.httpStatus===503);
+  }finally{await f.cleanup();}
+});
+test('local incomplete/error/oversized HTTP responses settle without a new request or unbounded diagnostics',async()=>{
+  const f=await fixture();try{
+    const local={endpoint:'http://127.0.0.1:11434',model:'synthetic-vlm:1'},frame=f.request.frames[0];
+    for(const event of ['aborted','close']){
+      const diagnostic={};
+      await assert.rejects(runLocalVisionBatch([frame],local,100,{requestFn:failedLocalHttp({status:200,body:'{',event}),diagnostic}),
+        {code:'MEDIA_VISION_BACKEND_UNAVAILABLE'});
+      assert.equal(diagnostic.localTransport.category,'response_aborted');
+      assert.equal(diagnostic.localTransport.responseSha256,null);
+    }
+    const diagnostic={};
+    await assert.rejects(runLocalVisionBatch([frame],local,100,{requestFn:failedLocalHttp({body:'x'.repeat(64*1024+1)}),diagnostic}),
+      {code:'MEDIA_VISION_BACKEND_UNAVAILABLE'});
+    assert.equal(diagnostic.localTransport.category,'response_limit');
+    assert.equal(diagnostic.localTransport.responseSha256,null);
+    assert.ok(JSON.stringify(diagnostic).length<500);
+    await assert.rejects(runLocalVisionBatch([frame],local,100,{requestFn:failedLocalHttp({requestError:'ECONNRESET'})}),
+      error=>error.code==='ECONNRESET'&&error.localTransportDiagnostic.networkCode==='ECONNRESET'&&error.localTransportDiagnostic.category==='request_error');
+  }finally{await f.cleanup();}
+});
+
+test('only exact chat HTTP500 token-repeat error receives generation classification',async()=>{
+  const f=await fixture();try{
+    const local={endpoint:'http://127.0.0.1:11434',model:'synthetic-vlm:1'};
+    const body=JSON.stringify({error:'prediction aborted, token repeat limit reached'});
+    assert.equal(Buffer.byteLength(body),58);
+    assert.equal(sha(Buffer.from(body)),'e58efdadfb338fc1b1bf72aee9f304d87c844c53d47703eea3700771a7426d47');
+    const diagnostic={};
+    await assert.rejects(runLocalVisionBatch([f.request.frames[0]],local,100,
+      {requestFn:failedLocalHttp({status:500,body}),diagnostic}),{code:'MEDIA_VISION_GENERATION_REPETITION'});
+    assert.equal(diagnostic.localTransport.backendErrorCategory,'token_repetition');
+    for(const item of [{status:503,body},{status:500,body:JSON.stringify({error:'prediction aborted, token repeat limit reached PRIVATE'})}]){
+      await assert.rejects(runLocalVisionBatch([f.request.frames[0]],local,100,
+        {requestFn:failedLocalHttp(item)}),{code:'MEDIA_VISION_BACKEND_UNAVAILABLE'});
+    }
+    await assert.rejects(assertLocalVisionModel({...local,digest:'e'.repeat(64)},
+      {requestFn:failedLocalHttp({status:500,body}),timeoutMs:100}),{code:'MEDIA_VISION_BACKEND_UNAVAILABLE'});
+  }finally{await f.cleanup();}
+});
 test('offline model identity check requires exact installed local vision digest and excludes remote entries',async()=>{
   const config=localBackendConfig({COMMUNITYHERO_MEDIA_VISION_LOCAL_ENDPOINT:'http://127.0.0.1:11434',
     COMMUNITYHERO_MEDIA_VISION_LOCAL_MODEL:'qwen3-vl:4b-instruct-q4_K_M',COMMUNITYHERO_MEDIA_VISION_LOCAL_DIGEST:'e'.repeat(64)});
@@ -167,13 +258,32 @@ test('assistant receives path-free, source-only sampled frames and rejects forei
 test('local chat admits only completed model-bound tool-free response and binds actual staged bytes',async()=>{
   const f=await fixture();try{
     const frame=f.request.frames[0],model='synthetic-vlm:1';
-    const valid={model,done:true,message:{role:'assistant',content:JSON.stringify({frames:[none('f1')],summary:'Красный кадр.'})}};
+    const valid={model,done:true,done_reason:'stop',message:{role:'assistant',content:JSON.stringify({frames:[none('f1')],summary:'Красный кадр.'})}};
     const invoke=(outer,requestFn)=>runLocalVisionBatch([frame],{endpoint:'http://127.0.0.1:11434',model},50,
       {requestFn:requestFn??fakeHttp({'/api/chat':outer},[])});
     const calls=[];
     assert.equal((await invoke(valid,fakeHttp({'/api/chat':valid},calls))).frames[0].id,'f1');
+    const diagnostic={};
+    await assert.rejects(runLocalVisionBatch([frame],{endpoint:'http://127.0.0.1:11434',model},50,
+      {requestFn:fakeHttp({'/api/chat':{...valid,done_reason:'length',message:{role:'assistant',content:'{'}}},[]),diagnostic}),
+      {code:'MEDIA_VISION_OUTPUT_INVALID'});
+    assert.equal(diagnostic.transport.doneReason,'length');
+    assert.equal(diagnostic.output.category,'invalid_json');
     const sent=JSON.parse(calls[0].body);
     assert.equal(sent.keep_alive,'5m');assert.deepEqual(sent.options,{temperature:0,num_ctx:4096,num_predict:1536});
+    const repetitionCalls=[];
+    await runLocalVisionBatch([frame],{endpoint:'http://127.0.0.1:11434',model},100,
+      {requestFn:fakeHttp({'/api/chat':valid},repetitionCalls),repeatPenalty:1.1,repeatLastN:256});
+    const repetitionSent=JSON.parse(repetitionCalls[0].body);
+    assert.deepEqual(repetitionSent.options,{temperature:0,num_ctx:4096,num_predict:1536,repeat_penalty:1.1,repeat_last_n:256});
+    assert.deepEqual(repetitionSent.format,sent.format);assert.deepEqual(repetitionSent.messages,sent.messages);
+    assert.equal(sent.format.properties.summary.maxLength,2000);
+    const localFrame=sent.format.properties.frames.items;
+    assert.equal(localFrame.properties.scene.maxLength,1000);
+    assert.equal(localFrame.properties.text.maxItems,40);
+    assert.equal(localFrame.properties.numbers.maxItems,40);
+    assert.equal(localFrame.properties.uncertainties.maxItems,20);
+    assert.equal(localFrame.properties.numbers.items.properties.raw.maxLength,100);
     assert.equal(sent.messages[1].images.length,1);assert.equal(sent.messages[1].images[0],JPEG.toString('base64'));
     for(const outer of [{...valid,done:false},{...valid,model:'other'},
       {...valid,message:{...valid.message,tool_calls:[{function:{name:'shell'}}]}}])
@@ -183,6 +293,7 @@ test('local chat admits only completed model-bound tool-free response and binds 
     await fs.writeFile(frame.path,JPEG);
     const stuck=()=>{const req=new EventEmitter();req.setTimeout=()=>{};req.end=()=>{};
       req.destroy=error=>req.emit('error',error);return req;};
-    await assert.rejects(invoke(valid,stuck),/MEDIA_VISION_TIMEOUT/);
+    await assert.rejects(invoke(valid,stuck),error=>error.code==='MEDIA_VISION_TIMEOUT'&&
+      error.localTransportDiagnostic.category==='deadline'&&error.localTransportDiagnostic.responseSha256===null);
   }finally{await f.cleanup();}
 });

@@ -8,7 +8,7 @@ import {guardMutation,mutationGuardOptions,resolveMaxInFlight,runProvider} from 
 
 const baseAction={actionId:'attempt-1',objectId:'baw-primary',itemId:'comment-1',conversationKey:'baw-primary:comment-1',action:'close',contextEvidenceDigest:'a'.repeat(64),expectedStatuses:['new'],workTime:0};
 
-function harness({account='baw-russia',executionMode='disabled'}={}) {
+function harness({account='baw-russia',executionMode='disabled',catalogueError,gatewayError}={}) {
   const paths=resolveAdapterPaths(account,{env:{},conveyorRoot:'C:/fixture/conveyor',providerRoot:'C:/fixture/provider',providerNode:'C:/fixture/node.exe'});
   const primary=account==='likeavto'?'like-primary':'baw-primary',objectIds=[primary,`${primary}-sibling`],calls=[];
   const readFileFn=async file=>JSON.stringify(path.resolve(file)===path.resolve(paths.cardFile)
@@ -17,7 +17,7 @@ function harness({account='baw-russia',executionMode='disabled'}={}) {
   class Store {}
   class Reader {
     constructor(_transport,scope){this.scope=scope;calls.push(['reader',scope]);}
-    async listAuthorizedObjects(){return {objectIds};}
+    async listAuthorizedObjects(){calls.push(['catalogue']);if(catalogueError)throw catalogueError;return {objectIds};}
     async listQueue(){return {items:[],count:0,nextCursor:null};}
   }
   const modules={
@@ -27,7 +27,7 @@ function harness({account='baw-russia',executionMode='disabled'}={}) {
     'provider/read-only-provider.ts':{AngrySpaceReadOnlyProvider:Reader,computeThreadContextEvidenceDigest:()=> 'a'.repeat(64)},
     'transport/fast-conveyor-gateway.ts':{
       fastCommentAttachments:()=>[],fastConveyorPublicSourceUrl:()=>null,fastConveyorAuthorId:()=>undefined,
-      runFastConveyorRequest:async(_native,request)=>{calls.push(['gateway',request]);return request.operation==='capabilities'?{contractVersion:'1.1.0',operation:'capabilities',account}:{version:1,operation:request.operation,account,results:[]};}
+      runFastConveyorRequest:async(_native,request)=>{calls.push(['gateway',request]);if(gatewayError)throw gatewayError;return request.operation==='capabilities'?{contractVersion:'1.1.0',operation:'capabilities',account}:{version:1,operation:request.operation,account,results:[]};}
     },
   };
   return {paths,readFileFn,calls,moduleLoader:async name=>modules[name]};
@@ -73,6 +73,45 @@ test('maxInFlight defaults to batch size and admits configured values above one'
   assert.equal(resolveMaxInFlight({maxInFlight:50},1,{}),50);
   assert.equal(resolveMaxInFlight({},1,{COMMUNITYHERO_MAX_IN_FLIGHT:'100'}),100);
   assert.throws(()=>resolveMaxInFlight({maxInFlight:101},1,{}),{code:'INVALID_MAX_IN_FLIGHT'});
+});
+
+test('execute catalogue failure returns exact not-attempted receipts before guard or gateway',async()=>{
+  for(const code of ['TRANSPORT_ERROR','HTTP_ERROR','ACCOUNT_SCOPE_MISMATCH','private details']) {
+    const error=Object.assign(new Error('private token and comment'),{code});
+    const h=harness({executionMode:'reviewed-comment-ops-v1',catalogueError:error});
+    const actions=[baseAction,{...baseAction,actionId:'reply-2',itemId:'comment-2',conversationKey:'baw-primary:comment-2',action:'reply_and_close',reply:'private approved reply'}];
+    let guardCalls=0;
+    const result=await runProvider({op:'execute',account:'baw-russia',actions},{...h,executionEnabled:true,
+      guardOptions:{runProcessFn:async()=>{guardCalls++;throw new Error('guard must not run');}}});
+    assert.equal(guardCalls,0);
+    assert.equal(h.calls.filter(([kind])=>kind==='catalogue').length,1);
+    assert.ok(!h.calls.some(([kind])=>kind==='gateway'));
+    assert.equal(result.account,'baw-russia');assert.equal(result.accountBinding.accountKey,'baw-russia');
+    assert.deepEqual(result.results,actions.map(action=>({actionId:action.actionId,itemId:action.itemId,status:'failed',
+      code:code==='private details'?'PROVIDER_UNAVAILABLE':code,operation:'adapter-catalogue',phase:'catalogue',mutationOutcome:'not-attempted',
+      providerCallAttempted:false,providerRetryAllowed:false})));
+    assert.doesNotMatch(JSON.stringify(result),/private|token|approved reply/);
+  }
+});
+
+test('unvalidated actions cannot receive catalogue receipts or trigger a reader',async()=>{
+  const h=harness({executionMode:'reviewed-comment-ops-v1',catalogueError:new Error('unreachable')});
+  await assert.rejects(runProvider({op:'execute',account:'baw-russia',actions:[{...baseAction,objectId:'foreign'}]},
+    {...h,executionEnabled:true}),{code:'INVALID_ACTIONS'});
+  assert.equal(h.calls.length,0);
+});
+
+test('readback catalogue errors and errors after gateway entry are never relabelled not-attempted',async()=>{
+  const error=Object.assign(new Error('uncertain external effect'),{code:'TRANSPORT_ERROR'});
+  const read=harness({catalogueError:error});
+  await assert.rejects(runProvider({op:'readback',account:'baw-russia',actions:[baseAction]},read),e=>e===error);
+  const execute=harness({executionMode:'reviewed-comment-ops-v1',gatewayError:error});
+  const lockRoot=await mkdtemp(path.join(os.tmpdir(),'communityhero-catalogue-boundary-'));
+  try {
+    await assert.rejects(runProvider({op:'execute',account:'baw-russia',actions:[baseAction]},
+      {...execute,executionEnabled:true,guardOptions:{lockRoot,runProcessFn:async()=>({stdout:'clear'})}}),e=>e===error);
+    assert.equal(execute.calls.filter(([kind])=>kind==='gateway').length,1);
+  } finally {await rm(lockRoot,{recursive:true,force:true});}
 });
 
 test('engine copies sharing one Provider config derive one resource lock root',()=>{

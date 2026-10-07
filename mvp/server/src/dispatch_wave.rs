@@ -1,7 +1,13 @@
 use super::{ApiResult, App, Value, bad, dispatch, required, set_outcome};
 use futures_util::{StreamExt, stream::FuturesUnordered};
 use serde_json::json;
-use std::{collections::HashMap, future::Future};
+use crate::dispatch_diagnostics::Outcome;
+use std::{collections::{HashMap, VecDeque}, future::Future};
+
+// Keep an admitted wave below the PostgreSQL reader pool's four connections.
+// An execution job holds the account-wide execution_gate, so this is also the
+// maximum dispatch concurrency across jobs in one workspace.
+pub(crate) const MAX_IN_FLIGHT: usize = 4;
 
 #[derive(Clone)]
 struct Entry {
@@ -82,7 +88,7 @@ async fn schedule_with<Run, RunFuture, Settle, SettleFuture>(
 ) -> ApiResult<Value>
 where
     Run: Fn(Value) -> RunFuture,
-    RunFuture: Future<Output = ApiResult<bool>>,
+    RunFuture: Future<Output = ApiResult<Outcome>>,
     Settle: Fn(Value, Settlement) -> SettleFuture,
     SettleFuture: Future<Output = ApiResult<()>>,
 {
@@ -98,13 +104,14 @@ where
         .enumerate()
         .map(|(index, operation)| entry(index, operation))
         .collect::<ApiResult<Vec<_>>>()?;
-    let parallelism = configured_parallelism.min(total.max(1));
+    let parallelism = configured_parallelism.min(MAX_IN_FLIGHT).min(total.max(1));
     let mut active = FuturesUnordered::new();
+    let mut completed = VecDeque::new();
     let mut active_keys: HashMap<String, usize> = HashMap::new();
     let mut blocked_keys: HashMap<String, String> = HashMap::new();
     let mut results: Vec<Option<Value>> = (0..total).map(|_| None).collect();
 
-    while !pending.is_empty() || !active.is_empty() {
+    while !pending.is_empty() || !active.is_empty() || !completed.is_empty() {
         // An UNKNOWN result quarantines only siblings which have not started.
         // Persist that no-attempt outcome before considering more dispatches.
         let mut cursor = 0;
@@ -118,29 +125,34 @@ where
                 continue;
             };
             let entry = pending.remove(cursor);
-            let record = settle(
+            let record = settle_with_progress(settle(
                 entry.operation.clone(),
                 Settlement::Quarantined {
                     blocked_by: blocked_by.clone(),
                 },
-            )
+            ), &mut active, &mut completed)
             .await;
             results[entry.index] = Some(match record {
                 Ok(()) => json!({
                     "operationId": entry.operation_id,
-                    "status": "quarantined",
+                    "status": "stale",
+                    "quarantined": true,
                     "blockedByOperationId": blocked_by
                 }),
                 Err(error) => json!({
                     "operationId": entry.operation_id,
-                    "status": "quarantined",
+                    "status": "unknown",
+                    "durableStatus": "dispatching",
+                    "quarantined": true,
                     "blockedByOperationId": blocked_by,
                     "recordError": error.1
                 }),
             });
         }
 
-        while active.len() < parallelism {
+        // Completed futures keep their conflict keys/capacity until their
+        // outcomes are processed below. Never replace an unprocessed slot.
+        while active.len() + completed.len() < parallelism {
             let Some(position) = pending
                 .iter()
                 .position(|entry| entry.keys.iter().all(|key| !active_keys.contains_key(key)))
@@ -155,7 +167,11 @@ where
             active.push(async move { (entry, future.await) });
         }
 
-        let Some((entry, outcome)) = active.next().await else {
+        let next = match completed.pop_front() {
+            Some(completion) => Some(completion),
+            None => active.next().await,
+        };
+        let Some((entry, outcome)) = next else {
             continue;
         };
         for key in &entry.keys {
@@ -163,21 +179,15 @@ where
         }
 
         match outcome {
-            Ok(true) => {
-                results[entry.index] = Some(json!({
-                    "operationId": entry.operation_id,
-                    "status": "known"
-                }));
-            }
-            Ok(false) => {
-                for key in &entry.keys {
+            Ok(outcome) => {
+                if outcome==Outcome::Unknown {for key in &entry.keys {
                     blocked_keys
                         .entry(key.clone())
                         .or_insert_with(|| entry.operation_id.clone());
-                }
+                }}
                 results[entry.index] = Some(json!({
                     "operationId": entry.operation_id,
-                    "status": "unknown"
+                    "status": outcome.status()
                 }));
             }
             Err(error) => {
@@ -187,23 +197,25 @@ where
                         .entry(key.clone())
                         .or_insert_with(|| entry.operation_id.clone());
                 }
-                let record = settle(
+                let record = settle_with_progress(settle(
                     entry.operation.clone(),
                     Settlement::DispatchFailed {
                         error: message.clone(),
                     },
-                )
+                ), &mut active, &mut completed)
                 .await;
                 results[entry.index] = Some(match record {
                     Ok(()) => json!({
                         "operationId": entry.operation_id,
-                        "status": "failed",
+                        "status": "unknown",
+                        "dispatcherFailed": true,
                         "durableStatus": "unknown",
                         "error": message
                     }),
                     Err(record_error) => json!({
                         "operationId": entry.operation_id,
-                        "status": "failed",
+                        "status": "unknown",
+                        "dispatcherFailed": true,
                         "durableStatus": "dispatching",
                         "error": message,
                         "recordError": record_error.1
@@ -220,18 +232,44 @@ where
             .filter(|result| result["status"] == status)
             .count()
     };
-    let failed = count("failed");
     Ok(json!({
         "total": total,
         "parallelism": parallelism.min(total),
-        "known": count("known"),
-        // Failed dispatcher calls are durably UNKNOWN unless even the local
-        // record failed; keep them in the legacy unknown aggregate as well.
-        "unknown": count("unknown") + failed,
-        "failed": failed,
-        "quarantined": count("quarantined"),
+        // Compatibility aggregate: terminal knowledge, never a success count.
+        "known": count("succeeded")+count("failed")+count("stale"),
+        "succeeded": count("succeeded"),
+        "failed": count("failed"),
+        "stale": count("stale"),
+        "unknown": count("unknown"),
+        "dispatcherFailed": results.iter().filter(|row|row["dispatcherFailed"]==true).count(),
+        "quarantined": results.iter().filter(|row|row["quarantined"]==true).count(),
         "results": results
     }))
+}
+
+/// Keep already-started dispatch futures moving while a durable settlement
+/// waits. Do not start new work or process buffered outcomes until settlement
+/// returns; the scheduler retains their capacity and conflict keys meanwhile.
+/// No child tasks are spawned, so cancellation still drops the whole wave.
+async fn settle_with_progress<SettlementFuture, DispatchFuture, Completion>(
+    settlement: SettlementFuture,
+    active: &mut FuturesUnordered<DispatchFuture>,
+    completed: &mut VecDeque<Completion>,
+) -> SettlementFuture::Output
+where
+    SettlementFuture: Future,
+    DispatchFuture: Future<Output = Completion>,
+{
+    tokio::pin!(settlement);
+    loop {
+        tokio::select! {
+            biased;
+            result = &mut settlement => return result,
+            completion = active.next(), if !active.is_empty() => {
+                if let Some(completion) = completion { completed.push_back(completion); }
+            }
+        }
+    }
 }
 
 fn entry(index: usize, operation: Value) -> ApiResult<Entry> {
@@ -257,10 +295,10 @@ mod tests {
     use crate::internal;
     use std::sync::{
         Arc, Mutex,
-        atomic::{AtomicUsize, Ordering},
+        atomic::{AtomicBool, AtomicUsize, Ordering},
     };
     use std::time::Duration;
-    use tokio::sync::Barrier;
+    use tokio::sync::{Barrier, Notify};
 
     fn operation(id: &str, item: &str, conversation: &str, reply: bool) -> Value {
         json!({
@@ -283,8 +321,119 @@ mod tests {
         }
     }
 
+    async fn settlement_keeps_active_dispatch_moving(first_fails: bool) {
+        let ready = Arc::new(Notify::new());
+        let settlement_started = Arc::new(Notify::new());
+        let progressed = Arc::new(Notify::new());
+        let settlement_done = Arc::new(AtomicBool::new(false));
+        let called = Arc::new(Mutex::new(Vec::new()));
+        let report = schedule_with(
+            vec![
+                operation("first", "a", "first-thread", true),
+                operation("first-blocked", "b", "first-thread", true),
+                operation("progress", "c", "progress-thread", true),
+                operation("progress-blocked", "d", "progress-thread", true),
+                operation("later", "e", "independent-thread", true),
+            ], 2,
+            {
+                let ready = ready.clone();
+                let settlement_started = settlement_started.clone();
+                let progressed = progressed.clone();
+                let settlement_done = settlement_done.clone();
+                let called = called.clone();
+                move |operation| {
+                    let ready = ready.clone();
+                    let settlement_started = settlement_started.clone();
+                    let progressed = progressed.clone();
+                    let settlement_done = settlement_done.clone();
+                    let called = called.clone();
+                    async move {
+                        let id = operation["id"].as_str().unwrap().to_owned();
+                        called.lock().unwrap().push(id.clone());
+                        match id.as_str() {
+                            "first" => {
+                                ready.notified().await;
+                                if first_fails { Err(internal("runner failure")) }
+                                else { Ok(Outcome::Unknown) }
+                            }
+                            "progress" => {
+                                ready.notify_one();
+                                settlement_started.notified().await;
+                                progressed.notify_one();
+                                // This completion must retain its keys until
+                                // processed; its sibling must never be started.
+                                Ok(Outcome::Unknown)
+                            }
+                            "later" => {
+                                assert!(settlement_done.load(Ordering::SeqCst));
+                                Ok(Outcome::Succeeded)
+                            }
+                            _ => panic!("conflicting quarantined operation was dispatched"),
+                        }
+                    }
+                }
+            },
+            {
+                let settlement_started = settlement_started.clone();
+                let progressed = progressed.clone();
+                let settlement_done = settlement_done.clone();
+                move |operation, settlement| {
+                    let settlement_started = settlement_started.clone();
+                    let progressed = progressed.clone();
+                    let settlement_done = settlement_done.clone();
+                    async move {
+                        let waits = match settlement {
+                            Settlement::DispatchFailed { .. } => operation["id"] == "first",
+                            Settlement::Quarantined { .. } => !first_fails && operation["id"] == "first-blocked",
+                        };
+                        if waits {
+                            settlement_started.notify_one();
+                            progressed.notified().await;
+                            settlement_done.store(true, Ordering::SeqCst);
+                        }
+                        Ok(())
+                    }
+                }
+            },
+        );
+        // The original scheduler deadlocks here: progress needs polling while
+        // the settlement is awaiting its notification.
+        let report = tokio::time::timeout(Duration::from_secs(1), report).await.unwrap().unwrap();
+        let called = called.lock().unwrap();
+        assert_eq!(called.len(), 3);
+        for id in ["first", "progress", "later"] { assert!(called.iter().any(|called| called == id)); }
+        assert_eq!(report["unknown"], 2);
+        assert_eq!(report["quarantined"], 2);
+        assert_eq!(report["succeeded"], 1);
+        assert_eq!(report["dispatcherFailed"], usize::from(first_fails));
+        assert_eq!(report["results"][1]["blockedByOperationId"], "first");
+        assert_eq!(report["results"][3]["blockedByOperationId"], "progress");
+    }
+
     #[tokio::test]
-    async fn configured_parallelism_exceeds_the_retired_five_action_cap() {
+    async fn quarantine_settlement_polls_existing_dispatch_without_starting_conflicts() {
+        settlement_keeps_active_dispatch_moving(false).await;
+    }
+
+    #[tokio::test]
+    async fn failure_settlement_polls_existing_dispatch_without_starting_conflicts() {
+        settlement_keeps_active_dispatch_moving(true).await;
+    }
+
+    #[tokio::test]
+    async fn summary_counts_terminal_outcomes_without_treating_known_as_success() {
+        let report=schedule_with(vec![operation("success","a","a",false),operation("failed","b","b",false),
+            operation("stale","c","c",false),operation("unknown","d","d",false)],4,
+            |operation|async move {Ok(match operation["id"].as_str().unwrap() {
+                "success"=>Outcome::Succeeded,"failed"=>Outcome::Failed,"stale"=>Outcome::Stale,_=>Outcome::Unknown
+            })},|_,_|async{Ok(())}).await.unwrap();
+        for field in ["succeeded","failed","stale","unknown"] {assert_eq!(report[field],1,"{field}");}
+        assert_eq!(report["known"],3);assert_eq!(report["total"],4);
+        assert!(report["results"].as_array().unwrap().iter().all(|result|result["status"]!="known"));
+    }
+
+    #[tokio::test]
+    async fn large_wave_stays_bounded_and_settles_every_operation() {
         let operations = (0..8)
             .map(|n| {
                 operation(
@@ -297,36 +446,31 @@ mod tests {
             .collect();
         let active = Arc::new(AtomicUsize::new(0));
         let maximum = Arc::new(AtomicUsize::new(0));
-        let barrier = Arc::new(Barrier::new(9));
         let report = tokio::spawn(schedule_with(
             operations,
             8,
             {
                 let active = active.clone();
                 let maximum = maximum.clone();
-                let barrier = barrier.clone();
                 move |_| {
                     let active = active.clone();
                     let maximum = maximum.clone();
-                    let barrier = barrier.clone();
                     async move {
                         let now = active.fetch_add(1, Ordering::SeqCst) + 1;
                         observe_max(&maximum, now);
-                        barrier.wait().await;
+                        tokio::time::sleep(Duration::from_millis(20)).await;
                         active.fetch_sub(1, Ordering::SeqCst);
-                        Ok(true)
+                        Ok(Outcome::Succeeded)
                     }
                 }
             },
             |_, _| async { Ok(()) },
         ));
-        tokio::time::timeout(Duration::from_secs(1), barrier.wait())
-            .await
-            .unwrap();
         let report = report.await.unwrap().unwrap();
-        assert_eq!(maximum.load(Ordering::SeqCst), 8);
-        assert_eq!(report["parallelism"], 8);
+        assert_eq!(maximum.load(Ordering::SeqCst), MAX_IN_FLIGHT);
+        assert_eq!(report["parallelism"], MAX_IN_FLIGHT);
         assert_eq!(report["known"], 8);
+        assert_eq!(report["succeeded"], 8);
     }
 
     #[tokio::test]
@@ -370,7 +514,7 @@ mod tests {
                         if let Some(counter) = counter {
                             counter.fetch_sub(1, Ordering::SeqCst);
                         }
-                        Ok(true)
+                        Ok(Outcome::Succeeded)
                     }
                 }
             },
@@ -401,7 +545,7 @@ mod tests {
                     async move {
                         let id = operation["id"].as_str().unwrap().to_owned();
                         called.lock().unwrap().push(id.clone());
-                        Ok(id != "unknown")
+                        Ok(if id != "unknown" {Outcome::Succeeded}else{Outcome::Unknown})
                     }
                 }
             },
@@ -433,7 +577,7 @@ mod tests {
         );
         assert_eq!(report["unknown"], 1);
         assert_eq!(report["quarantined"], 1);
-        assert_eq!(report["known"], 1);
+        assert_eq!(report["known"], 2);
     }
 
     #[tokio::test]
@@ -450,7 +594,7 @@ mod tests {
                 if operation["id"] == "fails" {
                     Err(internal("isolated runner failure"))
                 } else {
-                    Ok(true)
+                    Ok(Outcome::Succeeded)
                 }
             },
             {
@@ -472,7 +616,8 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(report["known"], 2);
-        assert_eq!(report["failed"], 1);
+        assert_eq!(report["failed"], 0);
+        assert_eq!(report["dispatcherFailed"], 1);
         assert_eq!(report["unknown"], 1);
         assert_eq!(
             settlements.lock().unwrap().as_slice(),

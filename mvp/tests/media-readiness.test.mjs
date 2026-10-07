@@ -92,14 +92,21 @@ test('reply, close and mixed bulk hold before any mutation or draft autosave',as
 test('already open review rechecks fresh readiness before approval or execute',async t=>{
   const oldFetch=globalThis.fetch,oldDocument=globalThis.document;
   t.after(()=>{globalThis.fetch=oldFetch;globalThis.document=oldDocument;});
-  let clicks,html='',calls=[];const button={disabled:false,addEventListener:(_name,handler)=>clicks=handler},mediaStatus={};
-  const dialog={remove(){},showModal(){},addEventListener(){},querySelectorAll:()=>[],querySelector:selector=>selector==='[data-media-readiness]'?mediaStatus:button,set innerHTML(value){html=value;}};
+  let clicks,html='',calls=[];const button={disabled:false,addEventListener:(_name,handler)=>clicks=handler},mediaStatus={},controls=new Map();
+  const control=selector=>{if(!controls.has(selector))controls.set(selector,{disabled:false,hidden:false,checked:false,innerHTML:'',addEventListener(){}});return controls.get(selector);};
+  const dialog={remove(){},showModal(){},addEventListener(){},querySelectorAll:()=>[],querySelector:selector=>selector==='[data-media-readiness]'?mediaStatus:selector==='[data-confirm]'?button:control(selector),set innerHTML(value){html=value;}};
   globalThis.document={activeElement:null,createElement:()=>dialog,body:{append(){}}};
   const snapshot={items:[{...item,mediaReadiness:readiness('ready')}],posts:[],branches:[],proposals:[proposal],operations:[]};
-  let raw=snapshot,data={items:[]},readinessUpdates=0,holdDuringApproval=false;const saved={items:{}};
+  let raw=snapshot,data={items:[]},readinessUpdates=0,holdDuringApproval=false,editorialBody;const saved={items:{}};
   globalThis.fetch=async(path,options={})=>{
-    calls.push({path,method:options.method||'GET'});
-    if(path==='/api/approvals'&&holdDuringApproval){raw={...snapshot,items:[{...item,mediaReadiness:readiness('media_wait')}]};connection.hydrate(raw,{repaint:false});return {ok:true,json:async()=>({id:'approved'})};}
+    const body=options.body?JSON.parse(options.body):undefined;
+    calls.push({path,method:options.method||'GET',body});
+    if(path==='/api/proposals/editorial-review'){
+      editorialBody=body;
+      return {ok:true,json:async()=>({jobId:'editorial-media-fixture',requestId:body.requestId,replayed:false})};
+    }
+    if(path==='/api/jobs/editorial-media-fixture')return {ok:true,json:async()=>({id:'editorial-media-fixture',kind:'editorial_review',purpose:'editorial_review',refId:editorialBody.requestId,status:'completed',result:{accepted:editorialBody.proposals,reused:[],held:[]}})};
+    if(path==='/api/approvals'&&holdDuringApproval){raw={...snapshot,items:[{...item,mediaReadiness:readiness('media_wait')}]};connection.hydrate(raw,{repaint:false});return {ok:true,json:async()=>({id:'approved',status:'approved',requestId:body.requestId,replayed:false})};}
     return {ok:true,json:async()=>raw};
   };
   const connection=createMvpConnection({getData:()=>data,getSaved:()=>saved,stateFor:row=>saved.items[row.id]||=structuredClone(row.initialState),esc:String,icon:()=>'',updateDecisionReadiness(){readinessUpdates++;}});
@@ -115,5 +122,11 @@ test('already open review rechecks fresh readiness before approval or execute',a
   connection.review(['p']);assert.match(html,/Получаем контекст видео/);assert.match(html,/data-confirm disabled/);
   raw=snapshot;connection.hydrate(raw,{repaint:false});connection.review(['p']);holdDuringApproval=true;
   await clicks({currentTarget:button});
-  assert.deepEqual(calls.filter(call=>call.method!=='GET').map(call=>call.path),['/api/approvals'],'a newly held approved action is not executed');
+  assert.deepEqual(calls.filter(call=>call.method!=='GET').map(call=>call.path),['/api/proposals/editorial-review'],'fresh editorial acceptance does not approve or execute automatically');
+  assert.deepEqual(editorialBody.proposals,[{id:'p',revision:1}],'editorial review covers the exact displayed version');
+  assert.match(control('[data-editorial-result]').innerHTML,/Проверка завершена/);
+  await clicks({currentTarget:button});
+  assert.deepEqual(calls.filter(call=>call.method!=='GET').map(call=>call.path),['/api/proposals/editorial-review','/api/approvals'],'a newly held valid approval is not executed');
+  assert.deepEqual(calls.find(call=>call.path==='/api/approvals').body.proposals,[{id:'p',revision:1}]);
+  assert.equal(button.disabled,true);assert.match(mediaStatus.textContent,/Получаем контекст видео/);
 });

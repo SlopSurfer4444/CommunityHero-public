@@ -16,7 +16,7 @@ const admit=(evidence,activity=trace)=>admitReviewEvidence({...value,evidence},p
 test('research validators retain fail-closed base code and emit distinct safe categories',()=>{
   const cases=[
     ['MISSING_EVIDENCE',()=>admit(undefined)],
-    ['FIELDS',()=>admit(Array(31).fill(source))],
+    ['FIELDS',()=>admit(Array(3000).fill({...source,claim:'x'.repeat(1000)}))],
     ['FIELDS',()=>admit([{...source,title:''}])],
     ['FIELDS',()=>admit([{...source,url:'http://127.0.0.1/private'}])],
     ['RECIPIENT',()=>admit([{...source,itemId:'foreign'}])],
@@ -32,6 +32,7 @@ test('research validators retain fail-closed base code and emit distinct safe ca
     return true;
   });
   assert.deepEqual(admit([source]),[{...source,trust:'source_only'}]);
+  assert.equal(admit(Array(31).fill(source)).length,31,'new uncapped review accepts all observed sources without truncation');
 });
 
 test('safeError exports only an allowed research category and never raw error properties',()=>{
@@ -115,7 +116,7 @@ test('sanitized lane receipts survive run cleanup, retain at most 32 own files a
     try{admit([source],{calls:1,openedUrls:[]});}catch(error){failure=error;}
     failure.researchDiagnostic.secret='PRIVATE_TEXT';
     failure.researchDiagnostic.completedActivity=Array(100).fill({action:'PRIVATE_TEXT',locatorKind:'PRIVATE_TEXT',urlSha256:'PRIVATE_TEXT',query:'PRIVATE_TEXT'});
-    const input='PRIVATE_TEXT';const prompt='communityhero-drafting-v15-review-exact-url-verification';
+    const input='PRIVATE_TEXT';const prompt='communityhero-drafting-v19-review-intent-scoped-evidence';
     assert.equal(await persistResearchDiagnostic(lane,failure,input,prompt),true);
     const files=(await fs.readdir(directory)).filter(name=>name.startsWith('research-failure-'));
     assert.equal(files.length,32);assert.equal(await fs.readFile(foreign,'utf8'),'keep');

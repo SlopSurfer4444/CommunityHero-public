@@ -5,15 +5,14 @@ import {publicUrl} from './assistant-research.mjs';
 const firstPass={text:'Разбор',sources:[],proposals:[],assessments:[{itemId:'a',outcome:'needs_attention',reason:'Нужна мощность',tags:['needs_fact']}]};
 const prepared=()=>prepareAssistantRequest({purpose:'triage_review',items:[{id:'a'}],firstPass});
 
-test('both research prompts require literal absolute URL opens within the unchanged proof budget',()=>{
+test('both research prompts require literal absolute URL opens with uncapped activity and unchanged exact source proof',()=>{
  for(const instructions of [reviewInstructions(),publicResearchInstructions()]) {
    assert.match(instructions,/explicitly open its literal absolute\nhttp:\/\/ or https:\/\/ URL/);
    assert.match(instructions,/reference ID \(ref_id such as turn0search0\) are\ninsufficient/);
    assert.match(instructions,/Cite the exact URL you explicitly opened/);
-   assert.match(instructions,/Reserve enough of the eight-call total/);
-   assert.match(instructions,/Never exceed the budget to repair attribution/);
-   assert.match(instructions,/retain needs_attention with no\nproposal/);
-   assert.match(instructions,/return sources: \[\] when no usable source remains/);
+   assert.match(instructions,/no numerical/);
+   assert.doesNotMatch(instructions,/eight-call total|Never exceed the budget/);
+   assert.match(instructions,/never invent support/);
  }
  const source={itemId:'a',url:'https://manufacturer.example/spec',title:'Spec',claim:'Engine power'};
  const value={evidence:[source],assessments:[{itemId:'a',outcome:'reply'}]};

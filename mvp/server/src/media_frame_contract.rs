@@ -108,11 +108,7 @@ pub(crate) fn validate_response(request: &Value, response: &Value) -> Result<Val
         return Err("visual_chunk_response_incomplete");
     }
     let provenance = &response["provenance"];
-    if !exact(provenance, PROVENANCE_KEYS)
-        || !nonempty(&provenance["backend"], 128)
-        || !nonempty(&provenance["model"], 256)
-        || !sha(&provenance["instructionSha256"])
-    {
+    if !valid_provenance(provenance, &request["frames"]) {
         return Err("visual_chunk_provenance_invalid");
     }
     let expected = request["frames"]
@@ -151,6 +147,41 @@ pub(crate) fn validate_response(request: &Value, response: &Value) -> Result<Val
         }
     }
     Ok(response.clone())
+}
+
+fn valid_provenance(value: &Value, frames: &Value) -> bool {
+    // Historical single-model receipts retain their exact original contract.
+    if exact(value, PROVENANCE_KEYS) {
+        return nonempty(&value["backend"], 128) && nonempty(&value["model"], 256)
+            && sha(&value["instructionSha256"]);
+    }
+    if !exact(value, &["schemaVersion", "kind", "frames", "rescue"])
+        || value["schemaVersion"] != 2 || value["kind"] != "mixed_frames"
+        || !exact(&value["rescue"], &["permitSha256", "cloudFrameCount", "cloudInvocationCount"])
+        || !sha(&value["rescue"]["permitSha256"]) { return false; }
+    let Some(expected) = frames.as_array() else { return false; };
+    let Some(actual) = value["frames"].as_array() else { return false; };
+    if actual.len() != expected.len() { return false; }
+    let mut seen = BTreeSet::new(); let mut cloud = 0_u64; let mut instruction = None;
+    for entry in actual {
+        if !exact(entry, &["id", "backend", "model", "instructionSha256"])
+            || !sha(&entry["instructionSha256"]) { return false; }
+        let Some(id) = entry["id"].as_str() else { return false; };
+        if !seen.insert(id) || !expected.iter().any(|frame| frame["id"] == id) { return false; }
+        let current = entry["instructionSha256"].as_str().unwrap();
+        if instruction.is_some_and(|prior| prior != current) { return false; }
+        instruction = Some(current);
+        match entry["backend"].as_str() {
+            Some("codex_isolated") if entry["model"] == "gpt-6-luna" || entry["model"] == crate::codex_model_policy::MODEL => cloud += 1,
+            Some("local_ollama") => {
+                let Some((model, digest)) = entry["model"].as_str().and_then(|m| m.split_once("@sha256:")) else { return false; };
+                if model.is_empty() || model.len() > 128 || !sha(&Value::String(digest.into())) { return false; }
+            }
+            _ => return false,
+        }
+    }
+    cloud > 0 && cloud <= 32 && value["rescue"]["cloudFrameCount"] == cloud
+        && value["rescue"]["cloudInvocationCount"] == cloud.div_ceil(4)
 }
 
 /// Shape and semantic checks for a single path-free durable observation.
@@ -192,7 +223,7 @@ pub(crate) fn validate_observation(frame: &Value) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn reasons(v:&Value)->bool{v.as_array().is_some_and(|a|!a.is_empty()&&a.len()<=8&&a.iter().all(|r|matches!(r.as_str(),Some("first"|"last"|"baseline"|"scene_before"|"scene_after"|"local_change_before"|"local_change_after"|"transient_pulse"))))}
+fn reasons(v:&Value)->bool{v.as_array().is_some_and(|a|!a.is_empty()&&a.len()<=8&&a.iter().all(|r|matches!(r.as_str(),Some("first"|"last"|"baseline"|"scene_before"|"scene_after"|"local_change_before"|"local_change_after"|"transient_pulse"|"second_midpoint"|"second_end"))))}
 
 fn validate_request(request: &Value) -> Result<(), &'static str> {
     if !exact(request, REQUEST_KEYS)
@@ -403,6 +434,16 @@ mod tests {
     }
 
     #[test]
+    fn fixed_sampling_reasons_roundtrip_in_sealed_response(){
+        let mut input=request();
+        input["frames"][0]["selectionReasons"]=json!(["second_midpoint"]);
+        input["frames"][1]["selectionReasons"]=json!(["second_end"]);
+        let input=seal_request(input);let output=response(&input);
+        assert!(validate_response(&input,&output).is_ok());
+        let mut invented=input.clone();invented["frames"][0]["selectionReasons"]=json!(["invented"]);
+        let invented=seal_request(invented);assert!(validate_response(&invented,&response(&invented)).is_err());
+    }
+    #[test]
     fn accepts_exact_subset_and_returns_path_free_observations() {
         let request = request();
         let response = response(&request);
@@ -411,6 +452,30 @@ mod tests {
         assert!(accepted.to_string().contains("от 125800 CNY"));
         assert!(!accepted.to_string().contains("private/64.png"));
         assert_eq!(request["chunk"]["endSelectionIndexExclusive"], 96);
+    }
+
+    #[test]
+    fn mixed_frame_provenance_is_exact_bounded_and_does_not_relabel_local_frames() {
+        let req=request(); let mut output=response(&req);
+        output["provenance"]=json!({"schemaVersion":2,"kind":"mixed_frames","frames":[
+            {"id":"f64","backend":"local_ollama","model":format!("fixture:1@sha256:{}","e".repeat(64)),"instructionSha256":"2".repeat(64)},
+            {"id":"f95","backend":"codex_isolated","model":"gpt-6-luna","instructionSha256":"2".repeat(64)}],
+            "rescue":{"permitSha256":"3".repeat(64),"cloudFrameCount":1,"cloudInvocationCount":1}});
+        assert!(validate_response(&req,&output).is_ok());
+        let mut sol61=output.clone();sol61["provenance"]["frames"][1]["model"]=json!(crate::codex_model_policy::MODEL);
+        assert!(validate_response(&req,&sol61).is_ok(),"new cloud evidence keeps exact four-frame rescue accounting");
+        for (pointer,replacement) in [
+            ("/provenance/schemaVersion",json!(3)),("/provenance/frames/1/id",json!("f64")),
+            ("/provenance/frames/1/backend",json!("invented")),("/provenance/frames/1/model",json!("gpt-6-sol")),
+            ("/provenance/frames/0/model",json!("unbound-model")),("/provenance/frames/1/instructionSha256",json!("9".repeat(64))),
+            ("/provenance/rescue/cloudFrameCount",json!(2)),("/provenance/rescue/cloudInvocationCount",json!(2)),
+            ("/provenance/rescue/permitSha256",json!("invalid"))] {
+            let mut changed=output.clone();*changed.pointer_mut(pointer).unwrap()=replacement;
+            assert_eq!(validate_response(&req,&changed).unwrap_err(),"visual_chunk_provenance_invalid");
+        }
+        output["provenance"]["frames"].as_array_mut().unwrap().pop();
+        assert!(validate_response(&req,&output).is_err());
+        assert!(validate_response(&req,&response(&req)).is_ok(),"historical three-key provenance remains valid");
     }
 
     #[test]

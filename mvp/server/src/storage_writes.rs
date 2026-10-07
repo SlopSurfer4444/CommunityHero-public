@@ -11,8 +11,37 @@ enum Scope<'a> {
     SourceClaim,
     Status(&'a [Value]),
 }
+// Includes the complete bounded 12-object, two-page status head.
+const STATUS_ROUTE_LIMIT:usize=2400;
 
 impl Database {
+    /// Read full workspace metadata for cursor/connector decisions without
+    /// loading entity payloads or taking the single writer connection.
+    pub(crate) async fn read_metadata(&self) -> ApiResult<Value> {
+        match self {
+            Self::Sqlite(_) => Ok(metadata(&self.read().await?)),
+            Self::Postgres { reader, .. } => {
+                let record = sqlx::query("SELECT account,metadata::text,execution_enabled FROM communityhero.workspaces WHERE id=$1")
+                    .bind(WORKSPACE).fetch_one(reader).await?;
+                #[cfg(test)] crate::performance::r3_sql_read();
+                if record.try_get::<bool, _>("execution_enabled")? {
+                    return Err(internal("PostgreSQL pilot execution must remain disabled"));
+                }
+                let value = parse(record.try_get::<&str, _>("metadata")?)?;
+                if !value.is_object() || value["account"].as_str().is_none()
+                    || record.try_get::<Option<String>, _>("account")?.as_deref() != value["account"].as_str() {
+                    return Err(internal("Workspace identity mismatch"));
+                }
+                for table in TABLES {
+                    if value.get(table).is_some() {
+                        return Err(internal("Workspace metadata contains entity collections"));
+                    }
+                }
+                Ok(value)
+            }
+        }
+    }
+
     /// Source scheduling needs routing/status tokens, never comment text, draft,
     /// branch evidence, or historical job payloads. The item projection is readonly.
     pub(crate) async fn change_source_claim_observed<T>(
@@ -23,9 +52,57 @@ impl Database {
     }
 
     pub(crate) async fn read_source_status(&self) -> ApiResult<Value> {
-        self.change_scope(Scope::SourceClaim, |d| Ok(d.clone()))
-            .await
-            .map(|(value, _)| value)
+        match self {
+            Self::Sqlite(_) => {
+                let value = project(&self.read().await?, &Scope::SourceClaim)?;
+                validate_scope(&value, &value, &Scope::SourceClaim)?;
+                Ok(value)
+            }
+            Self::Postgres { reader, .. } => {
+                // A single statement gives metadata, active jobs and source tokens
+                // one MVCC snapshot, without borrowing the leased writer or locking
+                // its workspace row. Atomic claim rechecks remain in change_scope.
+                let record = sqlx::query(
+                    "SELECT w.account,w.metadata::text,w.execution_enabled,
+                     COALESCE((SELECT jsonb_agg(jsonb_build_object('id',j.id,'kind',j.kind,'status',j.status,'refId',j.ref_id,'payload',j.payload) ORDER BY j.ordinal) FROM communityhero.jobs j WHERE j.workspace_id=w.id AND j.status IN ('running','queued')),'[]'::jsonb)::text AS active_jobs,
+                     COALESCE((SELECT jsonb_agg(COALESCE((SELECT jsonb_object_agg(e.key,e.value) FROM jsonb_each(i.payload) e WHERE e.key=ANY($2)),'{}'::jsonb) ORDER BY i.ordinal) FROM communityhero.items i WHERE i.workspace_id=w.id),'[]'::jsonb)::text AS source_items
+                     FROM communityhero.workspaces w WHERE w.id=$1",
+                ).bind(WORKSPACE).bind(SOURCE_FIELDS.to_vec()).fetch_one(reader).await?;
+                if record.try_get::<bool, _>("execution_enabled")? {
+                    return Err(internal("PostgreSQL pilot execution must remain disabled"));
+                }
+                let mut value = parse(record.try_get::<&str, _>("metadata")?)?;
+                if !value.is_object() || value["account"].as_str().is_none()
+                    || record.try_get::<Option<String>, _>("account")?.as_deref() != value["account"].as_str() {
+                    return Err(internal("Workspace identity mismatch"));
+                }
+                for table in TABLES {
+                    if value.get(table).is_some() {
+                        return Err(internal("Workspace metadata contains entity collections"));
+                    }
+                    value[table] = json!([]);
+                }
+                let active = parse(record.try_get::<&str, _>("active_jobs")?)?;
+                let mut jobs = Vec::new();
+                for job in active.as_array().ok_or_else(|| internal("Invalid active jobs"))? {
+                    let payload = &job["payload"];
+                    if job["id"].as_str() != Some(text(payload, "id")?) {
+                        return Err(internal("Record identity mismatch"));
+                    }
+                    for (_, key) in projection("jobs") {
+                        if (!payload[*key].is_null() && !payload[*key].is_string())
+                            || job[*key].as_str() != payload[*key].as_str() {
+                            return Err(internal("Record relational projection mismatch"));
+                        }
+                    }
+                    jobs.push(payload.clone());
+                }
+                value["jobs"] = json!(jobs);
+                value["items"] = parse(record.try_get::<&str, _>("source_items")?)?;
+                validate_scope(&value, &value, &Scope::SourceClaim)?;
+                Ok(value)
+            }
+        }
     }
 
     /// One existing job plus metadata. Only that job and `sync` can change.
@@ -46,7 +123,7 @@ impl Database {
         self.change_scope(Scope::Schedule, f).await
     }
 
-    /// At most 800 explicit provider routes. Only their status/workflow clocks,
+    /// At most 2400 explicit provider routes. Only their status/workflow clocks,
     /// revisions and sync metadata can change; drafts and routing are immutable.
     pub(crate) async fn change_status_observed<T>(
         &self,
@@ -108,13 +185,19 @@ impl Database {
                 .await
             }
             Self::Postgres { writer: pool, .. } => {
-                let mut tx = pool.begin().await?;
-                let record = sqlx::query("SELECT account,metadata::text,execution_enabled FROM communityhero.workspaces WHERE id=$1 FOR UPDATE")
-                    .bind(WORKSPACE).fetch_one(&mut *tx).await?;
+                let mut connection=pool.acquire().await?;
+                let mut tx=sqlx::Connection::begin(&mut *connection).await?;
+                let mut before=Value::Null;
+                let mut after=Value::Null;
+                let mut retained_record=None;
+                let outcome:ApiResult<_>=async {
+                retained_record=Some(sqlx::query("SELECT account,metadata::text,execution_enabled FROM communityhero.workspaces WHERE id=$1 FOR UPDATE")
+                    .bind(WORKSPACE).fetch_one(&mut *tx).await?);
+                let record=retained_record.as_ref().expect("metadata row retained");
                 if record.try_get::<bool, _>("execution_enabled")? {
                     return Err(internal("PostgreSQL pilot execution must remain disabled"));
                 }
-                let mut before = parse(record.try_get::<&str, _>("metadata")?)?;
+                before = parse(record.try_get::<&str, _>("metadata")?)?;
                 if !before.is_object()
                     || before["account"].as_str().is_none()
                     || record.try_get::<Option<String>, _>("account")?.as_deref()
@@ -137,12 +220,20 @@ impl Database {
                         }
                     }
                     Scope::Schedule | Scope::SourceClaim => {
+                        // A conductor read admission must inspect its exact durable
+                        // grant inside this transaction, including a paused or
+                        // otherwise non-active job. Other scheduling keeps its
+                        // established active-job projection and deduplication.
+                        let conductor = matches!(&scope, Scope::Schedule)
+                            .then(crate::conductor_authority::current_context).flatten();
+                        let conductor_id=conductor.as_ref().map(|ctx|ctx.run_id.as_str());
                         before["jobs"] = json!(
                             load_records(
                                 &mut tx,
                                 "jobs",
-                                "status IN ('running','queued')",
-                                None,
+                                if conductor.is_some(){"(status IN ('running','queued') OR id=$2)"}
+                                else{"status IN ('running','queued')"},
+                                conductor_id.as_ref(),
                                 None
                             )
                             .await?
@@ -162,11 +253,10 @@ impl Database {
                         before["items"] = json!(load_records(&mut tx, "items", "EXISTS (SELECT 1 FROM jsonb_array_elements($2::jsonb) r WHERE payload->>'objectId'=r->>'objectId' AND payload->>'itemId'=r->>'itemId')", None, Some(&json!(routes))).await?);
                     }
                 }
-                let mut after = before.clone();
+                after = before.clone();
                 let result = f(&mut after)?;
                 validate_scope(&before, &after, &scope)?;
                 if after == before {
-                    tx.commit().await?;
                     return Ok((result, false));
                 }
                 for table in ["jobs", "items"] {
@@ -187,15 +277,19 @@ impl Database {
                     sqlx::query("UPDATE communityhero.workspaces SET metadata=jsonb_set(metadata,'{sync}',$2::jsonb,true) WHERE id=$1")
                         .bind(WORKSPACE).bind(after["sync"].to_string()).execute(&mut *tx).await?;
                 }
-                tx.commit().await?;
                 Ok((result, true))
+                }.await;
+                let (outcome,completion)=super::pg_writer::settle(tx,outcome).await;
+                super::pg_writer::release(&mut connection,pool,completion).await;
+                drop(retained_record);
+                outcome
             }
         }
     }
 }
 
 fn validate_routes(routes: &[Value]) -> ApiResult<()> {
-    if routes.len() > 800 {
+    if routes.len() > STATUS_ROUTE_LIMIT {
         return Err(internal("Status scope exceeds bounded route limit"));
     }
     for route in routes {
@@ -223,10 +317,13 @@ fn project(workspace: &Value, scope: &Scope<'_>) -> ApiResult<Value> {
             projected["jobs"] = json!([job]);
         }
         Scope::Schedule | Scope::SourceClaim => {
+            let conductor = matches!(scope, Scope::Schedule)
+                .then(crate::conductor_authority::current_context).flatten();
             projected["jobs"] = json!(
                 rows(workspace, "jobs")?
                     .iter()
-                    .filter(|j| matches!(j["status"].as_str(), Some("running" | "queued")))
+                    .filter(|j| matches!(j["status"].as_str(), Some("running" | "queued"))
+                        || conductor.as_ref().is_some_and(|ctx|j["id"]==ctx.run_id))
                     .collect::<Vec<_>>()
             );
             if matches!(scope, Scope::SourceClaim) {
@@ -259,23 +356,23 @@ fn project(workspace: &Value, scope: &Scope<'_>) -> ApiResult<Value> {
             )
         }
     }
-    if matches!(scope, Scope::Status(_)) && rows(&projected, "items")?.len() > 800 {
+    if matches!(scope, Scope::Status(_)) && rows(&projected, "items")?.len() > STATUS_ROUTE_LIMIT {
         return Err(internal("Status scope has too many matching records"));
     }
     Ok(projected)
 }
 
+// Compare the exact protected object members by borrowing their values. Missing
+// and null remain distinct; no job, result or item body is copied then removed.
+fn same_except(before: &Value, after: &Value, mutable: &[&str]) -> bool {
+    let (Some(before), Some(after)) = (before.as_object(), after.as_object()) else {return false;};
+    before.iter().filter(|(key, _)| !mutable.contains(&key.as_str()))
+        .all(|(key, value)| after.get(key) == Some(value))
+        && after.keys().filter(|key| !mutable.contains(&key.as_str()))
+            .all(|key| before.contains_key(key))
+}
 fn validate_scope(before: &Value, after: &Value, scope: &Scope<'_>) -> ApiResult<()> {
-    let mut readonly_before = before.clone();
-    let mut readonly_after = after.clone();
-    for key in ["sync", "jobs", "items"] {
-        readonly_before.as_object_mut().unwrap().remove(key);
-        readonly_after
-            .as_object_mut()
-            .ok_or_else(|| internal("Invalid scoped workspace"))?
-            .remove(key);
-    }
-    if readonly_before != readonly_after || !after["sync"].is_object() {
+    if !same_except(before, after, &["sync", "jobs", "items"]) || !after["sync"].is_object() {
         return Err(internal(
             "Scoped mutation changed read-only workspace state",
         ));
@@ -323,13 +420,7 @@ fn validate_scope(before: &Value, after: &Value, scope: &Scope<'_>) -> ApiResult
                 return Err(internal("Status scope changed record membership"));
             }
             for (old, new) in old.iter().zip(new) {
-                let mut old = old.clone();
-                let mut new = new.clone();
-                for field in ["statusObservedAt", "providerStatus", "workflow", "revision"] {
-                    old.as_object_mut().unwrap().remove(field);
-                    new.as_object_mut().unwrap().remove(field);
-                }
-                if old != new {
+                if !same_except(old, new, &["statusObservedAt", "providerStatus", "workflow", "revision"]) {
                     return Err(internal("Status scope changed protected item content"));
                 }
             }
@@ -337,6 +428,18 @@ fn validate_scope(before: &Value, after: &Value, scope: &Scope<'_>) -> ApiResult
     }
     // History collections above are read-only empty placeholders, never histories
     // submitted to the full-workspace history validator.
+    crate::runtime_paid_result::validate_change(before, after)?;
+    crate::model_material_receipt::validate_change(before, after)?;
+    if matches!(scope, Scope::Job(_)) {
+        crate::answering_repair_plan::validate_job_change(before, after)?;
+    } else {
+        crate::answering_repair_plan::validate_readonly_projection_change(before, after)?;
+    }
+    // Other scopes preserve all existing jobs exactly; scheduling above also
+    // rejects creation of repair authority. Full closure checks belong to the
+    // full-domain writer, not this explicitly incomplete projection.
+    crate::conductor_authority::validate_change(before, after)?;
+    crate::retained_paid_recovery_registry::validate_change(before, after, false)?;
     Ok(())
 }
 
@@ -363,14 +466,23 @@ async fn load_records(
     routes: Option<&Value>,
 ) -> ApiResult<Vec<Value>> {
     // table/predicate are module constants, parameters are always bound values.
-    let statement = format!(
+    let statement = if table == "items" && routes.is_some() {
+        // Deduplicate requested routes, never matching item identities. The
+        // JSON text expressions intentionally preserve the existing PG route
+        // comparison semantics; identity/projection validation remains below.
+        // The existing items_provider_route_idx matches these equality keys.
+        format!(
+            "WITH requested_routes AS (SELECT DISTINCT r->>'objectId' AS object_id,r->>'itemId' AS provider_item_id FROM jsonb_array_elements($2::jsonb) r) SELECT i.id,i.payload::text{} FROM requested_routes r JOIN communityhero.items i ON i.workspace_id=$1 AND i.payload->>'objectId'=r.object_id AND i.payload->>'itemId'=r.provider_item_id ORDER BY i.ordinal LIMIT 2401",
+            projection(table).iter().map(|(column, _)| format!(",i.{column}")).collect::<String>()
+        )
+    } else { format!(
         "SELECT id,payload::text{} FROM communityhero.{table} WHERE workspace_id=$1 AND {predicate} ORDER BY ordinal{}",
         projection(table)
             .iter()
             .map(|(column, _)| format!(",{column}"))
             .collect::<String>(),
-        if table == "items" { " LIMIT 801" } else { "" }
-    );
+        if table == "items" { " LIMIT 2401" } else { "" }
+    ) };
     let mut query = sqlx::query(sqlx::AssertSqlSafe(statement.as_str())).bind(WORKSPACE);
     if let Some(key) = key {
         query = query.bind(*key);
@@ -379,7 +491,7 @@ async fn load_records(
         query = query.bind(routes.to_string());
     }
     let records = query.fetch_all(connection).await?;
-    if table == "items" && records.len() > 800 {
+    if table == "items" && records.len() > STATUS_ROUTE_LIMIT {
         return Err(internal("Status scope has too many matching records"));
     }
     records
@@ -434,3 +546,15 @@ async fn append_job(connection: &mut PgConnection, value: &Value) -> ApiResult<(
 #[cfg(test)]
 #[path = "storage_writes_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "storage_writes_conductor_tests.rs"]
+mod conductor_tests;
+
+#[cfg(test)]
+#[path = "storage_writes_query_candidate_tests.rs"]
+mod query_candidate_tests;
+
+#[cfg(test)]
+#[path = "storage_writes_paid_history_tests.rs"]
+mod paid_history_tests;

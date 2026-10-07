@@ -172,6 +172,7 @@ p, h1, h2, h3 { margin: 0; }
 .list-conditions .clear-conditions:hover { background: var(--soft); }
 .list-count { display: flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 10px; color: var(--muted); }
 .list-processing { margin-left: auto; color: #665a78; }
+.list-coverage { margin: 0 0 7px; color: var(--muted); font-size: 11px; line-height: 1.35; }
   .load-more { display: block; margin: 12px auto; font-size: 12px; }
   .list-top-spacer { position: relative; }
   .list-top-spacer .load-more { position: absolute; bottom: 4px; left: 50%; width: max-content; max-width: 95%; margin: 0; transform: translateX(-50%); }

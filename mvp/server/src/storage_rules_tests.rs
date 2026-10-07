@@ -3,7 +3,10 @@ use sha2::{Digest, Sha256};
 const AT: &str = "2026-09-23T12:00:00Z";
 
 fn workspace() -> Value {
-    json!({"account":"LikeAvto","connectorBinding":crate::legacy_binding(),"posts":[],"materials":[],"knowledge_entries":[],"knowledge_versions":[],"feedback":[]})
+    // database() stores this as the complete SQLite workspace, not as the
+    // read-only instruction projection returned by the product loader.
+    let mut workspace=crate::empty();normalize(&mut workspace);
+    workspace["connectorBinding"]=crate::legacy_binding();workspace
 }
 fn rehash(version: &mut Value) {
     let mut payload=version.clone();
@@ -23,6 +26,24 @@ async fn database(d:&Value)->(tempfile::TempDir,Database) {
     let pool=crate::open_db(&temp.path().join("workspace.sqlite")).await.unwrap();
     sqlx::query("UPDATE workspace SET payload=? WHERE id=1").bind(d.to_string()).execute(&pool).await.unwrap();
     (temp,Database::Sqlite(pool))
+}
+
+#[tokio::test]
+async fn baw_instruction_catalog_is_bound_to_its_own_company() {
+    let mut d=workspace();
+    d["account"]=json!("BAW Russia");
+    d["connectorBinding"]=crate::accounts::Profile::BawRussia.binding();
+    rule(&mut d,"baw-rule",json!({"account":"BAW Russia","postKeys":[]}),json!({"text":"BAW_ONLY"}));
+    rule(&mut d,"foreign-rule",json!({"account":"LikeAvto","postKeys":[]}),json!({"text":"FOREIGN_CANARY"}));
+    let (_temp,db)=database(&d).await;
+    let result=db.read_instruction_catalog().await.unwrap();
+    assert_eq!(result["versions"].as_array().unwrap().len(),1);
+    assert_eq!(result["versions"][0]["text"],"BAW_ONLY");
+    assert!(!result.to_string().contains("FOREIGN_CANARY"));
+    let selected=db.read_rule_selection(&[],AT).await.unwrap();
+    assert_eq!(selected["materials"].as_array().unwrap().len(),1);
+    assert_eq!(selected["materials"][0]["text"],"BAW_ONLY");
+    assert_eq!(db.read().await.unwrap(),d);
 }
 
 #[tokio::test]

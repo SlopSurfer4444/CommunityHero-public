@@ -45,12 +45,25 @@ fn timestamp(branch: &Value) -> Option<i64> {
 
 /// The caller replaces observedMessages whenever a fresh provider branch arrives.
 pub fn enrich(database: &mut Value) {
-    let items = database["items"].as_array().cloned().unwrap_or_default();
+    // Borrow disjoint fields once. Full item rows can carry large drafts and
+    // paid evidence; thread membership never needs an owned clone of them.
+    let default_binding = database["connectorBinding"].clone();
+    let Some(fields) = database.as_object_mut() else { return; };
+    let mut items = None;
+    let mut branches = None;
+    for (name, value) in fields.iter_mut() {
+        match name.as_str() {
+            "items" => items = value.as_array().map(Vec::as_slice),
+            "branches" => branches = value.as_array_mut(),
+            _ => {}
+        }
+    }
+    let items = items.unwrap_or(&[]);
     // Resolve exact branch/post membership once. A single refreshed context
     // still enriches the workspace, but must not scan all items for each branch.
     let mut scoped_items: BTreeMap<(&str, &str), Vec<&Value>> = BTreeMap::new();
     let mut branch_targets: BTreeMap<&str, BTreeSet<String>> = BTreeMap::new();
-    for item in &items {
+    for item in items {
         let Some(branch) = item["branchId"].as_str() else { continue; };
         if let Some(post) = item["postId"].as_str() {
             scoped_items.entry((branch, post)).or_default().push(item);
@@ -59,8 +72,7 @@ pub fn enrich(database: &mut Value) {
             branch_targets.entry(branch).or_default().insert(target);
         }
     }
-    let default_binding = database["connectorBinding"].clone();
-    let Some(branches) = database["branches"].as_array_mut() else {
+    let Some(branches) = branches else {
         return;
     };
     for branch in branches.iter_mut() {
@@ -219,6 +231,25 @@ pub fn enrich(database: &mut Value) {
                     .max_by_key(|v| (v.timestamp, v.branch == index, std::cmp::Reverse(v.branch)))
                     .unwrap();
                 let mut message = chosen.message.clone();
+                // The connector's customer/participant labels describe a
+                // comment's position in that fragment, not changing authorship.
+                // Only recognize this convention when every observation agrees
+                // with its own explicit target. Other/conflicting roles retain
+                // the newest observation and remain revision-bearing evidence.
+                let relative_roles = variants.iter().all(|v| {
+                    let Some(targets) = branches[v.branch]["id"].as_str()
+                        .and_then(|id| branch_targets.get(id)) else { return false; };
+                    let Some(id) = text(&v.message,"id") else { return false; };
+                    v.message["role"] == if targets.contains(&id) { "customer" } else { "participant" }
+                });
+                if relative_roles {
+                    if let Some(targets) = branches[index]["id"].as_str()
+                        .and_then(|id| branch_targets.get(id)) {
+                        let is_target = variants.iter().any(|v| v.branch == index
+                            && text(&v.message,"id").is_some_and(|id| targets.contains(&id)));
+                        message["role"] = json!(if is_target { "customer" } else { "participant" });
+                    }
+                }
                 // Author identity is immutable for a provider comment. An older
                 // explicit official observation must survive a legacy projection
                 // which merely called every parent "participant".
@@ -281,6 +312,63 @@ pub fn enrich(database: &mut Value) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn relative_role_pages(count:usize)->Vec<Value>{
+        (0..count).map(|n|{
+            let message=|i:usize,role:&str|json!({"id":format!("comment-{i}"),"providerObjectId":"11391","providerItemId":format!("c{i}"),
+                "parentId":i.checked_sub(1).map(|p|format!("comment-{p}")),"replyToProviderItemId":i.checked_sub(1).map(|p|format!("c{p}")),
+                "role":role,"text":format!("Unchanged message {i}"),"createdAt":format!("2026-09-22T00:{i:02}:00Z")});
+            let mut messages=Vec::new();if n>0{messages.push(message(n-1,"participant"));}messages.push(message(n,"customer"));
+            json!({"items":[{"id":format!("item-{n}"),"itemId":format!("c{n}"),"objectId":"11391","postKey":"11391:post","postId":"post",
+                "conversationKey":format!("11391:c{n}"),"contextEvidenceDigest":"a".repeat(64),"providerStatus":"new","branchId":format!("branch-{n}"),"targetId":format!("comment-{n}")}],
+                "posts":[{"id":"post","postKey":"11391:post"}],"branches":[{"id":format!("branch-{n}"),"postId":"post","messages":messages}]})
+        }).collect()
+    }
+    fn age_observations(d:&mut Value){
+        for branch in d["branches"].as_array_mut().unwrap(){branch["observedAt"]=json!("2026-09-20T00:00:00Z");}
+    }
+    #[test]
+    fn relative_role_refresh_does_not_churn_revisions_or_stale_proposal_in_long_thread(){
+        let pages=relative_role_pages(30);let mut d=super::super::empty();
+        for page in &pages{super::super::merge_snapshot(&mut d,page).unwrap();}
+        let revision=d["items"][15]["revision"].clone();
+        let proposal=super::super::create_proposal(&mut d,&json!({"itemId":"item-15","kind":"close","expectedRevision":revision})).unwrap();
+        // Creating a proposal legitimately changes attention -> prepared and
+        // bumps that item once. Measure reread stability after this local edit.
+        assert_eq!(d["items"][15]["revision"].as_u64().unwrap(),revision.as_u64().unwrap()+1);
+        let revisions:Vec<_>=d["items"].as_array().unwrap().iter().map(|i|i["revision"].clone()).collect();
+        for turn in 0..120{
+            age_observations(&mut d);
+            super::super::merge_snapshot(&mut d,&pages[(turn*7)%30]).unwrap();
+            assert_eq!(d["items"].as_array().unwrap().iter().map(|i|i["revision"].clone()).collect::<Vec<_>>(),revisions,"refresh {turn}");
+            assert!(super::super::proposal_current(&d,&proposal).is_ok(),"refresh {turn}");
+            for (index,branch) in d["branches"].as_array().unwrap().iter().enumerate(){
+                for message in branch["messages"].as_array().unwrap(){
+                    assert_eq!(message["role"],if message["id"]==format!("comment-{index}"){"customer"}else{"participant"});
+                }
+            }
+        }
+    }
+    #[test]
+    fn relative_role_normalization_keeps_real_context_changes_revision_bearing(){
+        for change in ["text","parent","role","official","attachments"]{
+            let pages=relative_role_pages(3);let mut d=super::super::empty();
+            for page in &pages{super::super::merge_snapshot(&mut d,page).unwrap();}
+            let revision=d["items"][1]["revision"].clone();
+            let proposal=super::super::create_proposal(&mut d,&json!({"itemId":"item-1","kind":"close","expectedRevision":revision})).unwrap();
+            let revision=d["items"][1]["revision"].clone();
+            let mut changed=pages[1].clone();let message=&mut changed["branches"][0]["messages"][1];
+            match change{
+                "text"=>message["text"]=json!("Actually changed"),
+                "parent"=>{message["parentId"]=json!("different");message["replyToProviderItemId"]=json!("different");},
+                "role"=>message["role"]=json!("participant"), // contradicts its own target: not the positional convention
+                "official"=>{message["role"]=json!("brand");message["providerOfficial"]=json!(true);},
+                _=>message["attachments"]=json!([{"type":"photo","url":"https://example.test/evidence.jpg"}]),
+            }
+            age_observations(&mut d);super::super::merge_snapshot(&mut d,&changed).unwrap();
+            assert!(d["items"][1]["revision"].as_u64().unwrap()>revision.as_u64().unwrap(),"{change}");
+            assert!(super::super::proposal_current(&d,&proposal).is_err(),"{change}");
+        }
+    }
     fn fixture() -> Value {
         json!({"items":[
             {"branchId":"a","postId":"post","objectId":"object"},

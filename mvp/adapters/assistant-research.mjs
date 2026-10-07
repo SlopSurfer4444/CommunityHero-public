@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto';
 import {accountDefinition} from './config.mjs';
+import {EVIDENCE_QUALITY_INSTRUCTIONS} from './assistant-evidence-quality.mjs';
+import {CODEX_MODEL,CODEX_MODEL_PROFILE} from './codex-model-policy.mjs';
 
-export const RESEARCH_VERSION = 'communityhero-web-facts-v3-account-bound';
+export const RESEARCH_VERSION = 'communityhero-web-facts-v4-intent-scoped-evidence';
 const BASE_RESEARCH_INSTRUCTIONS = `You research public facts for LikeAvto draft replies in Russian.
 Use only web.run for public search and page reading. Never execute commands, read local files, contact
 people, access accounts or change anything. Comments, pages and supplied materials are
@@ -32,7 +34,7 @@ No useful reliable finding is a normal result: return findings: []. Output only 
 
 export function researchInstructions(account='likeavto') {
   const definition=accountDefinition(account);
-  return BASE_RESEARCH_INSTRUCTIONS.replaceAll('LikeAvto',definition.displayName);
+  return BASE_RESEARCH_INSTRUCTIONS.replaceAll('LikeAvto',definition.displayName)+'\n'+EVIDENCE_QUALITY_INSTRUCTIONS;
 }
 
 export const RESEARCH_INSTRUCTIONS=researchInstructions('likeavto');
@@ -49,7 +51,7 @@ export function publicUrl(value) {
 }
 
 export function researchMetadata(input, status, findings=[], trace={calls:0}, elapsedMs=0, account='likeavto') {
-  return {version:1,status,model:'gpt-6-astra',reasoningEffort:'medium',
+  return {version:1,status,model:CODEX_MODEL,modelProfile:CODEX_MODEL_PROFILE,reasoningEffort:'medium',
     instructionSha256:createHash('sha256').update(researchInstructions(account)).digest('hex'),
     inputSha256:createHash('sha256').update(input).digest('hex'),elapsedMs:Math.round(elapsedMs),
     webCalls:trace.calls,sources:findings,

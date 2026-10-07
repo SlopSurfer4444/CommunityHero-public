@@ -11,6 +11,8 @@ type Branch = AnyRow & { id: string; messages?: AnyRow[] };
 type Message = { id: string; role: 'user' | 'assistant'; text: string; createdAt?: string; sources?: unknown[] };
 type Conversation = { id: string; title: string; itemIds: string[]; messages: Message[] };
 type Proposal = { id: string; itemId: string; kind: 'reply_and_close' | 'close'; text: string; revision: number; status: string; sources?: unknown[] };
+type MediaContext = { version: 1; strict: true; status: 'ready' | 'missing' | 'not-required' | 'waived'; proposalId: string; proposalRevision: number; contextDigest: string; requirements: { kind: string; sourceId: string; ready: boolean; reason?: string }[]; attempts: { jobId: string; status: string; phase?: string; failureClass?: string }[]; canOverrideMissingMedia: boolean; overrideUnavailableReason?: string; waiver?: AnyRow };
+type MediaContextWaiver = { expectedProposalRevision: number; expectedContextDigest: string; reason: string };
 type Material = { id: string; title: string; text: string; kind: string; revision: number; updatedAt?: string; sourceUrl?: string; postKey?: string };
 type Job = AnyRow & { id: string; status?: string; kind?: string; error?: string };
 type Data = { csrfToken: string; account: string; items: Item[]; posts: Post[]; branches: Branch[]; conversations: Conversation[]; proposals: Proposal[]; operations: AnyRow[]; materials: Material[]; jobs: Job[]; settings: AnyRow; sync: AnyRow };
@@ -213,14 +215,89 @@ export default function App() {
         </section>}
       </main>
       <aside className={`assistant-panel ${assistantOpen ? 'is-open' : ''}`} aria-hidden={!assistantOpen} inert={!assistantOpen}><div className="assistant-head"><div><MessageCircle size={19}/><strong>Ассистент</strong></div><button className="icon-button" title="Закрыть ассистента" onClick={() => setAssistantOpen(false)}><X size={16}/></button></div><div className="conversation-tools"><select value={conversationId} onChange={e => setConversationId(e.target.value)} aria-label="Обсуждение"><option value="">Новое обсуждение</option>{data.conversations.map(c => <option key={c.id} value={c.id}>{c.title || c.id}</option>)}</select><button title="Новое обсуждение" onClick={() => setConversationId('')}><Plus size={16}/></button></div><div className="chat-scroll">{conversation?.itemIds?.length ? <div className="context-banner"><BookOpen size={14}/> Контекст беседы: {conversation.itemIds.map(id => plain(data.items.find(x => x.id === id)?.title) || id).join(', ')}</div> : <div className="context-banner">Новая беседа без прикреплённого комментария</div>}{conversation?.messages?.length ? conversation.messages.map((m, i) => <div key={m.id || i} className={`chat-bubble ${m.role}`}><span>{m.role === 'assistant' ? 'Ассистент' : 'Вы'}</span><p>{m.text}</p>{m.sources?.length ? <small>Источники: {m.sources.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' · ')}</small> : null}<time>{displayDate(m.createdAt)}</time></div>) : <div className="assistant-empty"><Sparkles size={24}/><p>Обсудите ответ или попросите подготовить предложение. Ассистент не выполняет действия за вас.</p></div>}{activeJobs.some(j => ['assistant', 'chat'].includes(str(j.kind).toLowerCase())) && <div className="chat-pending"><LoaderCircle className="spin" size={15}/> Ассистент отвечает…</div>}
-          <div className="proposals"><div className="proposal-head"><h3>Предложения</h3><span>{data.proposals.filter(p => p.status === 'draft').length}</span></div>{data.proposals.filter(p => p.status === 'draft').map(p => <ProposalCard key={p.id} proposal={p} item={data.items.find(x => x.id === p.itemId)} selected={chosenProposals.includes(p.id)} toggle={() => toggleChoice(p.id, chosenProposals, setChosenProposals)} save={text => run('proposal-edit', () => api(`/api/proposals/${encodeURIComponent(p.id)}`, 'PATCH', { expectedRevision: p.revision, text }), 'Предложение обновлено')} busy={!!busy}/>)}{!data.proposals.some(p => p.status === 'draft') && <p className="muted">Предложений пока нет.</p>}</div></div><div className="assistant-bottom">{chosenProposals.length > 0 && <button className="review-button" onClick={() => setReviewOpen(true)}><ShieldCheck size={16}/> Проверить {chosenProposals.length} и выполнить…</button>}<label className="attach-row"><input type="checkbox" checked={attachSelected} onChange={e => setAttachSelected(e.target.checked)} disabled={!selected}/><span>{selected ? `Прикрепить выбранный комментарий: ${itemLabel(selected)}` : 'Выберите комментарий для прикрепления'}</span></label><div className="chat-composer"><textarea value={chatText} onChange={e => setChatText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }} placeholder="Спросите ассистента…" aria-label="Сообщение ассистенту"/><button className="send-button" title="Отправить" aria-label="Отправить ассистенту" onClick={sendChat} disabled={!!busy || !chatText.trim()}><ArrowUp size={20}/></button></div><small>Enter — отправить · Shift+Enter — новая строка</small></div></aside>
+          <div className="proposals"><div className="proposal-head"><h3>Предложения</h3><span>{data.proposals.filter(p => p.status === 'draft').length}</span></div>{data.proposals.filter(p => p.status === 'draft').map(p => <ProposalCard key={p.id} proposal={p} item={data.items.find(x => x.id === p.itemId)} selected={chosenProposals.includes(p.id)} toggle={() => toggleChoice(p.id, chosenProposals, setChosenProposals)} save={text => run('proposal-edit', () => api(`/api/proposals/${encodeURIComponent(p.id)}`, 'PATCH', { expectedRevision: p.revision, text }), 'Предложение обновлено')} saveMissingMedia={waiver => run('media-waiver', () => api(`/api/proposals/${encodeURIComponent(p.id)}/media-context-waiver`, 'POST', waiver), 'Исключение сохранено для этого предложения. Проверьте его перед выполнением.')} busy={!!busy}/>)}{!data.proposals.some(p => p.status === 'draft') && <p className="muted">Предложений пока нет.</p>}</div></div><div className="assistant-bottom">{chosenProposals.length > 0 && <button className="review-button" onClick={() => setReviewOpen(true)}><ShieldCheck size={16}/> Проверить {chosenProposals.length} и выполнить…</button>}<label className="attach-row"><input type="checkbox" checked={attachSelected} onChange={e => setAttachSelected(e.target.checked)} disabled={!selected}/><span>{selected ? `Прикрепить выбранный комментарий: ${itemLabel(selected)}` : 'Выберите комментарий для прикрепления'}</span></label><div className="chat-composer"><textarea value={chatText} onChange={e => setChatText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }} placeholder="Спросите ассистента…" aria-label="Сообщение ассистенту"/><button className="send-button" title="Отправить" aria-label="Отправить ассистенту" onClick={sendChat} disabled={!!busy || !chatText.trim()}><ArrowUp size={20}/></button></div><small>Enter — отправить · Shift+Enter — новая строка</small></div></aside>
     </div>
     {reviewOpen && <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setReviewOpen(false); }}><div className="review-modal" role="dialog" aria-modal="true" aria-labelledby="review-title"><div className="modal-head"><div><div className="eyebrow">ПОСЛЕДНЯЯ ПРОВЕРКА</div><h2 id="review-title">Подтвердить действия LikeAvto</h2></div><button className="icon-button" onClick={() => setReviewOpen(false)} aria-label="Закрыть"><X size={18}/></button></div><p className="review-warning">Следующая кнопка утвердит точные тексты и адресатов и запустит внешние действия. Проверьте каждый пункт.</p>{reviewProblem && <p className="review-error">{reviewProblem}</p>}<div className="review-scroll">{reviewRows.map(p => { const item = data.items.find(x => x.id === p.itemId); return <div className="review-card" key={p.id}><div><strong>{item ? itemLabel(item) : p.itemId}</strong><span>{p.kind === 'reply_and_close' ? 'Ответить и закрыть' : 'Закрыть без ответа'}</span></div><p className="recipient-text">{item ? itemText(item) : 'Исходный комментарий недоступен'}</p>{p.kind === 'reply_and_close' && <blockquote>{p.text}</blockquote>}<small>Адресат LikeAvto: {str(item?.itemId) || p.itemId} · предложение {p.id} · версия {p.revision}</small></div>; })}</div><div className="modal-actions"><button onClick={() => setReviewOpen(false)}>Вернуться</button><button className="primary" onClick={submitReview} disabled={!!busy || !chosenProposals.length || !!reviewProblem}><ShieldCheck size={16}/> Подтвердить и выполнить {chosenProposals.length}</button></div></div></div>}
   </div>;
 }
 
-function ProposalCard({ proposal, item, selected, toggle, save, busy }: { proposal: Proposal; item?: Item; selected: boolean; toggle: () => void; save: (text: string) => void; busy: boolean }) {
+function ProposalCard({ proposal, item, selected, toggle, save, saveMissingMedia, busy }: { proposal: Proposal; item?: Item; selected: boolean; toggle: () => void; save: (text: string) => void; saveMissingMedia: (waiver: MediaContextWaiver) => Promise<void>; busy: boolean }) {
   const [text, setText] = useState(proposal.text);
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const [mediaContext, setMediaContext] = useState<MediaContext | null>(null);
+  const [mediaBinding, setMediaBinding] = useState<{ text: string; kind: Proposal['kind'] } | null>(null);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [mediaError, setMediaError] = useState('');
+  const [mediaReload, setMediaReload] = useState(0);
+  const [mediaConfirmed, setMediaConfirmed] = useState(false);
+  const [waiverReason, setWaiverReason] = useState('');
+  const [waiverSaving, setWaiverSaving] = useState(false);
   useEffect(() => setText(proposal.text), [proposal.text, proposal.id]);
-  return <div className={`proposal-card ${selected ? 'chosen' : ''}`}><button className="proposal-select" onClick={toggle} aria-label={`Выбрать предложение ${proposal.id}`}>{selected ? <SquareCheck size={16}/> : <Square size={16}/>}</button><div className="proposal-body"><div className="proposal-meta"><strong>{item ? field(item, 'author', 'authorName', 'title') || item.id : proposal.itemId}</strong><span>{proposal.kind === 'reply_and_close' ? 'Ответить и закрыть' : 'Закрыть без ответа'}</span></div>{proposal.kind === 'reply_and_close' && <><textarea value={text} onChange={e => setText(e.target.value)} aria-label="Текст предложения"/><button onClick={() => save(text)} disabled={busy || text === proposal.text || !text.trim()}>Сохранить правку</button></>}{proposal.sources?.length ? <small>Источники: {proposal.sources.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' · ')}</small> : null}</div></div>;
+  useEffect(() => { setMediaConfirmed(false); setWaiverReason(''); }, [proposal.id, proposal.revision, proposal.kind, proposal.text, text, mediaContext?.contextDigest]);
+  useEffect(() => {
+    setMediaConfirmed(false); setWaiverReason('');
+    if (!mediaOpen) { setMediaLoading(false); return; }
+    setMediaContext(null); setMediaBinding(null); setMediaError('');
+    const controller = new AbortController();
+    setMediaLoading(true);
+    const load = async () => {
+      try {
+        const response = await fetch(`/api/proposals/${encodeURIComponent(proposal.id)}/media-context`, { credentials: 'same-origin', cache: 'no-store', signal: controller.signal });
+        const result = await response.json() as MediaContext & AnyRow;
+        if (!response.ok) throw new Error(field(result, 'error') || `Не удалось проверить медиаконтекст (${response.status})`);
+        if (result.version !== 1 || result.strict !== true || result.proposalId !== proposal.id || result.proposalRevision !== proposal.revision || !result.contextDigest || !['ready', 'missing', 'not-required', 'waived'].includes(result.status) || !Array.isArray(result.requirements) || !Array.isArray(result.attempts)) throw new Error('Версия предложения или медиаконтекст изменились. Обновите данные и проверьте снова.');
+        if (!controller.signal.aborted) { setMediaContext(result); setMediaBinding({ text: proposal.text, kind: proposal.kind }); }
+      } catch (e) { if (!controller.signal.aborted) setMediaError(errorText(e)); }
+      finally { if (!controller.signal.aborted) setMediaLoading(false); }
+    };
+    void load();
+    return () => controller.abort();
+  }, [mediaOpen, proposal.id, proposal.revision, proposal.kind, proposal.text, mediaReload]);
+  const mediaCurrent = mediaContext?.proposalId === proposal.id && mediaContext.proposalRevision === proposal.revision && mediaBinding?.text === proposal.text && mediaBinding.kind === proposal.kind;
+  const savedText = text === proposal.text;
+  const exactAction = proposal.kind === 'reply_and_close' || proposal.kind === 'close';
+  const canWaive = mediaOpen && mediaCurrent && mediaContext?.status === 'missing' && mediaContext.canOverrideMissingMedia === true && proposal.status === 'draft' && exactAction && savedText;
+  const mediaStatus = mediaContext && mediaCurrent ? ({ ready: 'готов', missing: 'отсутствует — действие заблокировано', 'not-required': 'не требуется', waived: 'сохранено персональное исключение' } as const)[mediaContext.status] : mediaLoading ? 'проверяем…' : mediaError ? 'проверка недоступна' : 'ещё не проверен';
+  const unavailableReason = !mediaCurrent ? 'Сначала загрузите актуальный медиаконтекст.' : !savedText ? 'Сохраните правку текста и заново проверьте медиаконтекст.' : !exactAction || proposal.status !== 'draft' ? 'Исключение доступно только для текущего предложения ответить и закрыть или закрыть без ответа.' : mediaContext?.canOverrideMissingMedia !== true ? mediaContext?.overrideUnavailableReason || 'Нужна персональная сессия с разрешением на такое исключение. Локальный владелец, CLI и ассистент его сохранить не могут.' : '';
+  async function submitMediaWaiver() {
+    if (!canWaive || !mediaContext || !mediaConfirmed || !waiverReason.trim() || busy || waiverSaving || mediaLoading) return;
+    setWaiverSaving(true); setMediaConfirmed(false);
+    try { await saveMissingMedia({ expectedProposalRevision: proposal.revision, expectedContextDigest: mediaContext.contextDigest, reason: waiverReason.trim() }); }
+    catch (e) { setMediaError(errorText(e)); }
+    finally { setWaiverSaving(false); setWaiverReason(''); setMediaReload(value => value + 1); }
+  }
+  return <div className={`proposal-card ${selected ? 'chosen' : ''}`}>
+    <button className="proposal-select" onClick={toggle} aria-label={`Выбрать предложение ${proposal.id}`}>{selected ? <SquareCheck size={16}/> : <Square size={16}/>}</button>
+    <div className="proposal-body">
+      <div className="proposal-meta"><strong>{item ? field(item, 'author', 'authorName', 'title') || item.id : proposal.itemId}</strong><span>{proposal.kind === 'reply_and_close' ? 'Ответить и закрыть' : 'Закрыть без ответа'}</span></div>
+      {proposal.kind === 'reply_and_close' && <>
+        <textarea value={text} onChange={e => { setText(e.target.value); setMediaConfirmed(false); }} disabled={waiverSaving} aria-label="Текст предложения"/>
+        <button onClick={() => save(text)} disabled={busy || waiverSaving || text === proposal.text || !text.trim()}>Сохранить правку</button>
+      </>}
+      {proposal.sources?.length ? <small>Источники: {proposal.sources.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' · ')}</small> : null}
+      <div className="proposal-media">
+        <p role="status">Медиаконтекст: {mediaStatus}</p>
+        <details open={mediaOpen} onToggle={e => setMediaOpen(e.currentTarget.open)}>
+          <summary>Проверить медиаконтекст и попытки восстановления</summary>
+          {mediaLoading && <p className="muted">Загрузка проверки для этого предложения…</p>}
+          {mediaError && <p className="review-error" role="alert">{mediaError}</p>}
+          {mediaContext && mediaCurrent && <>
+            <p className="muted">Строгая проверка · предложение {proposal.id} · версия {proposal.revision}</p>
+            <ul>{mediaContext.requirements.map((requirement, index) => <li key={`${requirement.kind}:${requirement.sourceId}:${index}`}>{requirement.kind} · {requirement.sourceId}: {requirement.ready ? 'готово' : 'отсутствует'}{requirement.reason ? ` · ${requirement.reason}` : ''}</li>)}</ul>
+            <strong>Попытки восстановления</strong>
+            {mediaContext.attempts.length ? <ul>{mediaContext.attempts.map((attempt, index) => <li key={`${attempt.jobId}:${index}`}>{attempt.jobId}: {statusLabel(attempt.status)}{attempt.phase ? ` · этап ${attempt.phase}` : ''}{attempt.failureClass ? ` · причина ${attempt.failureClass}` : ''}</li>)}</ul> : <p className="muted">Попытки восстановления не зарегистрированы.</p>}
+            {mediaContext.status === 'waived' && <p>Исключение действует только для этого предложения и проверенного контекста.{field(mediaContext.waiver, 'reason') ? ` Причина: ${field(mediaContext.waiver, 'reason')}` : ''}</p>}
+            {mediaContext.status === 'missing' && <>
+              <p>Сохранённое исключение разрешит рассмотреть этот конкретный случай без недостающего медиаконтекста. Выполнение требует отдельного подтверждения.</p>
+              {!canWaive && <p className="muted">{unavailableReason}</p>}
+              <label><input type="checkbox" checked={mediaConfirmed} onChange={e => setMediaConfirmed(e.target.checked)} disabled={!canWaive || busy || waiverSaving || mediaLoading}/> Я прочитал(а) требования и попытки восстановления и подтверждаю рассмотрение этого случая без недостающего медиаконтекста.</label>
+              <label>Причина исключения<textarea aria-label={`Причина исключения для предложения ${proposal.id}`} value={waiverReason} onChange={e => setWaiverReason(e.target.value)} disabled={!canWaive || busy || waiverSaving || mediaLoading} placeholder="Почему для этого конкретного случая допустимо продолжить без медиаконтекста?"/></label>
+              <button onClick={() => void submitMediaWaiver()} disabled={!canWaive || !mediaConfirmed || !waiverReason.trim() || busy || waiverSaving || mediaLoading}>{waiverSaving ? 'Сохраняем исключение…' : 'Сохранить исключение для этого случая'}</button>
+            </>}
+          </>}
+          {!mediaLoading && <button onClick={() => { setMediaConfirmed(false); setWaiverReason(''); setMediaReload(value => value + 1); }} disabled={busy || waiverSaving}>Обновить проверку</button>}
+        </details>
+      </div>
+    </div>
+  </div>;
 }

@@ -1,5 +1,5 @@
 // Transport snapshots stay separate from mutable editor/selection state.
-const collectionKeys=new Set(['items','posts','branches','proposals','operations','materials','conversations','jobs']);
+const collectionKeys=new Set(['items','posts','branches','proposals','operations','materials','conversations','jobs','approvals']);
 const unsafeKeys=new Set(['__proto__','prototype','constructor']);
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 const identity=value=>typeof value==='string'&&value.length>0;
@@ -16,7 +16,7 @@ function uniqueStrings(values){
   if(!Array.isArray(values)||values.some(value=>!identity(value))||new Set(values).size!==values.length)invalid();
   return new Set(values);
 }
-function topLevelKey(key){return identity(key)&&!unsafeKeys.has(key)&&!collectionKeys.has(key)&&key!=='workspaceVersion';}
+function topLevelKey(key){return identity(key)&&!unsafeKeys.has(key)&&(!collectionKeys.has(key)||key==='approvals')&&key!=='workspaceVersion';}
 
 export function canRequestWorkspaceDelta(snapshot){
   return object(snapshot)&&identity(snapshot.workspaceVersion)&&identity(snapshot.operator?.id);
@@ -29,7 +29,8 @@ export function mergeWorkspaceDelta(snapshot,response){
   if(response.kind==='full'){
     const full=response.snapshot;
     if(!canRequestWorkspaceDelta(full)||!Array.isArray(full.items))invalid();
-    for(const key of collectionKeys)if(own(full,key))ids(full[key]);
+    // Approvals retain atomic legacy fallback when IDs cannot be keyed.
+    for(const key of collectionKeys)if(key!=='approvals'&&own(full,key))ids(full[key]);
     return full;
   }
   if(response.kind!=='delta'||!canRequestWorkspaceDelta(snapshot)
@@ -42,7 +43,7 @@ export function mergeWorkspaceDelta(snapshot,response){
   const next={...snapshot,...response.set,workspaceVersion:response.workspaceVersion};
   for(const key of removed)delete next[key];
   for(const [key,change] of Object.entries(response.collections)){
-    if(!collectionKeys.has(key)||!object(change)||Object.keys(change).some(field=>!['upsert','remove','order'].includes(field)))invalid();
+    if(!collectionKeys.has(key)||own(response.set,key)||removed.has(key)||!object(change)||Object.keys(change).some(field=>!['upsert','remove','order'].includes(field)))invalid();
     const old=snapshot[key]??[],oldIds=ids(old),upsertIds=ids(change.upsert),removeIds=uniqueStrings(change.remove);
     for(const id of removeIds)if(!oldIds.has(id)||upsertIds.has(id))invalid();
     const rows=new Map(old.filter(row=>!removeIds.has(row.id)).map(row=>[row.id,row]));
@@ -61,6 +62,14 @@ export function mergeWorkspaceDelta(snapshot,response){
 
 // Delta merge preserves untouched row references. Cache per-row semantics so a
 // changed collection never serializes every unchanged branch/message again.
+function coveragePresentationFields(row){
+  if(!row||typeof row!=='object')return row;
+  const accounting=row.accounting;
+  return {scope:row.scope,done:row.done,traversalComplete:row.traversalComplete,contextComplete:row.contextComplete,
+    coverageComplete:row.coverageComplete,unknownDates:row.unknownDates,invalidatedAt:row.invalidatedAt,
+    accounting:accounting&&{version:accounting.version,trackedUnique:accounting.trackedUnique,importedUnique:accounting.importedUnique,
+      unresolvedUnique:accounting.unresolvedUnique,unverifiedPages:accounting.unverifiedPages,overflow:accounting.overflow}};
+}
 export function createWorkspaceChangeTracker(){
   const dataClocks=new Set(['providerObservedAt','statusObservedAt','providerStatusObservedAt','contextObservedAt']);
   const uiClocks=new Set(['updatedAt','lastAttemptAt','lastSuccessAt','startedAt','finishedAt','scannedAt']);
@@ -89,6 +98,8 @@ export function createWorkspaceChangeTracker(){
     uiChanged=changed('ui:instruction-status',instructionStatus,uiCache,uiClocks)||uiChanged;
     uiChanged=changed('ui:jobs',raw.jobs,jobCache,uiClocks,(row)=>row&&({id:row.id,kind:row.kind,status:row.status,error:row.error}))||uiChanged;
     uiChanged=changed('ui:sync',raw.sync,uiCache,uiClocks,sync=>sync&&({status:sync.status,lastError:sync.lastError,
+      openCoverage:coveragePresentationFields(sync.openCoverage),closedCoverage:coveragePresentationFields(sync.scan?.closed),
+      invalidatedAt:sync.scan?.invalidatedAt,backgroundState:sync.background?.state,
       ...Object.fromEntries(['open','closed'].map(mode=>[mode,sync[mode]&&{hasMore:sync[mode].hasMore,cursor:sync[mode].cursor,complete:sync[mode].coverage?.complete}]))}))||uiChanged;
     return {dataChanged,uiChanged};
   };

@@ -24,7 +24,9 @@ test('click clears the unchanged editor and shows one local bubble before POST a
   const pending=connection.sendAssistant('Hello');
   assert.equal(input.value,'');assert.equal(saved.mvpAiInput,'');assert.equal(posts,1);
   assert.match(connection.aiHtml(),/<strong>Вы<\/strong><p>Hello<\/p>/);
-  assert.doesNotMatch(connection.aiHtml(),/Отправляем|Проверяем|Ассистент печатает/);
+  assert.match(connection.aiHtml(),/Ожидаем ассистента…/);
+  assert.doesNotMatch(connection.aiHtml(),/Ответ сервера задерживается/);
+  assert.doesNotMatch(connection.aiHtml(),/Ассистент печатает/);
   assert.equal(connection.sendAssistant('Hello') instanceof Promise,true);
   assert.equal(posts,1,'a second click must not issue another POST while pending');
   saved.mvpAiInput='Next';input.value='Next';
@@ -39,6 +41,25 @@ test('click clears the unchanged editor and shows one local bubble before POST a
   const html=connection.aiHtml();
   assert.equal((html.match(/<strong>Вы<\/strong><p>Hello<\/p>/g)||[]).length,1);
   assert.match(html,/Ассистент печатает/);assert.equal(saved.mvpAiInput,'Next');
+  connection.stop();
+});
+
+test('long admission adds an honest delay note only after twelve seconds',async t=>{
+  t.mock.timers.enable({apis:['setTimeout']});
+  const oldFetch=globalThis.fetch,oldDocument=globalThis.document;
+  t.after(()=>{globalThis.fetch=oldFetch;globalThis.document=oldDocument;});
+  const post=deferred(),saved={mvpConversationId:'chat',mvpAiInput:'Hello'},input={value:'Hello'};
+  globalThis.document={querySelector:selector=>selector==='#ai-input'?input:null};
+  globalThis.fetch=async path=>path==='/api/bootstrap'?response(snapshot()):post.promise;
+  const connection=createMvpConnection({getSaved:()=>saved,currentAssistantContext:()=>({itemIds:[]}),esc:escape,icon:()=>''});
+  await connection.load();const pending=connection.sendAssistant('Hello');
+  t.mock.timers.tick(11999);
+  assert.doesNotMatch(connection.aiHtml(),/Ответ сервера задерживается/);
+  t.mock.timers.tick(1);
+  assert.match(connection.aiHtml(),/Ответ сервера задерживается; приём запроса ещё не подтверждён/);
+  assert.doesNotMatch(connection.aiHtml(),/Ассистент печатает/);
+  post.resolve(response({jobId:'job'}));await pending;
+  assert.doesNotMatch(connection.aiHtml(),/Ответ сервера задерживается/);
   connection.stop();
 });
 
@@ -94,6 +115,7 @@ test('first-ever chat shows the bubble before conversation creation and keeps it
   await connection.load();const pending=connection.sendAssistant('First question');
   assert.equal(saved.mvpConversationId,undefined);assert.equal(input.value,'');assert.equal(renders,1,'missing progress slot must repaint immediately');
   assert.match(connection.aiHtml(),/<strong>Вы<\/strong><p>First question<\/p>/);
+  assert.match(connection.aiHtml(),/Ожидаем ассистента…/);
   create.resolve(response({id:'new-chat'}));
   await new Promise(setImmediate);
   assert.equal(saved.mvpConversationId,'new-chat');assert.equal(posts,1);

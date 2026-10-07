@@ -110,8 +110,16 @@ pub fn query(d:&Value,args:&Value,stats:bool)->Result<Value,&'static str>{
 }
 
 /// Compatibility endpoint retains the original required-query contract.
+/// This validation is independent of workspace state, so callers can reject
+/// invalid requests before acquiring a database reader or materializing rows.
+pub(crate) fn validate_search_query(query_text:&str)->Result<&str,&'static str>{
+    let q=query_text.trim();
+    let characters=q.chars().take(301).count();
+    if !(2..=300).contains(&characters){return Err("Search query must contain 2 to 300 characters");}
+    Ok(q)
+}
 pub fn search(d:&Value,query_text:&str,limit:usize)->Result<Value,&'static str>{
-    let q=query_text.trim();if q.chars().count()<2||q.chars().count()>300{return Err("Search query must contain 2 to 300 characters");}
+    let q=validate_search_query(query_text)?;
     query(d,&json!({"query":q,"limit":limit.clamp(1,20)}),false)
 }
 

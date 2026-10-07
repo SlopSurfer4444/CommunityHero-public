@@ -115,8 +115,8 @@ test('the prompt boundary separates action from wording and does not promote leg
     assert.match(instructions,/literal, never regular expressions/);assert.match(instructions,/not a domain allowlist/);
   }
   const req=fixture();const input=prepareAssistantRequest(req).input;
-  assert.equal(generationMetadata(input,true).promptVersion,'communityhero-drafting-v14-imported-rule-semantics');
-  assert.equal(generationMetadata(input,false,0,'likeavto',true).promptVersion,'communityhero-discussion-v14-imported-rule-semantics');
+  assert.equal(generationMetadata(input,true).promptVersion,'communityhero-drafting-v19-intent-scoped-evidence');
+  assert.equal(generationMetadata(input,false,0,'likeavto',true).promptVersion,'communityhero-discussion-v19-intent-scoped-evidence');
   const unknown=structuredClone(req);delete unknown.materials[0].companyImport;
   assert.notEqual(generationMetadata(input,true).inputSha256,generationMetadata(prepareAssistantRequest(unknown).input,true).inputSha256);
 });

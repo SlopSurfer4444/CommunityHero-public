@@ -5,10 +5,11 @@ async fn sqlite()->(Database,tempfile::TempDir){
 }
 #[tokio::test]async fn conversation_creation_preserves_operator_attachments_and_unrelated_state(){
     let (db,_dir)=sqlite().await;db.change(|d|{seed(d);Ok(())}).await.unwrap();
+    let runtime=crate::native_fixture_owner_repair::initialize_db(&db).await.unwrap();
     let baseline=db.read().await.unwrap();
     let before_time=chrono::Utc::now();
     let attached=json!(["i","i"]);
-    let created=db.create_conversation("operator-exact","",attached.as_array().unwrap()).await.unwrap();
+    let created=db.create_conversation("operator-exact","",attached.as_array().unwrap(), &runtime).await.unwrap();
     assert_eq!(created["operatorId"],"operator-exact");assert_eq!(created["title"],"");
     assert_eq!(created["itemIds"],attached);assert_eq!(created["messages"],json!([]));
     uuid::Uuid::parse_str(created["id"].as_str().unwrap()).unwrap();
@@ -16,12 +17,13 @@ async fn sqlite()->(Database,tempfile::TempDir){
     assert!(created_at>=before_time&&created_at<=chrono::Utc::now());
     let mut expected=baseline.clone();expected["conversations"].as_array_mut().unwrap().push(created.clone());
     assert_eq!(db.read().await.unwrap(),expected);
-    let empty=db.create_conversation("another-operator","Обсуждение",&[]).await.unwrap();
+    let empty=db.create_conversation("another-operator","Обсуждение",&[], &runtime).await.unwrap();
     assert_ne!(empty["id"],created["id"]);assert_eq!(empty["operatorId"],"another-operator");assert_eq!(empty["itemIds"],json!([]));
     expected["conversations"].as_array_mut().unwrap().push(empty);assert_eq!(db.read().await.unwrap(),expected);
 }
 #[tokio::test]async fn conversation_creation_rejects_unknown_and_invalid_ids_without_any_write(){
     let (db,_dir)=sqlite().await;db.change(|d|{seed(d);Ok(())}).await.unwrap();
+    let runtime=crate::native_fixture_owner_repair::initialize_db(&db).await.unwrap();
     let baseline=db.read().await.unwrap();
     for (ids,status,message) in [
         (json!(["i","missing"]),axum::http::StatusCode::NOT_FOUND,"items record not found"),
@@ -29,7 +31,7 @@ async fn sqlite()->(Database,tempfile::TempDir){
         (json!(["missing",42]),axum::http::StatusCode::NOT_FOUND,"items record not found"),
         (json!([null,"missing"]),axum::http::StatusCode::BAD_REQUEST,"Invalid itemIds")
     ]{
-        let error=db.create_conversation("operator","title",ids.as_array().unwrap()).await.unwrap_err();
+        let error=db.create_conversation("operator","title",ids.as_array().unwrap(), &runtime).await.unwrap_err();
         assert_eq!(error.0,status);assert_eq!(error.1,message);assert_eq!(db.read().await.unwrap(),baseline);
     }
 }
@@ -59,6 +61,40 @@ fn seed_empty_dialogue(d:&mut Value){
     crate::knowledge::sync_catalog(d,&crate::now()).unwrap();
     let bundle=crate::prepare_bundle::build(d,&[],&[]).unwrap();
     d["jobs"][0]["prepareBundle"]=bundle;
+}
+#[tokio::test]
+async fn manual_model_review_native_receipt_survives_scoped_assistant_prepare_and_confirmation(){
+    let(mut d,batch,result,native)=super::super::hot_admission::tests::native_editorial_material_fixture();
+    crate::editorial_review::admit(&mut d,&batch,&result,"2026-10-06T00:00:01Z").unwrap();
+    let actor=crate::operator_editorial::tests::actor();
+    let proposal=d["proposals"][0].clone();let item=crate::row(&d,"items",proposal["itemId"].as_str().unwrap()).unwrap().clone();
+    assert!(proposal["prepareRunId"].is_null());assert_eq!(proposal["editorialModelMaterialReceipt"]["nativeJobId"],native);
+    d["conversations"]=json!([{"id":"native-chat","operatorId":actor.id,"itemIds":[item["id"]],"messages":[{"id":"request","role":"user","text":"Подготовь проверенный ответ"}]}]);
+    let(db,_temp)=sqlite().await;db.change(|workspace|{*workspace=d;Ok(())}).await.unwrap();
+    let full=db.read().await.unwrap();let view=db.read_assistant_context(None,"native-chat").await.unwrap();
+    assert_eq!(view,projected(&full,None,"native-chat").unwrap());
+    assert_eq!(crate::row(&view,"jobs",&native).unwrap(),crate::row(&full,"jobs",&native).unwrap());
+    assert!(crate::row(&view,"jobs","cold-editorial-history").is_err());
+    let args=json!({"mode":"execute_prepared","items":[{"id":item["id"],"revision":item["revision"],"proposalId":proposal["id"],"proposalRevision":proposal["revision"]}]});
+    let receipt=db.change_assistant_observed(None,"native-chat",|workspace|crate::assistant_action_review::prepare(workspace,&actor,"native-chat","request",&args)).await.unwrap().0;
+    assert_eq!(receipt["terminal"],true);assert_eq!(receipt["status"],"awaiting_confirmation");
+    let reviewed=db.read().await.unwrap();assert_eq!(reviewed["jobs"],full["jobs"]);assert_eq!(reviewed["operations"],full["operations"]);assert_eq!(reviewed["approvals"],full["approvals"]);
+    db.change_assistant_observed(None,"native-chat",|workspace|{workspace["conversations"][0]["messages"].as_array_mut().unwrap().push(json!({"id":"confirm","role":"user","text":"Да, отправляй"}));Ok(())}).await.unwrap();
+    let confirmed=db.read().await.unwrap();let scoped=db.read_assistant_context(None,"native-chat").await.unwrap();
+    assert_eq!(crate::assistant_action_review::pending_confirmation(&scoped,&actor,"native-chat","confirm").unwrap(),crate::assistant_action_review::pending_confirmation(&confirmed,&actor,"native-chat","confirm").unwrap());
+    assert!(crate::assistant_action_review::pending_confirmation(&scoped,&actor,"native-chat","confirm").unwrap().is_some());
+    // Missing paid native history is never treated as an unreviewed manual
+    // exemption. Compare the same exact error in full and scoped readers.
+    for mutation in ["missing","wrong_kind","history","paid"]{
+        let mut hostile=confirmed.clone();
+        let at=hostile["jobs"].as_array().unwrap().iter().position(|job|job["id"]==native).unwrap();
+        match mutation{"missing"=>{hostile["jobs"].as_array_mut().unwrap().remove(at);},"wrong_kind"=>hostile["jobs"][at]["kind"]=json!("sync"),"history"=>hostile["jobs"][at]["modelMaterialReceipts"]=json!([]),_=>hostile["jobs"][at]["retainedEvidence"]=json!([])}
+        let expected=crate::assistant_action_review::pending_confirmation(&hostile,&actor,"native-chat","confirm").unwrap_err();
+        let projection=projected(&hostile,None,"native-chat").unwrap();
+        let actual=crate::assistant_action_review::pending_confirmation(&projection,&actor,"native-chat","confirm").unwrap_err();
+        assert_eq!(actual.1,expected.1,"{mutation}");
+    }
+    db.close().await;
 }
 #[tokio::test]async fn empty_dialogue_excludes_comment_corpus_but_preserves_global_source_checks(){
     let (db,_dir)=sqlite().await;
@@ -178,12 +214,34 @@ fn seed_empty_dialogue(d:&mut Value){
     assert!(error.is_err());assert_eq!(db.read().await.unwrap(),after);
 }
 #[tokio::test]async fn scoped_admission_and_proposal_outcome_equal_full_domain(){
-    let (db,_dir)=sqlite().await;db.change(|d|{seed(d);Ok(())}).await.unwrap();
+    // The old candidate is retired; admitting a second foreign paid draft over
+    // an active candidate is intentionally fenced by the reservation contract.
+    let mut result=json!({"text":"Готово","proposals":[{"itemId":"i","kind":"reply_and_close","text":"Уточняем стоимость."}],"sources":[],
+        "runMetadata":{"schemaVersion":1,"model":"fixture","reasoningEffort":"medium","promptVersion":"storage-native-discussion-fixture",
+            "instructionSha256":"a".repeat(64),"inputSha256":"b".repeat(64),"cliSha256":"c".repeat(64),
+            "elapsedMs":1,"completedAt":"2026-10-06T00:00:00Z"}});
+    let (db,_dir)=sqlite().await;db.change(|d|{
+        seed(d);d["proposals"][0]["status"]=json!("stale");
+        // This scenario presents a newly actionable reply. Unlike the archive
+        // fixtures, it needs an actual native material/paid-result receipt.
+        // Construct this isolated capture before fixture persistence.
+        d["connectorBinding"]=crate::active_binding(d)?.to_json();
+        d["posts"][0]["attachments"]=json!([]);
+        let mut bundle=crate::prepare_bundle::build(d,&[json!("i")],d["conversations"][0]["messages"].as_array().unwrap()).map_err(crate::bad)?;
+        bundle["request"]["purpose"]=json!("discussion");
+        crate::preparation_unit::attach(d,&mut bundle,"2026-10-06T00:00:00Z").map_err(crate::bad)?;
+        crate::preparation_materials::attach_request(d,&mut bundle["request"]).map_err(crate::bad)?;
+        bundle["digest"]=json!(crate::editorial_review::hash_text(&bundle["request"].to_string()));
+        let request=bundle["request"].clone();
+        let job=crate::row_mut(d,"jobs","job")?;job["purpose"]=json!("discussion");job["prepareBundle"]=bundle;
+        result["runMetadata"]["visualNeedContract"]=request["visualNeedContract"].clone();
+        result["runMetadata"]["visualSelection"]=request["visualSelection"].clone();
+        crate::model_material_receipt::fixture_result(d,"job",&request,&mut result)?;Ok(())
+    }).await.unwrap();
     let full=db.read().await.unwrap();let view=db.read_assistant_context(Some("job"),"chat").await.unwrap();
     let full_stats=crate::assistant_context::query(&full,&json!({}),true).unwrap();let scope_stats=crate::assistant_context::query(&view,&json!({}),true).unwrap();
     assert_eq!(without(&full_stats,&["observedAt"]),without(&scope_stats,&["observedAt"]));
     assert_eq!(crate::prepare_bundle::review_fingerprint(&full,"i").unwrap(),crate::prepare_bundle::review_fingerprint(&view,"i").unwrap());
-    let result=json!({"text":"Готово","proposals":[{"itemId":"i","kind":"reply_and_close","text":"Уточняем стоимость."}],"sources":[]});
     let outcome=db.change_assistant_observed(Some("job"),"chat",|d|crate::prepare_bundle::admit(d,"job","chat",&result)).await.unwrap().0;
     assert_eq!(outcome["status"],"review");let stored=db.read().await.unwrap();let proposal=stored["proposals"].as_array().unwrap().last().unwrap();assert!(crate::proposal_current(&stored,proposal).is_ok());
     let scoped=db.read_assistant_context(Some("job"),"chat").await.unwrap();assert!(crate::proposal_current(&scoped,scoped["proposals"].as_array().unwrap().last().unwrap()).is_ok());
@@ -222,9 +280,10 @@ async fn postgres_create_conversation_clone_probe(){
     assert!(database.contains("assistant_scope_test"),"refusing non-test database");
     crate::db_guards::require_schema(&pool).await.unwrap();pool.close().await;
     let db=Database::postgres(&url).await.unwrap();
+    let runtime=crate::runtime_lifecycle_startup::initialize_db_fixture(&db).await.unwrap();
     let baseline=db.read().await.unwrap();let mut expected=baseline.clone();
     let started=std::time::Instant::now();
-    let empty=db.create_conversation("probe-operator-empty","Обсуждение",&[]).await.unwrap();
+    let empty=db.create_conversation("probe-operator-empty","Обсуждение",&[], &runtime).await.unwrap();
     let empty_ms=started.elapsed().as_secs_f64()*1000.0;
     assert_eq!(empty["operatorId"],"probe-operator-empty");assert_eq!(empty["itemIds"],json!([]));assert_eq!(empty["messages"],json!([]));
     uuid::Uuid::parse_str(empty["id"].as_str().unwrap()).unwrap();
@@ -232,7 +291,7 @@ async fn postgres_create_conversation_clone_probe(){
     expected["conversations"].as_array_mut().unwrap().push(empty.clone());
     let attached_id=baseline["items"].as_array().unwrap().first().expect("clone must contain an attachment fixture")["id"].clone();
     let attached=vec![attached_id.clone(),attached_id];let started=std::time::Instant::now();
-    let created=db.create_conversation("probe-operator-attached","",&attached).await.unwrap();
+    let created=db.create_conversation("probe-operator-attached","",&attached, &runtime).await.unwrap();
     let attached_ms=started.elapsed().as_secs_f64()*1000.0;
     assert_ne!(created["id"],empty["id"]);assert_eq!(created["operatorId"],"probe-operator-attached");
     assert_eq!(created["title"],"");assert_eq!(created["itemIds"],json!(attached));
@@ -242,7 +301,7 @@ async fn postgres_create_conversation_clone_probe(){
         (vec![json!(format!("missing-{}",crate::id())),json!(42)],axum::http::StatusCode::NOT_FOUND,"items record not found"),
         (vec![json!(42)],axum::http::StatusCode::BAD_REQUEST,"Invalid itemIds")
     ]{
-        let error=db.create_conversation("probe-operator","Rejected",&ids).await.unwrap_err();
+        let error=db.create_conversation("probe-operator","Rejected",&ids, &runtime).await.unwrap_err();
         assert_eq!(error.0,status);assert_eq!(error.1,message);assert_eq!(db.read().await.unwrap(),expected);
     }
     println!("CREATE_CONVERSATION_CLONE_PROBE {}",json!({"emptyCreateMs":empty_ms,"attachedCreateMs":attached_ms,"existingConversations":rows(&baseline,"conversations").unwrap().len(),"workspaceBytes":baseline.to_string().len()}));

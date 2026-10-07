@@ -1,7 +1,32 @@
 use super::*;
 
+#[cfg(windows)]
+#[tokio::test]
+async fn media_bridge_containment_is_empty_before_success() {
+    let mut command=Command::new("cmd.exe");
+    command.args(["/C","ping -n 30 127.0.0.1 > NUL"])
+        .stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null())
+        .kill_on_drop(true).creation_flags(0x08000000);
+    let mut child=command.spawn().unwrap();
+    let tree=ProcessTree::attach(&child).unwrap();
+    tree.stop_and_wait().await.unwrap();
+    assert!(child.wait().await.is_ok());
+    // Idempotent readback, including the no-descendants fast path.
+    tree.stop_and_wait().await.unwrap();
+}
+
 fn pilot_actor(id: &str) -> operator_auth::Actor {
     operator_auth::Actor { id: id.into(), name: id.into(), role: "operator".into(), csrf_token: "test".into(), authority_generation: Some("a".repeat(64)) }
+}
+
+#[test]
+fn dispatch_configuration_rejects_invalid_values_and_caps_large_waves() {
+    assert_eq!(dispatch_parallelism_value("1").unwrap(),1);
+    assert_eq!(dispatch_parallelism_value("4").unwrap(),dispatch_wave::MAX_IN_FLIGHT);
+    assert_eq!(dispatch_parallelism_value("72").unwrap(),dispatch_wave::MAX_IN_FLIGHT);
+    for value in ["", "0", "-1", "not-a-number"] {
+        assert!(dispatch_parallelism_value(value).is_err(),"{value}");
+    }
 }
 
 #[tokio::test]
@@ -28,21 +53,23 @@ fn publication_approval_belongs_to_reviewer_and_legacy_to_local_owner() {
 
 #[tokio::test]
 async fn other_operator_cannot_consume_reviewers_approval() {
-    let (app, _temp) = test_app().await;
+    let (app, _temp) = test_app_with_post().await;
     let p = proposal_new(State(app.clone()), Json(json!({"itemId":"item-1","kind":"reply_and_close","text":"Exact reviewed reply","expectedRevision":1}))).await.unwrap().0;
+    app.change(|d| { crate::editorial_review::fixture_accept(d,p["id"].as_str().unwrap()).unwrap(); Ok(()) }).await.unwrap();
     let approval = approval_new(State(app.clone()), axum::Extension(pilot_actor("dmitry")), Json(json!({"proposals":[{"id":p["id"],"revision":p["revision"]}]}))).await.unwrap().0;
     assert_eq!(approval["approvedBy"]["id"], "dmitry");
+    let reviewed_jobs=app.read().await.unwrap()["jobs"].clone();
     let result = execute(State(app.clone()), axum::Extension(pilot_actor("alexey")), Path(approval["id"].as_str().unwrap().into())).await;
     assert_eq!(result.unwrap_err().0, StatusCode::FORBIDDEN);
     let d = app.read().await.unwrap();
     assert_eq!(d["approvals"][0]["status"], "approved");
     assert!(list(&d,"operations").is_empty());
-    assert!(list(&d,"jobs").is_empty());
+    assert_eq!(d["jobs"],reviewed_jobs,"Denied execution preserves the actual editorial capture");
 }
 
 #[tokio::test]
 async fn simultaneous_reviewers_publish_through_one_lane_without_retries() {
-    let (mut app, temp) = test_app().await;
+    let (mut app, temp) = test_app_with_post().await;
     let access_file = temp.path().join("access.json");
     let operator_tokens = ["dmitry", "alexey"].map(|id| (id, format!("{id}-{}", "test-key".repeat(8))));
     let operators: Vec<Value> = operator_tokens.iter().map(|(id, token)| {
@@ -62,13 +89,14 @@ let input='';for await(const chunk of process.stdin)input+=chunk;const r=JSON.pa
 const target=r.itemId??r.actions[0].itemId;
 await appendFile(__LOG__,JSON.stringify({operation:r.operation,target})+'\n');
 await new Promise(resolve=>setTimeout(resolve,50));
-const result=r.operation==='context'?{itemId:target,objectId:'11391',postKey:'11391:post-1',conversationKey:'11391:'+target,contextEvidenceDigest:'a'.repeat(64)}:{results:r.actions.map(a=>({actionId:a.actionId,itemId:a.itemId,status:'verified'}))};
+const result=r.operation==='context'?{itemId:target,objectId:'11391',postKey:'11391:post-1',conversationKey:'11391:'+target,contextEvidenceDigest:'a'.repeat(64)}:{account:r.account,results:r.actions.map(a=>({actionId:a.actionId,itemId:a.itemId,status:'verified'}))};
 process.stdout.write(JSON.stringify({ok:true,result}));"#.replace("__LOG__", &json!(log.to_string_lossy()).to_string());
     std::fs::write(&app.bridge, script).unwrap();
-    app.change(|d| { let mut second=fixture();second["id"]=json!("item-2");second["itemId"]=json!("comment-2");second["conversationKey"]=json!("11391:comment-2");list_mut(d,"items").push(second);Ok(()) }).await.unwrap();
+    app.change(|d| { connection_gate::fixture_open(d)?;let mut second=fixture();second["id"]=json!("item-2");second["itemId"]=json!("comment-2");second["conversationKey"]=json!("11391:comment-2");list_mut(d,"items").push(second);create_post_fixture(d,"item-2") }).await.unwrap();
     let mut approvals=vec![];
     for (target,actor) in [("item-1","dmitry"),("item-2","alexey")] {
         let p=proposal_new(State(app.clone()),Json(json!({"itemId":target,"kind":"reply_and_close","text":"Reviewed response","expectedRevision":1}))).await.unwrap().0;
+        app.change(|d| { crate::editorial_review::fixture_accept(d,p["id"].as_str().unwrap()).unwrap(); Ok(()) }).await.unwrap();
         let a=approval_new(State(app.clone()),axum::Extension(actors[actor].clone()),Json(json!({"proposals":[{"id":p["id"],"revision":p["revision"]}]}))).await.unwrap().0;
         approvals.push(a["id"].as_str().unwrap().to_owned());
     }
@@ -84,20 +112,23 @@ process.stdout.write(JSON.stringify({ok:true,result}));"#.replace("__LOG__", &js
     assert_ne!(entries[0]["target"],entries[3]["target"]);
     let d=app.read().await.unwrap();
     assert!(list(&d,"operations").iter().all(|op|op["approvedBy"]["id"]==op["executedBy"]["id"]));
+    assert!(list(&d,"operations").iter().all(|op|op["dispatchPermit"]["phase"]=="transport_settled"&&connection_gate::valid_permit(op)));
     assert!(execute(State(app.clone()),axum::Extension(pilot_actor("dmitry")),Path(approvals[0].clone())).await.is_err());
 }
 
 #[tokio::test]
 async fn manual_instruction_api_persists_replays_and_invalidates_prepared_context() {
-    let (mut app, temp) = test_app().await;
+    let (mut app, temp) = test_app_with_post().await;
     app.change(|d| {
         d["items"][0]["draft"] = json!("");
         d["items"][0]["providerObservedAt"] = json!(now());
-        d["posts"] = json!([{"id":"post-1","postKey":"11391:post-1"}]);
         knowledge::sync_catalog(d, &now()).map_err(bad)?;
         let at = chrono::Utc::now().timestamp();
         let (job, _) = auto_prepare::claim(d, at)?.unwrap();
-        auto_prepare::complete(d, &job, &json!({"text":"Ready","sources":[],"assessments":[{"itemId":"item-1","outcome":"reply","reason":"Friendly comment"}],"proposals":[{"itemId":"item-1","kind":"reply_and_close","text":"Thank you"}]}), at)?;
+        let mut result=engine_prepare::tests::single_pass_result(json!({"text":"Ready","sources":[],"assessments":[{"itemId":"item-1","outcome":"reply","reason":"Friendly comment"}],"proposals":[{"itemId":"item-1","kind":"reply_and_close","text":"Thank you"}]}));
+        let request=row(d,"jobs",&job)?["prepareBundle"]["request"].clone();
+        model_material_receipt::fixture_result(d,&job,&request,&mut result)?;
+        auto_prepare::complete(d,&job,&result,at)?;
         row_mut(d,"jobs",&job)?["status"] = json!("completed");
         Ok(())
     }).await.unwrap();
@@ -182,6 +213,34 @@ fn assembled_thread_change_invalidates_proposal_without_provider_digest_change()
     assert!(proposal_current(&d, &p).is_err());
 }
 
+#[test]
+fn native_comment_locator_is_navigation_not_changed_reply_evidence() {
+    let mut d = empty();
+    let mut item = fixture();
+    item["branchId"] = json!("branch");
+    item["postId"] = json!("post");
+    let mut page = json!({"items":[item],"posts":[{"id":"post"}],"branches":[{
+        "id":"branch","postId":"post","messages":[{"id":"message","text":"Original"}]}]});
+    merge_snapshot(&mut d, &page).unwrap();
+    let revision = d["items"][0]["revision"].clone();
+    let proposal = create_proposal(&mut d, &json!({"itemId":"item-1","kind":"close","expectedRevision":revision})).unwrap();
+    let revision = d["items"][0]["revision"].clone();
+    let digest = d["items"][0]["branchContextDigest"].clone();
+    for locator in [json!("https://www.youtube.com/watch?v=abcdefghijk&lc=fixture"), Value::Null] {
+        page["items"][0]["nativeUrl"] = locator.clone();
+        page["branches"][0]["messages"][0]["nativeUrl"] = locator.clone();
+        merge_snapshot(&mut d, &page).unwrap();
+        assert_eq!(d["items"][0]["nativeUrl"], locator);
+        assert_eq!(d["items"][0]["revision"], revision);
+        assert_eq!(d["items"][0]["branchContextDigest"], digest);
+        assert!(proposal_current(&d, &proposal).is_ok());
+    }
+    page["branches"][0]["messages"][0]["text"] = json!("Actual changed statement");
+    merge_snapshot(&mut d, &page).unwrap();
+    assert_ne!(d["items"][0]["branchContextDigest"], digest);
+    assert!(proposal_current(&d, &proposal).is_err());
+}
+
 #[tokio::test]
 async fn sync_resumes_after_failed_page_without_losing_checkpoint_or_duplicating_items() {
     let (mut app, temp) = test_app().await;
@@ -195,7 +254,7 @@ async fn sync_resumes_after_failed_page_without_losing_checkpoint_or_duplicating
         .join("../tests/fake-bridge.mjs")
         .canonicalize()
         .unwrap();
-    let wrapper = temp.path().join("bridge.mjs");
+    let wrapper = temp.path().join("fake-bridge-wrapper.mjs");
     let url = format!(
         "file:///{}",
         real_bridge
@@ -222,11 +281,11 @@ async fn sync_resumes_after_failed_page_without_losing_checkpoint_or_duplicating
     let error = run_sync(app.clone()).await.unwrap_err();
     assert!(error.1.contains("TEST_PAGE_FAILURE"), "{}", error.1);
     let interrupted = app.read().await.unwrap();
-    assert_eq!(
-        interrupted["sync"]["scan"]["open"]["cursor"],
-        "fake-second-page"
-    );
-    assert_eq!(interrupted["sync"]["scan"]["open"]["pages"], 1);
+    // OPEN pages are staged as one bounded batch. A failed second read cannot
+    // commit the first page or advance its durable cursor independently.
+    assert!(interrupted["sync"]["scan"]["open"]["cursor"].is_null());
+    assert_eq!(interrupted["sync"]["scan"]["open"]["pages"], 0);
+    assert!(list(&interrupted,"items").is_empty());
     app.db.close().await;
     app.db = Database::Sqlite(
         open_db(&temp.path().join("workspace.sqlite"))
@@ -243,8 +302,15 @@ async fn sync_resumes_after_failed_page_without_losing_checkpoint_or_duplicating
     // Closed history deliberately advances one page per cycle; the next cycle
     // resumes that cursor rather than rereading or duplicating its first page.
     let result = run_sync(app.clone()).await.unwrap();
-    assert_eq!(result["partial"], false);
+    // This legacy fake bridge supplies cursor traversal but no requested-ID
+    // accounting. Exhaustion cannot retrospectively certify context coverage.
+    assert_eq!(result["partial"], true);
+    assert_eq!(result["traversalComplete"], true);
+    assert_eq!(result["contextComplete"], false);
+    assert_eq!(result["snapshotConsistent"], false);
     let resumed = app.read().await.unwrap();
+    assert_eq!(resumed["sync"]["scan"]["open"]["accounting"]["unverifiedPages"], 2);
+    assert_eq!(resumed["sync"]["scan"]["closed"]["accounting"]["unverifiedPages"], 2);
     assert_eq!(
         resumed["sync"]["scan"]["id"],
         interrupted["sync"]["scan"]["id"]
@@ -472,6 +538,82 @@ fn moderation_is_explicit_platform_bound_and_has_no_fake_restore() {
         if let Ok(proposal)=result {assert!(proposal_current(&data,&proposal).is_ok());}
     }
 }
+/// Explicit complete synthetic source for tests that exercise current reply
+/// readiness. Call before creating a proposal; the sparse global fixture stays
+/// unchanged so missing-source and legacy-contract tests keep their meaning.
+pub(crate) fn create_post_fixture(d: &mut Value, item_id: &str) -> ApiResult<()> {
+    assert!(!list(d,"proposals").iter().any(|p|p["itemId"]==item_id),
+        "Source fixtures must be installed before proposal creation");
+    let binding=active_binding(d)?.to_json();
+    d["connectorBinding"]=binding.clone();
+    let item=row_mut(d,"items",item_id)?;
+    item["postId"]=json!("post-1");
+    item["connectorBinding"]=binding.clone();
+    let post=json!({"id":"post-1","postKey":item["postKey"],"objectId":item["objectId"],
+        "text":"Complete synthetic source post","attachments":[],"connectorBinding":binding});
+    if let Some(existing)=list(d,"posts").iter().find(|p|p["id"]=="post-1") {
+        assert_eq!(existing,&post,"A source fixture must not replace existing evidence");
+    } else { list_mut(d,"posts").push(post); }
+    Ok(())
+}
+
+pub(crate) async fn test_app_with_post() -> (App, tempfile::TempDir) {
+    let (app,temp)=test_app().await;
+    app.change(|d|create_post_fixture(d,"item-1")).await.unwrap();
+    (app,temp)
+}
+
+#[test]
+fn proposal_creation_origin_rejects_client_markers_without_partial_state() {
+    let mut source=empty();source["items"]=json!([fixture()]);
+    create_post_fixture(&mut source,"item-1").unwrap();
+    for marker in [json!("operator_manual_v1"),json!("model_generation_v1"),Value::Null] {
+        for generated in [false,true] {
+            let mut d=source.clone();
+            let body=json!({"itemId":"item-1","expectedRevision":1,"kind":"reply_and_close",
+                "text":"Exact synthetic draft","nativeCreationOrigin":marker});
+            let error=if generated {create_generated_proposal(&mut d,&body)}else{create_proposal(&mut d,&body)}.unwrap_err();
+            assert_eq!(error.0,StatusCode::BAD_REQUEST);
+            assert_eq!(error.1,"Proposal creation origin is server-owned");
+            assert_eq!(d,source,"Rejected client origin cannot insert a proposal or bump the recipient");
+        }
+    }
+}
+
+#[test]
+fn native_creation_origin_distinguishes_manual_generated_derived_and_recovered_replies() {
+    let mut source=empty();
+    // The native store normalizes these collections before origin/feedback
+    // reducers run. Pure fixtures must represent that initialized workspace.
+    for key in ["feedback","knowledge_entries","knowledge_versions"] {source[key]=json!([]);}
+    source["items"]=json!([fixture()]);
+    create_post_fixture(&mut source,"item-1").unwrap();
+    let body=json!({"itemId":"item-1","expectedRevision":1,"kind":"reply_and_close","text":"Exact synthetic draft"});
+    let manual=create_proposal(&mut source.clone(),&body).unwrap();
+    assert_eq!(manual["nativeCreationOrigin"],"operator_manual_v1");
+    assert!(preparation_materials::genuine_manual(&manual));
+    let mut d=source.clone();let generated=create_generated_proposal(&mut d,&body).unwrap();
+    assert_eq!(generated["nativeCreationOrigin"],"model_generation_v1");
+    assert!(!preparation_materials::genuine_manual(&generated));
+    let derived_body=json!({"itemId":"item-1","expectedRevision":d["items"][0]["revision"],
+        "kind":"reply_and_close","text":"Edited synthetic model draft",
+        "sourceProposalId":generated["id"],"sourceProposalRevision":generated["revision"]});
+    let derived=create_proposal(&mut d,&derived_body).unwrap();
+    assert_eq!(derived["nativeCreationOrigin"],"model_derived_v1");
+    assert!(!preparation_materials::genuine_manual(&derived));
+    assert_eq!(derived["origin"]["id"],generated["id"]);
+    for key in ["origin","priorPreparationOrigin","generationMetadata","prepareRunId","prepareBundleId",
+        "prepareBundleDigest","sourceProposalId","sourceProposalRevision",retained_paid_recovery::FIELD] {
+        let mut forged=manual.clone();forged[key]=json!("nonmanual-provenance");
+        assert!(!preparation_materials::genuine_manual(&forged),"{key}");
+    }
+    let mut historical=manual;historical.as_object_mut().unwrap().remove("nativeCreationOrigin");
+    assert!(!preparation_materials::genuine_manual(&historical),"Missing historical metadata never proves a manual origin");
+    let (recovered,_,_,key)=retained_paid_recovery::tests::recovered_fixture();
+    let proposal=row(&recovered,"proposals",&key).unwrap();
+    assert_eq!(proposal["nativeCreationOrigin"],"retained_model_recovery_v1");
+    assert!(!preparation_materials::genuine_manual(proposal));
+}
 
 #[test]
 fn closed_reply_preserves_unresolved_moderation_and_route_guards() {
@@ -507,15 +649,41 @@ fn closed_reply_preserves_unresolved_moderation_and_route_guards() {
     let mut unbound=prior.clone();unbound["target"].as_object_mut().unwrap().remove("connectorBinding");
     assert!(recipient_operation_blocks(&unbound,&proposal,&item));
 }
+#[test]
+fn provider_recipient_alias_blocks_unknown_and_succeeded_effects_without_foreign_scope_collision() {
+    let mut selected=fixture();selected["id"]=json!("new-local-row");
+    selected["revision"]=json!(9);selected["workflow"]=json!("closed");selected["providerStatus"]=json!("closed");
+    selected["connectorBinding"]=legacy_binding();
+    let mut old=selected.clone();old["id"]=json!("old-local-row");old["revision"]=json!(1);
+    let proposal=json!({"itemId":"new-local-row","kind":"reply_and_close","allowClosedReply":true});
+    for status in ["dispatching","unknown","succeeded"] {
+        let operation=json!({"itemId":"old-local-row","status":status,"action":{"action":"close"},"target":old});
+        assert!(recipient_operation_blocks(&operation,&proposal,&selected),"{status}");
+        let mut same_provider_different_connection=operation.clone();
+        same_provider_different_connection["target"]["connectorBinding"]["id"]=json!("other-connection");
+        assert!(!recipient_operation_blocks(&same_provider_different_connection,&proposal,&selected));
+        let mut foreign_account=operation.clone();
+        foreign_account["target"]["connectorBinding"]["accountId"]=json!("Other");
+        assert!(!recipient_operation_blocks(&foreign_account,&proposal,&selected));
+    }
+    let mut malformed=json!({"itemId":"old-local-row","status":"unknown","target":old});
+    malformed["target"]["connectorBinding"]=json!({});
+    assert!(recipient_operation_blocks(&malformed,&proposal,&selected));
+    malformed["target"]["itemId"]=json!("unrelated-comment");
+    assert!(!recipient_operation_blocks(&malformed,&proposal,&selected));
+}
 
 #[test]
 fn reply_to_closed_requires_explicit_manual_intent_and_current_evidence() {
     let mut data=empty();let mut item=fixture();item["providerStatus"]=json!("closed");item["workflow"]=json!("closed");data["items"]=json!([item]);
+    create_post_fixture(&mut data,"item-1").unwrap();
     let mut body=json!({"itemId":"item-1","kind":"reply_and_close","text":"Reviewed followup","expectedRevision":1});
     assert!(create_proposal(&mut data,&body).is_err());
     body["allowClosedReply"]=json!(true);
     assert!(create_generated_proposal(&mut data,&body).is_err());
     let proposal=create_proposal(&mut data,&body).unwrap();
+    editorial_review::fixture_accept(&mut data,proposal["id"].as_str().unwrap()).unwrap();
+    let proposal=row(&data,"proposals",proposal["id"].as_str().unwrap()).unwrap().clone();
     let current=proposal_current(&data,&proposal).unwrap();
     assert_eq!(action_for(&proposal,&current,"operation").unwrap()["expectedStatuses"],json!(["closed"]));
     data["items"][0]["revision"]=json!(2);
@@ -527,11 +695,11 @@ pub(super) async fn test_app() -> (App, tempfile::TempDir) {
         .await
         .unwrap();
     let (events, _) = broadcast::channel(8);
-    let app = App {
-        account: crate::accounts::Profile::LikeAvto,
+    let app = App {lifecycle_task_count: Default::default(), lifecycle_admission: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto)), lifecycle_owner: Arc::new(crate::runtime_lifecycle_startup::Admission::fixture(crate::accounts::Profile::LikeAvto).identity().clone()), lifecycle_provider_token: Default::default(), lifecycle_work: Default::default(), media_discovery: Default::default(),preparation_wake: Default::default(),provider_session: Default::default(),
+        account: crate::accounts::Profile::LikeAvto,navigation:crate::account_navigation::Navigation::root(),
         db: Database::Sqlite(db),
         gate: Arc::new(crate::writer_gate::WriterGate::default()), execution_gate: Arc::new(Mutex::new(())),
-        assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),
+        preparation_workers: Default::default(),editorial_gate: Default::default(),assistant_gate: Arc::new(Mutex::new(())),assistant_chat_gate: Arc::new(Mutex::new(())),
         events,
         csrf: id(),
                 auth: None,
@@ -543,6 +711,7 @@ pub(super) async fn test_app() -> (App, tempfile::TempDir) {
         node: temp.path().join("no-runtime"),
         tasks: Arc::new(Mutex::new(HashMap::new())),bootstrap_cache:Arc::new(bootstrap_cache::Cache::default()),
     };
+    crate::runtime_lifecycle_app::initialize_app_fixture(&app).await.unwrap();
     app.change(|d| {
         list_mut(d, "items").push(fixture());
         Ok(())
@@ -582,8 +751,9 @@ async fn simultaneous_edit_accepts_one_revision() {
 }
 #[tokio::test]
 async fn proposal_edit_invalidates_immutable_approval() {
-    let (app, _temp) = test_app().await;
+    let (app, _temp) = test_app_with_post().await;
     let p=proposal_new(State(app.clone()),Json(json!({"itemId":"item-1","kind":"reply_and_close","text":"Exact old text","expectedRevision":1}))).await.unwrap().0;
+    app.change(|d| { crate::editorial_review::fixture_accept(d,p["id"].as_str().unwrap()).unwrap(); Ok(()) }).await.unwrap();
     let approval = approval_new(
         State(app.clone()),
         axum::Extension(operator_auth::Actor::local_owner("test")),
@@ -658,7 +828,8 @@ fn recovery_is_unknown_never_retry() {
     list_mut(&mut d, "jobs").push(json!({"id":"j","kind":"assistant","status":"running"}));
     list_mut(&mut d, "operations").push(json!({"id":"o","status":"dispatching"}));
     list_mut(&mut d, "proposals").push(json!({"id":"p","status":"dispatching"}));
-    recover(&mut d);
+    crate::native_fixture_owner_repair::initialize_workspace(&mut d).unwrap();
+    recover(&mut d).unwrap();
     assert_eq!(d["jobs"][0]["status"], "interrupted");
     assert_eq!(d["operations"][0]["status"], "unknown");
     assert_eq!(d["proposals"][0]["status"], "unknown");
@@ -789,9 +960,9 @@ async fn sync_job_failure_and_recovery_update_visible_status() {
 #[tokio::test]
 async fn cancelling_assistant_kills_entire_process_tree() {
     let (mut app, temp) = test_app().await;
-    app.node = PathBuf::from(
+    app.node = std::env::var_os("COMMUNITYHERO_TEST_NODE").map(PathBuf::from).unwrap_or_else(|| PathBuf::from(
         "C:/AIDev/Workspaces/repos/Angry.Space.Auto-symphony/data/private/angryspace-conveyor/provider-runtime/bundle/node.exe",
-    );
+    ));
     assert!(
         app.node.exists(),
         "Existing Node runtime required for containment test"
@@ -814,7 +985,10 @@ async fn cancelling_assistant_kills_entire_process_tree() {
     app.spawn(job.clone(), async move {
         worker.bridge("assistant", json!({})).await
     });
-    for _ in 0..100 {
+    // Process-tree admission plus Node startup can exceed two seconds on a
+    // loaded Windows host. Wait for the real heartbeat before testing cancel;
+    // keep the deadline below the fixture's 30-second normal completion.
+    for _ in 0..500 {
         if marker.exists() {
             break;
         }
@@ -949,9 +1123,10 @@ fn provider_cannot_import_operator_lineage_for_new_item() {
 
 #[tokio::test]
 async fn video_prerequisite_blocks_previously_approved_dispatch_without_consuming_approval(){
-    let (app,_temp)=test_app().await;
+    let (app,_temp)=test_app_with_post().await;
     let actor=operator_auth::Actor::local_owner("test");
     let p=proposal_new(State(app.clone()),Json(json!({"itemId":"item-1","kind":"reply_and_close","text":"Saved reviewed reply","expectedRevision":1}))).await.unwrap().0;
+    app.change(|d| {editorial_review::fixture_accept(d,p["id"].as_str().unwrap()).map_err(bad)?;Ok(())}).await.unwrap();
     let approval=approval_new(State(app.clone()),axum::Extension(actor.clone()),Json(json!({"proposals":[{"id":p["id"],"revision":p["revision"]}]}))).await.unwrap().0;
     app.change(|d|{d["posts"]=json!([{"id":"post-1","postKey":d["items"][0]["postKey"],"attachments":[{"type":"video"}]}]);Ok(())}).await.unwrap();
     let before=app.read().await.unwrap();
@@ -961,10 +1136,17 @@ async fn video_prerequisite_blocks_previously_approved_dispatch_without_consumin
     assert_eq!(after["proposals"][0]["text"],"Saved reviewed reply");
 }
 #[tokio::test]
-async fn missing_visual_context_cannot_create_ready_video_decision(){
+async fn missing_visual_context_stages_manual_draft_without_ready_admission(){
     let (app,_temp)=test_app().await;
     app.change(|d|{d["posts"]=json!([{"id":"post-1","postKey":d["items"][0]["postKey"],"attachments":[{"type":"video"}]}]);Ok(())}).await.unwrap();
     let before=app.read().await.unwrap();
-    assert!(proposal_new(State(app.clone()),Json(json!({"itemId":"item-1","kind":"reply_and_close","text":"Typed draft","expectedRevision":1}))).await.is_err());
-    let after=app.read().await.unwrap();assert_eq!(after["items"],before["items"]);assert_eq!(after["proposals"],before["proposals"]);
+    let proposal=proposal_new(State(app.clone()),Json(json!({"itemId":"item-1","kind":"reply_and_close","text":"Typed draft","expectedRevision":1}))).await.unwrap().0;
+    let after=app.read().await.unwrap();
+    assert_eq!(proposal["status"],"draft");assert!(decision_media::enabled(&proposal));
+    assert!(proposal.get("editorialReview").is_none());assert!(proposal_current(&after,&proposal).is_err());
+    let actor=operator_auth::Actor::local_owner("test");
+    assert!(approval_new(State(app.clone()),axum::Extension(actor),Json(json!({"proposals":[{"id":proposal["id"],"revision":proposal["revision"]}]}))).await.is_err());
+    let held=app.read().await.unwrap();assert_eq!(held,after);
+    for field in ["posts","materials","jobs","approvals","operations"] {assert_eq!(held[field],before[field]);}
+    app.db.close().await;
 }

@@ -129,7 +129,7 @@ pub fn research_arguments(call:&Value)->ApiResult<Value>{
 pub fn research_result(value:Value)->ApiResult<Value>{
     if value.to_string().len()>100000{return Err(bad("Research result exceeds evidence budget"));}
     let text=value["text"].as_str().filter(|s|s.len()<=60000).ok_or_else(||bad("Research summary missing or too long"))?;
-    let sources=value["sources"].as_array().filter(|s|s.len()<=20).ok_or_else(||bad("Research sources missing or too many"))?;
+    let sources=value["sources"].as_array().ok_or_else(||bad("Research sources missing"))?;
     let mut admitted=vec![];
     for source in sources{
         let url=crate::required(source,"url")?;
@@ -141,6 +141,11 @@ pub fn research_result(value:Value)->ApiResult<Value>{
 #[cfg(test)]
 mod tests{
     use super::*;
+    #[test]fn public_research_accepts_eighty_sources_and_retains_byte_budget(){
+        let sources:Vec<_>=(0..80).map(|n|json!({"url":format!("https://manufacturer.example/source-{n}"),"title":"Primary source","claim":"Fact"})).collect();
+        assert_eq!(research_result(json!({"text":"Answer","sources":sources})).unwrap()["sources"].as_array().unwrap().len(),80);
+        assert!(research_result(json!({"text":"x".repeat(100001),"sources":[]})).is_err());
+    }
     fn fixture()->Value{
         json!({"account":"LikeAvto","items":[{"id":"a","revision":1,"branchId":"b","workflow":"attention","text":"тест"},{"id":"c","revision":1,"branchId":"b","workflow":"attention"}],"branches":[{"id":"b","postId":"p","messages":[]}],"posts":[{"id":"p"}],"materials":[],"conversations":[{"id":"chat","operatorId":"alice","messages":[]}],"jobs":[{"id":"job","kind":"assistant","operatorId":"alice","refId":"chat","status":"running"}],"proposals":[],"operations":[],"audit":[]})
     }
@@ -196,8 +201,12 @@ mod tests{
     }
     #[test]fn prepared_action_statistics_require_current_actionable_proposals(){
         let mut d=fixture();
-        for item in d["items"].as_array_mut().unwrap(){item["itemId"]=item["id"].clone();item["objectId"]=json!("11391");item["postKey"]=json!("11391:p");item["conversationKey"]=item["id"].clone();item["contextEvidenceDigest"]=json!("a".repeat(64));}
-        crate::create_proposal(&mut d,&json!({"itemId":"a","expectedRevision":1,"kind":"reply_and_close","text":"Ответ"})).unwrap();
+        let binding=crate::active_binding(&d).unwrap().to_json();d["connectorBinding"]=binding.clone();
+        for item in d["items"].as_array_mut().unwrap(){item["itemId"]=item["id"].clone();item["objectId"]=json!("11391");item["postId"]=json!("p");item["postKey"]=json!("11391:p");item["connectorBinding"]=binding.clone();item["conversationKey"]=item["id"].clone();item["contextEvidenceDigest"]=json!("a".repeat(64));}
+        d["posts"][0]["text"]=json!("Complete synthetic source post");
+        d["posts"][0]["postKey"]=json!("11391:p");d["posts"][0]["attachments"]=json!([]);d["posts"][0]["connectorBinding"]=binding;
+        let reply=crate::create_proposal(&mut d,&json!({"itemId":"a","expectedRevision":1,"kind":"reply_and_close","text":"Ответ"})).unwrap();
+        crate::editorial_review::fixture_accept(&mut d,reply["id"].as_str().unwrap()).unwrap();
         crate::create_proposal(&mut d,&json!({"itemId":"c","expectedRevision":1,"kind":"close","text":""})).unwrap();
         let stats=crate::assistant_context::query(&d,&json!({}),true).unwrap();
         assert_eq!(stats["openTotal"],2);assert_eq!(stats["prepared_reply"],1);assert_eq!(stats["prepared_close"],1);assert_eq!(stats["preparedReplyPercentOfOpen"],50.0);

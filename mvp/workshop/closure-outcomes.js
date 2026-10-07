@@ -15,17 +15,18 @@ function directReply(message, item, target) {
   return localParent === target.id;
 }
 
-export function deriveClosure(item, branches = [], operations = []) {
+export function deriveClosure(item, branches = [], operations = [], account = null) {
   if ((item.workflow || item.view) !== 'closed') return null;
   // Preserve confirmed local operations as the authoritative outcome. Most
   // recent admitted successful close wins if historical operations coexist.
   const op = operations.filter(entry => entry.itemId === item.id && entry.status === 'succeeded'
     && ['close', 'reply_and_close'].includes(entry.action?.action)).at(-1);
-  if (op) return {at:op.updatedAt || op.createdAt || null, actor:'LikeAvto',
+  const actor = id(account) || id(item.connectorBinding?.accountId) || 'Команда';
+  if (op) return {at:op.updatedAt || op.createdAt || null, actor,
     outcome:op.action.action === 'reply_and_close' ? 'reply' : 'no_reply', source:'operation', operationId:op.id || null};
 
   // Import observations do not provide the time at which the operator closed it.
-  const result = {at:item.closedAt || null, actor:'LikeAvto', outcome:'unknown', source:'provider_context', replyId:null};
+  const result = {at:item.closedAt || null, actor, outcome:'unknown', source:'provider_context', replyId:null};
   const matches = branches.filter(branch => branch.id === item.branchId);
   if (matches.length !== 1) return {...result, reason:'missing_or_ambiguous_branch'};
   const branch = matches[0], messages = Array.isArray(branch.messages) ? branch.messages : [];

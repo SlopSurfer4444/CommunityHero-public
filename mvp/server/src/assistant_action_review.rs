@@ -38,6 +38,34 @@ fn fields(value: &Value, allowed: &[&str]) -> ApiResult<()> {
     Ok(())
 }
 
+// This admits only a local manual draft into a NON-EXECUTABLE review stage.
+// It does not manufacture delivery/semantic evidence or relax proposal_current
+// for a presented execution review, approval, confirmation or dispatch.
+fn unreviewed_manual_current(d:&Value,proposal:&Value)->ApiResult<Value>{
+    if proposal["kind"]!="reply_and_close"||proposal["status"]!="draft"
+        ||!preparation_materials::genuine_manual(proposal)
+        ||proposal["modelMaterialReceipt"].is_object()||proposal["editorialModelMaterialReceipt"].is_object(){
+        return Err(conflict("Manual draft requires its own current editorial review"));
+    }
+    let context=prepare_bundle::EvidenceContext::new(d);
+    let target=required(proposal,"itemId")?;
+    if proposal["reviewContextDigest"]!=context.review_fingerprint(target).map_err(conflict)?{
+        return Err(conflict("Manual draft source changed; prepare a current draft"));
+    }
+    let binding=active_binding(d)?;let item=bound_item(&binding,row(d,"items",target)?)?;
+    validate_route(proposal,&binding,&item)?;
+    if item["workflow"]!="prepared"||item["providerStatus"]=="deleted"
+        ||item["revision"]!=proposal["itemRevision"]
+        ||item["contextEvidenceDigest"]!=proposal["contextEvidenceDigest"]
+        ||item["branchContextDigest"]!=proposal["branchContextDigest"]{
+        return Err(conflict("Manual draft recipient changed; prepare a current draft"));
+    }
+    conductor_authority::fence_admission(d,"proposal",&[json!(target)])?;
+    preparation_reservations::assert_proposal(d,proposal)?;
+    reply_constraints::validate_reply(&context,&item,required(proposal,"text")?).map_err(conflict)?;
+    Ok(item)
+}
+
 /// Called in an app.change transaction, with the authenticated actor and source
 /// user message ID captured by the HTTP handler, never supplied by the model.
 /// A successful call is terminal for the assistant turn: the complete receipt
@@ -62,6 +90,7 @@ fn prepare_inner(d: &mut Value, actor: &Actor, conversation_id: &str, user_messa
         .ok_or_else(|| bad("Choose 1 to 100 exact items with revisions"))?;
     let mut seen = std::collections::HashSet::new();
     let mut entries = vec![];
+    let mut editorial_required=vec![];
     for selected in refs {
         fields(selected, &["id", "revision", "proposalId", "proposalRevision"])?;
         let key = required(selected, "id")?;
@@ -105,7 +134,16 @@ fn prepare_inner(d: &mut Value, actor: &Actor, conversation_id: &str, user_messa
             || !matches!(proposal["status"].as_str(), Some("draft" | "approved")) {
             return Err(conflict("Prepared proposal is unavailable or requires a different review"));
         }
-        let current = proposal_current(d, &proposal)?;
+        let context=prepare_bundle::EvidenceContext::new(d);
+        let needs_manual_review=proposal["kind"]=="reply_and_close"&&proposal["status"]=="draft"
+            &&preparation_materials::genuine_manual(&proposal)
+            &&!proposal["modelMaterialReceipt"].is_object()&&!proposal["editorialModelMaterialReceipt"].is_object()
+            &&preparation_materials::require_proposal(&context,&proposal).is_err();
+        let current=if needs_manual_review{
+            let current=unreviewed_manual_current(d,&proposal)?;
+            editorial_required.push(json!({"id":proposal["id"],"revision":proposal["revision"]}));
+            current
+        }else{proposal_current(d,&proposal)?};
         if list(d, "operations").iter().any(|o| recipient_operation_blocks(o, &proposal, &current)) {
             return Err(conflict("Recipient has an unresolved or completed operation"));
         }
@@ -116,7 +154,10 @@ fn prepare_inner(d: &mut Value, actor: &Actor, conversation_id: &str, user_messa
     let review_id = id();
     let receipt_id = id();
     let has_replies = entries.iter().any(|e| e["proposal"]["kind"] == "reply_and_close");
-    let mut text = format!("Проверка перед выполнением: {} комментариев. Пока ничего не отправлено и не закрыто.\n", entries.len());
+    let needs_editorial_review=!editorial_required.is_empty();
+    let mut text = if needs_editorial_review{
+        format!("Сохранены точные черновики для {} комментариев. Пакет требует редакторской проверки текста и обязательных материалов перед подтверждением отправки.\n",entries.len())
+    }else{format!("Проверка перед выполнением: {} комментариев. Пока ничего не отправлено и не закрыто.\n", entries.len())};
     for (index, entry) in entries.iter().enumerate() {
         let item = &entry["item"];
         let proposal = &entry["proposal"];
@@ -129,9 +170,12 @@ fn prepare_inner(d: &mut Value, actor: &Actor, conversation_id: &str, user_messa
             text.push('\n');
         } else { text.push_str("Действие: закрыть без ответа. Ответ не будет отправлен.\n"); }
     }
-    text.push_str("\nПроверьте всех получателей и точные тексты. Чтобы выполнить именно этот пакет, следующим сообщением напишите «Да, выполняй». Любые изменения потребуют новой проверки.");
+    if needs_editorial_review{
+        text.push_str("\nОтправка этого пакета пока недоступна. Сначала нужна редакторская проверка сохранённых ответов с полным обязательным контекстом; затем заново сформируйте проверку перед отправкой. Это сообщение не является разрешением на выполнение.");
+    }else{text.push_str("\nПроверьте всех получателей и точные тексты. Чтобы выполнить именно этот пакет, следующим сообщением напишите «Да, выполняй». Любые изменения потребуют новой проверки.");}
     if text.len() > 550_000 { return Err(bad("Review is too large to present completely; choose fewer items")); }
-    let review = json!({"id":review_id,"status":"presented","operatorId":actor.id,"authorityDigest":authority(actor),
+    let status=if needs_editorial_review{"needs_editorial_review"}else{"presented"};
+    let review = json!({"id":review_id,"status":status,"operatorId":actor.id,"authorityDigest":authority(actor),
         "conversationId":conversation_id,"sourceUserMessageId":user_message_id,"sourceUserIndex":source_index,
         "receiptMessageId":receipt_id,"receiptText":text,"mode":mode,"hasReplies":has_replies,"proposals":entries,
         "createdAt":now(),"expiresAt":chrono::Utc::now().timestamp()+REVIEW_SECONDS});
@@ -141,10 +185,15 @@ fn prepare_inner(d: &mut Value, actor: &Actor, conversation_id: &str, user_messa
         if prior["status"] == "presented" { prior["status"] = json!("superseded"); }
     }
     chat["actionReviews"].as_array_mut().unwrap().push(review.clone());
-    chat["messages"].as_array_mut().unwrap().push(json!({"id":receipt_id,"role":"assistant","text":text,
-        "createdAt":now(),"actionReview":{"reviewId":review_id,"mode":mode,"proposals":entries},"serverActionReview":true}));
-    audit(d, "assistant.review_presented", &review_id);
-    Ok(json!({"reviewId":review_id,"status":"awaiting_confirmation","terminal":true,"receiptMessageId":receipt_id,"text":text,"proposals":entries}))
+    let mut message=json!({"id":receipt_id,"role":"assistant","text":text,"createdAt":now()});
+    if needs_editorial_review{
+        message["editorialReviewRequired"]=json!({"reviewId":review_id,"proposals":editorial_required});
+    }else{message["actionReview"]=json!({"reviewId":review_id,"mode":mode,"proposals":entries});message["serverActionReview"]=json!(true);}
+    chat["messages"].as_array_mut().unwrap().push(message);
+    audit(d,if needs_editorial_review{"assistant.draft_review_required"}else{"assistant.review_presented"},&review_id);
+    let mut result=json!({"reviewId":review_id,"status":if needs_editorial_review{"needs_editorial_review"}else{"awaiting_confirmation"},"terminal":true,"receiptMessageId":receipt_id,"text":text,"proposals":entries});
+    if needs_editorial_review{result["editorialReviewRequired"]=json!(editorial_required);}
+    Ok(result)
 }
 
 fn affirmative(text: &str, has_replies: bool) -> bool {
@@ -193,6 +242,7 @@ pub(crate) fn pending_confirmation(d: &Value, actor: &Actor, conversation_id: &s
     let chat = conversation(d, actor, conversation_id)?;
     let (_, message) = user_turn(chat, user_message_id)?;
     let Some(review) = chat["actionReviews"].as_array().and_then(|a| a.last()) else { return Ok(None); };
+    if review["status"]!="presented"{return Ok(None);}
     if !affirmative(message["text"].as_str().unwrap_or(""), review["hasReplies"] == true) { return Ok(None); }
     let review_id = required(review, "id")?;
     confirmation(d, actor, conversation_id, user_message_id, review_id)?;

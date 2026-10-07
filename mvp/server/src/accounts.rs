@@ -70,18 +70,22 @@ pub(crate) fn initialize(data: &mut Value, selected: Profile) -> ApiResult<()> {
 }
 
 pub(crate) async fn status(State(app): State<App>) -> ApiResult<Json<Value>> {
-    let data = app.read().await?;
+    let data = app.db.read_engine_status().await?;
     let profile = Profile::from_workspace(&data)?;
     active_binding(&data)?;
     let count = |collection: &str, field: &str, state: &str| list(&data, collection)
         .iter().filter(|row| row[field] == state).count();
     Ok(Json(json!({"version":1,"account":profile.key(),"displayAccount":profile.display(),
+        "storageGeneration":data["storageGeneration"],
         "externalWrites":app.external_writes,"authority":"shared-rust-engine",
+        "prepareScopeReservations":{"version":1},
+        "strictGrouping":{"version":1,"contract":crate::preparation_unit::CONTRACT},
+        "prepareWorkers":{"version":1,"maxWorkers":app.preparation_workers.width()},
         "capabilities":{"read":true,"prepare":true,"exactApproval":true,"reconcile":true,
             "autonomousApproval":"explicit-client-run-only","restoreDeleted":false},
-        "counts":{"items":list(&data,"items").len(),"prepared":count("items","workflow","prepared"),
+        "counts":data.get("counts").cloned().unwrap_or_else(||json!({"items":list(&data,"items").len(),"prepared":count("items","workflow","prepared"),
             "attention":count("items","workflow","attention"),"unknown":count("operations","status","unknown"),
-            "dispatching":count("operations","status","dispatching")}})))
+            "dispatching":count("operations","status","dispatching")}))})))
 }
 
 #[cfg(test)] mod tests {

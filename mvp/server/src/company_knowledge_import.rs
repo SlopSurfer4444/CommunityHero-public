@@ -154,6 +154,9 @@ pub fn apply(d:&mut Value,package:&Package,company:&str,at:&str)->Result<Value,&
         let old_material=rows(&candidate,"materials").iter().find(|m|m["id"]==source).cloned();
         if old_material.as_ref().is_some_and(|m|!in_account(m,expected)){return Err("Legacy material belongs to another company");}
         let old_head=entry_index.and_then(|i|rows(&candidate,"knowledge_versions").iter().find(|v|v["id"]==candidate["knowledge_entries"][i]["currentVersionId"])).cloned();
+        if old_head.as_ref().is_some_and(|head|head["category"]=="reply_url_policy") {
+            return Err("Reply URL policy requires a versioned edit");
+        }
         let kind=match text(record,"kind"){"claim"=>"reference",kind=>kind};
         let meta=&record["metadata"];
         let observed=record["observedAt"].as_str().unwrap_or(&package.generated_at);
@@ -243,6 +246,85 @@ mod tests {
     }
     fn workspace()->Value {json!({"account":"LikeAvto","connectorBinding":{"connector":"angryspace","accountId":"LikeAvto","providerAccountId":"likeavto"},"materials":[],"knowledge_entries":[],"knowledge_versions":[],"posts":[],"operations":[{"id":"unknown","status":"unknown"}],"approvals":[{"id":"approved"}],"items":[]})}
     #[test]
+    fn reviewed_account_instruction_reaches_preparation_without_unquarantining_imports() {
+        let candidate:Value=serde_json::from_str(include_str!("../../../project/knowledge/likeavto-youtube-sales-route-2026-09-29.json")).unwrap();
+        assert_eq!(candidate["status"],"candidate_not_installed");
+        assert_eq!(candidate["company"],"LikeAvto");
+        let mut d=workspace();
+        d["connectorBinding"]=crate::accounts::Profile::LikeAvto.binding();
+        d["posts"]=json!([{"id":"post","postKey":"youtube:post","platform":"youtube","title":"LikeAvto post"}]);
+        d["branches"]=json!([{"id":"branch","postId":"post","messages":[],"contextComplete":true}]);
+        d["items"]=json!([{"id":"item","branchId":"branch","postId":"post","postKey":"youtube:post","platform":"youtube","text":"Сколько стоит?","revision":1,"workflow":"attention"}]);
+        let installed=crate::knowledge::save_instruction(&mut d,&candidate["install"]["body"],AT).unwrap();
+        let replay=crate::knowledge::save_instruction(&mut d,&candidate["install"]["body"],AT).unwrap();
+        assert_eq!(replay["replayed"],true);
+        assert_eq!(installed["entry"]["scope"]["account"],"LikeAvto");
+        let captured=crate::prepare_bundle::build(&d,&[json!("item")],&[]).unwrap();
+        let route=rows(&captured["request"],"materials").iter().find(|m|m["knowledgeEntryId"]==installed["entry"]["id"]).unwrap();
+        assert_eq!(route["kind"],"rule");
+        assert_eq!(route["trust"],"verified");
+        assert_eq!(route["text"],candidate["install"]["body"]["text"]);
+        assert!(rows(&captured["request"],"knowledgeManifest").iter().any(|m|m["entryId"]==installed["entry"]["id"]&&m["versionId"]==installed["version"]["id"]));
+
+        let mut foreign=d.clone();
+        foreign["account"]=json!("BAW Russia");
+        foreign["connectorBinding"]=crate::accounts::Profile::BawRussia.binding();
+        foreign["items"][0]["account"]=json!("BAW Russia");
+        foreign["posts"][0]["account"]=json!("BAW Russia");
+        assert!(rows(&select(&foreign,&[],&[],AT).unwrap(),"materials").is_empty());
+
+        let pending=crate::knowledge::revise(&mut d,text(&installed["entry"],"id"),&json!({"expectedVersionId":installed["version"]["id"],"status":"pending_review"}),AT).unwrap();
+        assert_eq!(pending["status"],"pending_review");
+        assert!(rows(&select(&d,&[],&[],AT).unwrap(),"materials").is_empty());
+    }
+    #[test]
+    fn exact_legacy_binding_is_readable_but_partial_or_foreign_variants_are_not() {
+        let legacy=workspace();
+        assert_eq!(supported_account(&legacy),Ok("LikeAvto"));
+        let mut baw=legacy.clone();
+        baw["account"]=json!("BAW Russia");
+        baw["connectorBinding"]["accountId"]=json!("BAW Russia");
+        baw["connectorBinding"]["providerAccountId"]=json!("baw-russia");
+        assert_eq!(supported_account(&baw),Ok("BAW Russia"));
+        let mut full=legacy.clone();
+        full["connectorBinding"]=crate::accounts::Profile::LikeAvto.binding();
+        assert_eq!(supported_account(&full),Ok("LikeAvto"));
+        let mut unbound=legacy.clone();
+        unbound.as_object_mut().unwrap().remove("connectorBinding");
+        assert_eq!(supported_account(&unbound),Ok("LikeAvto"));
+        let mut bad=legacy.clone();
+        bad["connectorBinding"]["providerAccountId"]=json!("other");
+        assert_eq!(supported_account(&bad),Err("Knowledge account is not configured"));
+        let mut bad=legacy.clone();
+        bad["connectorBinding"]["workspaceId"]=json!("local-pilot");
+        assert_eq!(supported_account(&bad),Err("Knowledge account is not configured"));
+        let mut bad=legacy.clone();
+        bad["connectorBinding"].as_object_mut().unwrap().remove("providerAccountId");
+        assert_eq!(supported_account(&bad),Err("Knowledge account is not configured"));
+        let mut bad=legacy.clone();
+        bad["connectorBinding"]["accountId"]=json!("BAW Russia");
+        assert_eq!(supported_account(&bad),Err("Knowledge account is not configured"));
+        let mut third=legacy;
+        third["account"]=json!("Third Company");
+        third["connectorBinding"]["accountId"]=json!("Third Company");
+        third["connectorBinding"]["providerAccountId"]=json!("third");
+        assert_eq!(supported_account(&third),Err("Knowledge account is not configured"));
+    }
+    #[test]
+    fn import_cannot_replace_current_typed_reply_url_head() {
+        let mut d=workspace();
+        d["connectorBinding"]=crate::accounts::Profile::LikeAvto.binding();
+        crate::knowledge::reply_url_policy::save(&mut d,&json!({"requestId":"typed-owner",
+            "expectedVersionId":null,"values":[]}),AT).unwrap();
+        let source=text(&d["knowledge_entries"][0],"sourceMaterialId").to_owned();
+        let mut r=record("claim","collision");
+        r["metadata"]["legacyMaterialId"]=json!(source);
+        let p=package(vec![r],vec![]);
+        let before=d.clone();
+        assert_eq!(apply(&mut d,&p,"likeavto",AT),Err("Reply URL policy requires a versioned edit"));
+        assert_eq!(d,before);
+    }
+    #[test]
     fn import_replay_keeps_one_material_head_and_leaves_authority_records_untouched() {
         let p=package(vec![record("claim","claim-1"),record("rule","rule-1")],vec![]);let mut d=workspace();let before=d.clone();
         let receipt=apply(&mut d,&p,"likeavto",AT).unwrap();assert_eq!(receipt["imported"],2);assert!(has_authority(&d));
@@ -320,7 +402,9 @@ mod tests {
         let selected=select(&d,&[],&[json!({"postKey":"legacy:post"})],AT).unwrap();assert_eq!(rows(&selected,"materials").len(),1);
         assert_eq!(selected["materials"][0]["transcription"]["coverage"],"unknown");assert_eq!(selected["materials"][0]["postKey"],"legacy:post");assert_eq!(d["knowledge_versions"][0]["postKey"],"");
         assert!(TranscriptLookup::new(&d,AT).unwrap().has(&d["posts"][0]).unwrap());
-        d["connectorBinding"]["connector"]=json!("vk");assert!(rows(&select(&d,&[],&[json!({"postKey":"legacy:post"})],AT).unwrap(),"materials").is_empty());
+        d["connectorBinding"]=json!({"id":"vk-likeavto-v1","workspaceId":"local-pilot",
+            "accountId":"LikeAvto","connector":"vk","revision":1,"providerAccountId":"likeavto"});
+        assert!(rows(&select(&d,&[],&[json!({"postKey":"legacy:post"})],AT).unwrap(),"materials").is_empty());
         assert!(!TranscriptLookup::new(&d,AT).unwrap().has(&d["posts"][0]).unwrap());
     }
     #[test]

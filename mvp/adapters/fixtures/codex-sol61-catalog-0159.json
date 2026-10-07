@@ -1,0 +1,21 @@
+{
+  "source": "synthetic-public-fixture-not-an-authenticated-catalog",
+  "models": [
+    {
+      "slug": "gpt-6.1-sol",
+      "display_name": "Synthetic route fixture",
+      "description": "Synthetic shape for local adapter tests, not an account capability receipt",
+      "default_reasoning_level": "high",
+      "supported_reasoning_levels": [
+        {
+          "effort": "high",
+          "description": "Synthetic fixture"
+        }
+      ],
+      "input_modalities": [
+        "text",
+        "image"
+      ]
+    }
+  ]
+}

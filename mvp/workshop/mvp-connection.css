@@ -4,3 +4,16 @@
 .mvp-workflow{display:inline-flex;align-items:center;gap:5px;color:var(--muted);margin-left:8px}.mvp-workflow select{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:3px 6px;font-size:11px;color:#4c4654}.mvp-wait-form{padding:17px 19px}.mvp-wait-form label{display:grid;gap:5px;color:var(--muted);font-size:12px;margin-bottom:10px}.mvp-wait-form input{border:1px solid var(--line);border-radius:7px;padding:7px;background:var(--surface);color:inherit}.mvp-wait-form footer{margin:15px -19px -17px}
 .mvp-sync-note{margin:0 0 12px;padding:8px 10px;border-radius:7px;background:#faf3e7;color:#75582d;font-size:12px}
 .assistant-typing-dots{display:inline-flex;min-width:1em}.assistant-typing-dots span{animation:assistant-typing-dot 1.2s infinite ease-in-out}.assistant-typing-dots span:nth-child(2){animation-delay:.2s}.assistant-typing-dots span:nth-child(3){animation-delay:.4s}@keyframes assistant-typing-dot{0%,60%,100%{opacity:.25}30%{opacity:1}}@media(prefers-reduced-motion:reduce){.assistant-typing-dots span{animation:none;opacity:1}}
+.mvp-confirmed-reply{margin:10px 0 16px;padding:11px 13px;border:1px solid var(--reply-line);border-radius:12px;background:var(--reply);color:var(--text)}
+.mvp-confirmed-reply strong{display:block;margin-bottom:6px;font-size:12px;color:#465c7e}
+.mvp-confirmed-reply p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.mvp-media-context{margin-top:10px;border-top:1px solid var(--line);padding-top:8px;font-size:12px}
+.mvp-media-context summary{cursor:pointer;color:var(--accent)}
+.mvp-media-context>div{display:block;padding-top:8px}
+.mvp-media-context ul{padding-left:18px;overflow-wrap:anywhere}
+.mvp-media-context h4{margin:10px 0 5px;font-size:12px}
+.mvp-media-context form{display:grid;gap:9px;margin:10px 0}
+.mvp-media-context label{display:grid;gap:5px}
+.mvp-media-context .mvp-media-confirm{display:flex;align-items:flex-start;gap:7px;line-height:1.5}
+.mvp-media-context textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:inherit;resize:vertical}
+.mvp-selected-media-review{margin:8px 12px;font-size:12px}

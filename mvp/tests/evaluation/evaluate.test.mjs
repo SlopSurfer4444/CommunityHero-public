@@ -12,7 +12,7 @@ test('post groups cannot leak between development and control; deterministic', (
   const groups = new Map();
   for (const c of cases.cases) { const key = `${c.account}:${c.platform}:${c.postKey}`; if (groups.has(key)) assert.equal(groups.get(key), split(c)); groups.set(key, split(c)); }
 });
-test('ten synthetic cases stay pending; analyst expectations are not gold', () => {
+test('ten synthetic replacement cases stay pending; analyst expectations are not gold', () => {
   const data = JSON.parse(readFileSync(new URL('../fixtures/knowledge-real-cases.json', import.meta.url)));
   const labels = template(data);
   assert.equal(labels.labels.length, 10);

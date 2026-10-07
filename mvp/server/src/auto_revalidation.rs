@@ -25,10 +25,29 @@ pub(super) fn validated_config(body: &Value) -> ApiResult<Value> {
     Ok(json!({"enabled":enabled,"debounceSeconds":debounce}))
 }
 pub(super) fn status(d: &Value, now: i64) -> Value {
-    let raw=&d["settings"]["autoPreparation"]["revalidation"];
-    let effective=json!({"enabled":raw["enabled"]==true,"debounceSeconds":raw["debounceSeconds"].as_i64().unwrap_or(120).clamp(30,3600)});
     let media_states=crate::media_queue::preparation_states(d,list(d,"items"),&super::stamp(now));
     let candidates=list(d,"items").iter().filter(|i| eligible_with_media(d,i,now,media_states.as_ref().ok().and_then(|s|s.get(i["id"].as_str().unwrap_or(""))).map_or(true,Option::is_some)) && source_candidate(d,i).is_some()).count();
+    let group_review_required=list(d,"items").iter().filter(|i| eligibility_block(d,i,now,
+        media_states.as_ref().ok().and_then(|s|s.get(i["id"].as_str().unwrap_or(""))).map_or(true,Option::is_some))==Some("group_review_required")).count();
+    let mut value=status_summary(d,now);
+    value["candidateCount"]=json!(candidates);
+    value["groupReviewRequiredCount"]=json!(group_review_required);
+    value.as_object_mut().unwrap().remove("eligibility");
+    value
+}
+/// Observed counters and configuration only. This is never an admission preview:
+/// no missing eligibility proof is converted into a zero or a permission.
+pub(super) fn status_summary(d:&Value,now:i64)->Value {
+    let raw=&d["settings"]["autoPreparation"]["revalidation"];
+    let effective=json!({"enabled":raw["enabled"]==true,"debounceSeconds":raw["debounceSeconds"].as_i64().unwrap_or(120).clamp(30,3600)});
+    // The summary projection contains aggregate workflow counters, not items.
+    // Full status reaches this helper only after its unchanged list/eligibility
+    // evaluation. A projection's absent items never stand for actual zero work.
+    let workflow=if let Some(items)=d["items"].as_array(){json!({
+        "prepared":items.iter().filter(|i|i["workflow"]=="prepared").count(),
+        "needsAttention":items.iter().filter(|i|i["workflow"]=="attention").count(),
+        "stale":items.iter().filter(|i|i["workflow"]=="attention"&&i["autoPreparation"]["status"]=="stale").count()})}
+        else{d["maintenancePreparationWorkflow"].clone()};
     let recent:Vec<&Value>=list(d,"jobs").iter().filter(|j|j["purpose"]==PURPOSE && super::time(&j["claimedAt"]).is_some_and(|at|at>now-86400)).collect();
     let active:Vec<&Value>=list(d,"jobs").iter().filter(|j|j["kind"]=="assistant"
         && matches!(j["status"].as_str(),Some("running"|"queued"))).collect();
@@ -38,11 +57,10 @@ pub(super) fn status(d: &Value, now: i64) -> Value {
     let recent_running=recent.iter().filter(|j|matches!(j["status"].as_str(),Some("running"|"queued"))).count();
     // Preserve the old fields for API consumers, but explicitly identify their
     // historical scope. Current queue and lane counts never come from outcomes.
-    json!({"configuration":effective,"mode":"continuous","candidateCount":candidates,"claimedLast24Hours":recent.len(),
+    json!({"configuration":effective,"mode":"continuous","candidateCount":null,"groupReviewRequiredCount":null,
+        "eligibility":{"status":"not_evaluated","detailQuery":"eligibility=full"},"claimedLast24Hours":recent.len(),
         "observedAt":super::stamp(now),"legacyCountersScope":"revalidation_last_24_hours",
-        "currentWorkflow":{"prepared":list(d,"items").iter().filter(|i|i["workflow"]=="prepared").count(),
-            "needsAttention":list(d,"items").iter().filter(|i|i["workflow"]=="attention").count(),
-            "stale":list(d,"items").iter().filter(|i|i["workflow"]=="attention"&&i["autoPreparation"]["status"]=="stale").count()},
+        "currentWorkflow":workflow,
         "activeJobs":{"initialPreparation":active_count("auto_prepare"),"revalidation":active_count(PURPOSE),
             "discussion":active_count("discussion"),
             "otherPreparation":active.iter().filter(|j|!matches!(j["purpose"].as_str(),Some("auto_prepare"|"auto_revalidate"|"discussion"))).count()},
@@ -58,20 +76,21 @@ fn eligible_with_media(d: &Value, item: &Value, now: i64, media_wait: bool) -> b
     eligibility_block(d,item,now,media_wait).is_none()
 }
 fn eligibility_block(d: &Value, item: &Value, now: i64, media_wait: bool) -> Option<&'static str> {
+    if media_wait&&!crate::decision_media::may_assess(d,item).unwrap_or(false){return Some("media_prerequisite_unavailable");}
     if item["workflow"] != "attention" { return Some("workflow_changed"); }
     if !matches!(item["providerStatus"].as_str(), Some("new" | "inprogress")) { return Some("provider_status_changed"); }
     if !item["draft"].as_str().unwrap_or("").trim().is_empty() { return Some("operator_draft_present"); }
     if item["draftEdited"] == true { return Some("operator_draft_edited"); }
     if !item["autoPreparation"]["humanOverrideAt"].is_null() { return Some("human_override_present"); }
     if !matches!(item["autoPreparation"]["status"].as_str(), Some("stale" | "needs_attention")) { return Some("preparation_state_changed"); }
-    if media_wait { return Some("media_prerequisite_unavailable"); }
-    if !super::time(&item["providerObservedAt"]).is_some_and(|t| (now-600..=now+60).contains(&t)) { return Some("provider_observation_expired"); }
+    if !super::valid_provider_observation(item,now) { return Some("provider_observation_invalid"); }
     let Ok(binding) = crate::active_binding(d) else { return Some("connector_binding_unavailable"); };
     if crate::bridge_account(&binding).is_err() || crate::bound_item(&binding, item).is_err() { return Some("item_binding_changed"); }
     if list(d,"proposals").iter().any(|p| p["itemId"] == item["id"]
         && matches!(p["status"].as_str(), Some("draft" | "approved" | "dispatching" | "unknown"))) { return Some("protected_proposal_present"); }
     if list(d,"operations").iter().any(|o| o["itemId"] == item["id"]
         && matches!(o["status"].as_str(), Some("dispatching" | "unknown"))) { return Some("protected_operation_present"); }
+    if crate::preparation_restart::grouped_previous(d,item) {return Some("group_review_required");}
     None
 }
 fn previous(d: &Value, item: &Value) -> Option<(Value, Value)> {
@@ -91,7 +110,14 @@ fn previous(d: &Value, item: &Value) -> Option<(Value, Value)> {
         && crate::preparation_restart::authorized_error_retry(d,item,job)
         && matches!(job["status"].as_str(),Some("completed"|"failed"))
         && job["refId"]==item["id"];
-    if !matches!(job["purpose"].as_str(), Some("auto_prepare" | "auto_revalidate"))
+    let repaired_owner=if job["purpose"]=="answering_repair" {
+        let proposal=saved?;
+        let owner=crate::answering_repair_plan::automatic_proposal_origin(d,proposal)?;
+        let root=row(d,"jobs",&owner).ok()?;
+        if root["status"]!="completed"||item["autoPreparation"]["jobId"]!=owner{return None;}
+        Some(owner)
+    }else{None};
+    if (!matches!(job["purpose"].as_str(), Some("auto_prepare" | "auto_revalidate"))&&repaired_owner.is_none())
         || (job["status"] != "completed" && !explicit_error) { return None; }
     let bundle=&job["prepareBundle"];
     if bundle["version"]!=1 || bundle["itemIds"]!=json!([item["id"]])
@@ -104,7 +130,9 @@ fn previous(d: &Value, item: &Value) -> Option<(Value, Value)> {
         || crate::prepare_bundle::current(d,bundle).is_err()) {return None;}
     if saved.is_none() && job["prepareOutcome"]["status"] != "needs_attention" && !explicit_error { return None; }
     let decision = json!({"itemId":item["id"],"proposalId":saved.map(|p|p["id"].clone()),
-        "prepareRunId":run,"outcome":saved.map(|p| if p["kind"]=="close" {"close"}else{"reply"}).unwrap_or("needs_attention"),
+        "prepareRunId":run,"outcome":saved.map(|p|match p["kind"].as_str(){
+            Some("reply_and_close")=>"reply",Some("close")=>"close",Some("hide")=>"hide",Some("delete")=>"delete",_=>"needs_attention"
+        }).unwrap_or("needs_attention"),
         "text":saved.and_then(|p|p["text"].as_str()).unwrap_or(""),
         "reason":if explicit_error {job.get("error").unwrap_or(&job["prepareOutcome"]["reason"])} else {&job["prepareOutcome"]["reason"]},
         "sourceChangeReason":item["autoPreparation"]["sourceChangeReason"]});
@@ -136,7 +164,35 @@ fn source_candidate(d: &Value, item: &Value) -> Option<(Value, Option<String>, S
         }) { return None; }
     Some((decision,restart,source))
 }
-pub(super) fn claim(d: &mut Value, now: i64) -> ApiResult<Option<(String, Value)>> {
+fn candidates(d: &Value, now: i64) -> ApiResult<Vec<Value>> {
+    let media_states=crate::media_queue::preparation_states(d,list(d,"items"),&super::stamp(now))?;
+    Ok(list(d,"items").iter().filter(|item| eligible_with_media(d,item,now,
+        media_states.get(item["id"].as_str().unwrap_or("")).map_or(true,Option::is_some))).cloned().collect())
+}
+// Pure admission preview shared by fairness and the exclusive claim. Merely
+// stale/settling or permanently blocked work must not drain healthy workers.
+fn ready_capture(d: &Value, item: &Value, now: i64, debounce: i64) -> Option<(Value, Option<String>, String)> {
+    let id=item["id"].as_str()?;
+    let (decision,restart,source)=source_candidate(d,item)?;
+    if item["autoRevalidation"]["pendingDigest"] != source
+        || !super::time(&item["autoRevalidation"]["observedAt"]).is_some_and(|at|at<=now-debounce) {return None;}
+    // A previous repaired decision truthfully names its paid child. Reservation
+    // ownership is separately derived from the proven original workflow owner.
+    let previous_owner=if row(d,"jobs",decision["prepareRunId"].as_str()?).ok()?["purpose"]=="answering_repair" {
+        let proposal=row(d,"proposals",decision["proposalId"].as_str()?).ok()?;
+        crate::answering_repair_plan::automatic_proposal_origin(d,proposal)?
+    }else{decision["prepareRunId"].as_str()?.to_owned()};
+    crate::preparation_reservations::assert_available(d,&[id.to_owned()],Some(&previous_owner)).ok()?;
+    let mut bundle=crate::prepare_bundle::triage(d,id).ok()?;
+    bundle["request"]["previousDecision"]=decision;
+    bundle["digest"]=json!(format!("{:x}",Sha256::digest(bundle["request"].to_string().as_bytes())));
+    Some((bundle,restart,source))
+}
+pub(super) fn ready(d: &Value, now: i64) -> ApiResult<bool> {
+    let Some(debounce)=config(d) else {return Ok(false);};
+    Ok(candidates(d,now)?.iter().any(|item|ready_capture(d,item,now,debounce).is_some()))
+}
+pub(super) fn observe(d: &mut Value, now: i64) -> ApiResult<()> {
     let interrupted: Vec<(String,String)> = list(d,"items").iter().filter_map(|i| {
         if i["autoRevalidation"]["status"] != "running" { return None; }
         let job = i["autoRevalidation"]["jobId"].as_str()?;
@@ -149,26 +205,30 @@ pub(super) fn claim(d: &mut Value, now: i64) -> ApiResult<Option<(String, Value)
         state["reason"] = json!("Перепроверка прервана. Сохранённое решение оставлено; автоматический повтор не запускается.");
         state["finishedAt"] = json!(super::stamp(now));
     }
-    let Some(debounce) = config(d) else { return Ok(None); };
-    if list(d,"jobs").iter().any(|j| j["kind"]=="assistant" && j["purpose"]!="discussion"
-        && matches!(j["status"].as_str(),Some("running"|"queued"))) {
-        return Ok(None);
-    }
-    let media_states=crate::media_queue::preparation_states(d,list(d,"items"),&super::stamp(now))?;
-    let candidates: Vec<Value> = list(d,"items").iter().filter(|i| eligible_with_media(d,i,now,media_states.get(i["id"].as_str().unwrap_or("")).map_or(true,Option::is_some))).cloned().collect();
-    for item in candidates {
+    if config(d).is_none(){return Ok(());}
+    let candidates=candidates(d,now)?;
+    // Observe stability even while independent initial work is active. Otherwise
+    // continuous refill can prevent the debounce clock from ever starting.
+    for item in &candidates {
         let Some(id) = item["id"].as_str() else { continue; };
-        let Some((decision,restart,source)) = source_candidate(d,&item) else { continue; };
+        let Some((_,restart,source)) = source_candidate(d,item) else { continue; };
         if item["autoRevalidation"]["pendingDigest"] != source {
             row_mut(d,"items",id)?["autoRevalidation"] = json!({"status":"settling","pendingDigest":source,"observedAt":super::stamp(now),"restartRunId":restart});
-            continue;
         }
-        if !super::time(&item["autoRevalidation"]["observedAt"]).is_some_and(|at| at <= now-debounce) { continue; }
-        let mut bundle = match crate::prepare_bundle::triage(d,id) { Ok(b)=>b,Err(_)=>continue };
-        bundle["request"]["previousDecision"] = decision;
-        // previousDecision is evidence, not a chat instruction. Bind it into the
-        // immutable request hash; only the ordinary current source digest admits results.
-        bundle["digest"] = json!(format!("{:x}",Sha256::digest(bundle["request"].to_string().as_bytes())));
+    }
+    Ok(())
+}
+pub(super) fn claim(d: &mut Value, now: i64) -> ApiResult<Option<(String, Value)>> {
+    observe(d,now)?;
+    if d["settings"]["autoPreparation"]["continuousPreparation"].is_object()
+        && crate::continuous_preparation::admission_reason(d).is_some(){return Ok(None);}
+    let Some(debounce)=config(d) else{return Ok(None);};
+    let candidates=candidates(d,now)?;
+    if list(d,"jobs").iter().any(|j| j["kind"]=="assistant" && j["purpose"]!="discussion"
+        && matches!(j["status"].as_str(),Some("running"|"queued"))) {return Ok(None);}
+    for item in candidates {
+        let Some((bundle,restart,source))=ready_capture(d,&item,now,debounce) else {continue;};
+        let id=item["id"].as_str().expect("captured review recipient");
         let request = bundle["request"].clone();
         let job = crate::new_job(d,"assistant",id)?;
         let stored = row_mut(d,"jobs",&job)?;
@@ -177,10 +237,18 @@ pub(super) fn claim(d: &mut Value, now: i64) -> ApiResult<Option<(String, Value)
         stored["sourceDigest"] = json!(source);
         if let Some(run)=restart {stored["restartRunId"]=json!(run);}
         stored["claimedAt"] = json!(super::stamp(now));
+        let reservation=crate::preparation_reservations::capture(d,&job)?;
+        crate::preparation_reservations::check(d,&reservation,Some(&job))?;
+        row_mut(d,"jobs",&job)?["scopeReservation"]=reservation;
         let state = &mut row_mut(d,"items",id)?["autoRevalidation"];
         state["status"] = json!("running");
         state["jobId"] = json!(job);
         state["startedAt"] = json!(super::stamp(now));
+        if crate::continuous_preparation::enabled(d){
+            let parent=request["previousDecision"]["prepareRunId"].as_str().filter(|id|row(d,"jobs",id)
+                .is_ok_and(|j|j["continuousPreparationOrigin"]["kind"]=="continuous_background")).map(str::to_owned);
+            crate::continuous_preparation::stamp_background_job(d,&job,parent.as_deref())?;
+        }
         return Ok(Some((job,request)));
     }
     Ok(None)
@@ -237,41 +305,187 @@ pub(super) fn complete(d: &mut Value, job_id: &str, result: &Value, now: i64) ->
     Ok(outcome)
 }
 
+/// Revalidation repair keeps the original workflow owner and paid result. The
+/// admitted child's new revision cannot be checked against the original bundle.
+#[derive(Clone,Copy)]
+pub(crate) enum RepairPhase { BeforeAdmission, AfterAdmission }
+pub(crate) fn repair_current(d:&Value,origin:&str,affected:&[Value],phase:RepairPhase)->ApiResult<()> {
+    let root=row(d,"jobs",origin)?;let bundle=&root["prepareBundle"];let request=&bundle["request"];
+    let id=crate::required(root,"refId")?;let item=row(d,"items",id)?;let binding=crate::active_binding(d)?;
+    if root["kind"]!="assistant"||root["purpose"]!=PURPOSE||root.get("originatingAnsweringAttemptId").is_some()
+        ||!matches!(root["status"].as_str(),Some("running"|"completed"|"failed"|"interrupted"))
+        ||root["preparationStages"]["first"]["status"]!="completed"||bundle["version"]!=1
+        ||bundle["itemIds"]!=json!([id])||crate::list(request,"items").len()!=1||request["items"][0]["id"]!=id
+        ||affected.len()!=1||affected[0]!=id||bundle["digest"]!=crate::preparation_materials::hash(request)
+        ||request["account"]!=d["account"]||request["connectorBinding"]!=binding.to_json()
+        ||root["prepareOutcome"]["itemId"]!=id||!root["prepareOutcome"]["admission"].is_object()
+        ||item["autoPreparation"]["jobId"]!=origin||item["autoPreparation"]["attempts"]!=1||item["autoPreparation"]["inputDigest"]!=bundle["dependencyDigest"]||item["autoRevalidation"]["jobId"]!=origin
+        ||item["autoRevalidation"]["status"]!="completed"||!root["sourceDigest"].is_string()
+        ||item["autoRevalidation"]["pendingDigest"]!=root["sourceDigest"] {
+        return Err(crate::conflict("Repair revalidation singleton ownership changed"));
+    }
+    let original_receipt=crate::model_material_receipt::result_receipt(request,&root["preparationStages"]["first"]["result"])
+        .map_err(crate::conflict)?.ok_or_else(||crate::conflict("Repair revalidation original paid material receipt missing"))?;
+    if original_receipt["nativeJobId"]!=origin||!crate::list(root,"modelMaterialReceipts").contains(&original_receipt)
+        ||!crate::list(root,"retainedEvidence").contains(&original_receipt["paidResultRef"]){
+        return Err(crate::conflict("Repair revalidation original paid closure changed"));
+    }
+    if crate::list(root,"videoFrameNeeds").is_empty()||root["videoFrameNeeds"]!=root["preparationStages"]["first"]["result"]["nativeVideoFrameNeeds"]
+        ||crate::list(root,"videoFrameNeeds").iter().any(|need|need["originatingAnsweringAttemptId"]!=origin||need["requestingPaidAttemptId"]!=origin
+            ||need["parentPaidResultRef"]!=original_receipt["paidResultRef"]||crate::video_frame_work::current_need(d,need).is_err()){
+        return Err(crate::conflict("Repair revalidation original frame need lineage changed"));
+    }
+    crate::bound_item(&binding,item)?;
+    if item["draftEdited"]==true||!item["autoPreparation"]["humanOverrideAt"].is_null()
+        ||!item["draft"].as_str().unwrap_or("").trim().is_empty()
+        ||!matches!(item["providerStatus"].as_str(),Some("new"|"inprogress"))
+        ||!super::valid_provider_observation(item,chrono::Utc::now().timestamp())
+        ||root["sourceDigest"]!=crate::prepare_bundle::review_fingerprint(d,id).map_err(crate::conflict)? {
+        return Err(crate::conflict("Repair revalidation source or operator decision changed"));
+    }
+    let completed=match phase {
+        RepairPhase::BeforeAdmission=>{
+            if root["prepareOutcome"]["status"]!="needs_attention"||item["autoPreparation"]["status"]!="needs_attention"
+                ||item["autoPreparation"]["requiresReview"]!=true||item["workflow"]!="attention"||!crate::list(&root["prepareOutcome"]["admission"],"candidates").is_empty(){
+                return Err(crate::conflict("Repair revalidation original held decision changed"));
+            }None
+        },
+        RepairPhase::AfterAdmission=>{
+            let expected=if root["repairMergeReceipt"].is_object(){root["prepareOutcome"]["status"].as_str().unwrap_or("")}else{"needs_attention"};
+            if !matches!(expected,"needs_attention"|"prepared")||item["autoPreparation"]["status"]!=expected
+                ||item["autoPreparation"]["requiresReview"]!=json!(expected!="prepared"){
+                return Err(crate::conflict("Repair revalidation preparation state changed"));
+            }
+            let child=crate::answering_repair_plan::settled_child(d,origin)?.ok_or_else(||crate::conflict("Repair revalidation settled child missing"))?;
+            let ids=vec![id.to_owned()];
+            crate::preparation_reservations::assert_repair_projection(d,origin,crate::required(child,"id")?,&ids)?;
+            Some(child)
+        },
+    };
+    for proposal in crate::list(d,"proposals").iter().filter(|p|p["itemId"]==id
+        &&matches!(p["status"].as_str(),Some("draft"|"approved"|"dispatching"|"unknown"))) {
+        let own=completed.is_some_and(|child|proposal["status"]=="draft"&&proposal["prepareRunId"]==child["id"]
+            &&crate::list(&child["prepareOutcome"],"candidates").iter().any(|c|c["proposalId"]==proposal["id"]&&c["itemId"]==id));
+        if !own{return Err(crate::conflict("Repair revalidation protected proposal present"));}
+    }
+    if crate::list(d,"operations").iter().any(|o|o["itemId"]==id&&!matches!(o["status"].as_str(),Some("succeeded"|"failed"|"stale"))){
+        return Err(crate::conflict("Repair revalidation unresolved operation present"));
+    }
+    Ok(())
+}
+pub(crate) fn merge_repair_projection(d:&mut Value,origin:&str,mut outcome:Value,repaired:&Value)->ApiResult<Value>{
+    let affected=crate::list(repaired,"affectedRecipientIds");repair_current(d,origin,affected,RepairPhase::AfterAdmission)?;
+    let id=affected[0].as_str().ok_or_else(||crate::conflict("Repair revalidation recipient missing"))?;
+    if outcome["itemId"]!=id||!outcome["admission"].is_object()||outcome["status"]!="needs_attention" {
+        return Err(crate::conflict("Repair revalidation original outcome changed"));
+    }
+    let assessments=crate::list(repaired,"finalAssessments");let candidates=crate::list(repaired,"candidates");
+    if assessments.len()!=1||assessments[0]["itemId"]!=id||candidates.len()>1||candidates.iter().any(|c|c["itemId"]!=id||c["status"]!="review"){
+        return Err(crate::conflict("Repair revalidation assessment coverage changed"));
+    }
+    let assessment=&assessments[0];let tags=super::assessment_tags(assessment)?;
+    let reason=assessment["reason"].as_str().filter(|s|!s.trim().is_empty()&&s.len()<=12000).ok_or_else(||crate::conflict("Repair revalidation reason missing"))?;
+    let prepared=if let Some(candidate)=candidates.first(){
+        let proposal=row(d,"proposals",crate::required(candidate,"proposalId")?)?;let item=row(d,"items",id)?;
+        let expected=match assessment["outcome"].as_str(){Some("reply")=>"reply_and_close",Some("close")=>"close",Some("hide")=>"hide",Some("delete")=>"delete",_=>return Err(crate::conflict("Repair revalidation action disagrees"))};
+        if proposal["prepareRunId"]!=repaired["repairJobId"]||proposal["itemId"]!=id||proposal["kind"]!=expected
+            ||proposal["itemRevision"]!=item["revision"]||item["workflow"]!="prepared"||proposal["status"]!="draft" {
+            return Err(crate::conflict("Repair revalidation proposal no longer owns its saved draft"));
+        }true
+    }else{if assessment["outcome"]!="needs_attention"||row(d,"items",id)?["workflow"]!="attention"{return Err(crate::conflict("Repair revalidation held decision changed"));}false};
+    crate::answering_repair_plan::merge_admission(&mut outcome["admission"],repaired);
+    let status=if prepared{"prepared"}else{"needs_attention"};let at=crate::now();let item=row_mut(d,"items",id)?;
+    item["autoPreparation"]["status"]=json!(status);item["autoPreparation"]["requiresReview"]=json!(!prepared);
+    item["autoPreparation"]["reason"]=json!(reason);item["autoPreparation"]["retryAt"]=Value::Null;
+    item["autoPreparation"]["repairJobId"]=repaired["repairJobId"].clone();item["autoPreparation"]["updatedAt"]=json!(at);
+    item["autoRevalidation"]["repairJobId"]=repaired["repairJobId"].clone();item["autoRevalidation"]["finishedAt"]=json!(at);
+    item["decision"]=assessment["outcome"].clone();item["reason"]=json!(reason);item["triageTags"]=tags;
+    outcome["status"]=json!(status);outcome["reason"]=json!(reason);outcome["repairJobId"]=repaired["repairJobId"].clone();Ok(outcome)
+}
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::super::tests::{captured_result, complete_with_captured_result, legacy_two_pass_request};
     const NOW:i64=1_790_000_000;
     fn response()->Value {json!({"text":"Reviewed","sources":[],"assessments":[{"itemId":"i","outcome":"reply","reason":"Evidence supports this reply"}],"proposals":[{"itemId":"i","kind":"reply_and_close","text":"Сохранённый ответ"}]})}
+    fn initial_fixture()->Value {
+        // The shared fixture binds its own pristine synthetic account and
+        // declares known-empty attachments before any preparation capture.
+        let mut d=super::super::tests::fixture();
+        d["items"][0]["createdAt"]=json!(super::super::stamp(NOW-60));
+        d["items"][0]["providerObservedAt"]=json!(super::super::stamp(NOW));
+        d
+    }
     fn held()->Value {
-        let mut d=crate::empty();
-        d["items"]=json!([{"id":"i","itemId":"c","objectId":"o","postKey":"p","conversationKey":"thread","branchId":"b","postId":"post","revision":1,"draft":"","workflow":"attention","providerStatus":"new","createdAt":super::super::stamp(NOW-60),"providerObservedAt":super::super::stamp(NOW)}]);
-        d["branches"]=json!([{"id":"b","postId":"post","messages":[{"id":"c","text":"Hi"}],"contextComplete":false}]);
-        d["posts"]=json!([{"id":"post","text":"Post"}]);
+        let mut d=initial_fixture();
         let (job,_)=super::super::claim(&mut d,NOW).unwrap().unwrap();
-        super::super::complete(&mut d,&job,&response(),NOW).unwrap();
+        assert_eq!(complete_with_captured_result(&mut d,&job,&response(),NOW).unwrap()["status"],"prepared");
+        crate::proposal_current(&d,&d["proposals"][0]).expect("held fixture starts with current material provenance");
         row_mut(&mut d,"jobs",&job).unwrap()["status"]=json!("completed");
         d["materials"].as_array_mut().unwrap().push(json!({"id":"video","kind":"transcript","postKey":"p","text":"New evidence"}));
         super::super::reconcile_stale(&mut d,NOW+1);
         d
     }
     fn enabled(d:&mut Value){d["settings"]["autoPreparation"]=json!({"revalidation":{"enabled":true,"debounceSeconds":30}});}
+    #[test]
+    fn old_observation_revalidation_keeps_semantic_gates_without_age_expiry() {
+        for age in [601,3600] {
+            let mut d=held();enabled(&mut d);
+            let observed=super::super::stamp(NOW-age);d["items"][0]["providerObservedAt"]=json!(observed);
+            assert!(claim(&mut d,NOW+1).unwrap().is_none());
+            let (job,_)=claim(&mut d,NOW+33).unwrap().unwrap();
+            assert_eq!(complete_with_captured_result(&mut d,&job,&response(),NOW+3633).unwrap()["status"],"prepared");
+            assert_eq!(d["items"][0]["providerObservedAt"],observed);
+            assert!(list(&d,"approvals").is_empty());assert!(list(&d,"operations").is_empty());
+        }
+        for observation in [Value::Null,json!("bad-time"),json!(super::super::stamp(NOW+94))] {
+            let mut d=held();enabled(&mut d);d["items"][0]["providerObservedAt"]=observation;
+            let jobs=d["jobs"].clone();
+            assert!(claim(&mut d,NOW+1).unwrap().is_none());assert!(claim(&mut d,NOW+33).unwrap().is_none());
+            assert_eq!(d["jobs"],jobs);
+        }
+    }
+    #[test]
+    fn historical_group_does_not_hold_current_singleton_decision() {
+        let mut d=held();enabled(&mut d);
+        d["jobs"].as_array_mut().unwrap().insert(0,json!({"id":"old-group","purpose":"auto_prepare","status":"completed","refId":"other","prepareBundle":{"itemIds":["other","i"]}}));
+        d["proposals"].as_array_mut().unwrap().insert(0,json!({"id":"old-proposal","itemId":"i","status":"stale","prepareRunId":"old-group"}));
+        assert!(!crate::preparation_restart::grouped_previous(&d,&d["items"][0]));
+        let ids=vec!["i".to_owned()];
+        let preview=crate::preparation_restart::plan_scoped(&mut d,"current-only",false,NOW+1,Some(&ids)).unwrap();
+        assert_eq!(preview["eligibleCount"],1);
+        assert!(claim(&mut d,NOW+1).unwrap().is_none());
+        assert!(claim(&mut d,NOW+33).unwrap().is_some());
+        assert_eq!(d["proposals"][0]["id"],"old-proposal");
+    }
     fn add_initial(d:&mut Value,number:usize) {
         let mut item=d["items"][0].clone();
         item["id"]=json!(format!("fresh-{number}"));item["itemId"]=json!(format!("fresh-comment-{number}"));
+        // These fairness fixtures represent independently ready posts; a shared
+        // post now correctly claims its comments together in a single job.
+        let post=format!("fresh-post-{number}");let branch=format!("fresh-branch-{number}");
+        item["postId"]=json!(post);item["postKey"]=json!(post);item["branchId"]=json!(branch);
+        item["conversationKey"]=json!(branch);
+        d["posts"].as_array_mut().unwrap().push(json!({"id":post,"text":"Independent post","attachments":[]}));
+        d["branches"].as_array_mut().unwrap().push(json!({"id":branch,"postId":post,"messages":[{"id":item["itemId"],"text":"Hi"}],"contextComplete":false}));
         item["workflow"]=json!("attention");item["draft"]=json!("");
         for key in ["autoPreparation","autoRevalidation","decision","reason","preparationMediaWait"] {item.as_object_mut().unwrap().remove(key);}
         d["items"].as_array_mut().unwrap().push(item);
     }
     fn finish_automatic(d:&mut Value,job:&str,at:i64) {
-        let item=row(d,"jobs",job).unwrap()["refId"].clone();
-        let mut answer=response();answer["assessments"][0]["itemId"]=item.clone();answer["proposals"][0]["itemId"]=item;
-        assert_eq!(super::super::complete(d,job,&answer,at).unwrap()["status"],"prepared");
+        let ids=row(d,"jobs",job).unwrap()["prepareBundle"]["itemIds"].as_array().unwrap().clone();
+        let mut answer=response();
+        answer["assessments"]=json!(ids.iter().map(|id|json!({"itemId":id,"outcome":"reply",
+            "reason":"Evidence supports this reply"})).collect::<Vec<_>>());
+        answer["proposals"]=json!(ids.iter().map(|id|json!({"itemId":id,"kind":"reply_and_close",
+            "text":"Сохранённый ответ"})).collect::<Vec<_>>());
+        assert_eq!(complete_with_captured_result(d,job,&answer,at).unwrap()["status"],"prepared");
         row_mut(d,"jobs",job).unwrap()["status"]=json!("completed");
     }
     #[test]
     fn fairness_alternates_ready_classes_using_durable_admission_history() {
         let mut d=held();enabled(&mut d);
-        for number in 0..6 {add_initial(&mut d,number);}
+        add_initial(&mut d,0);
         assert!(claim(&mut d,NOW+1).unwrap().is_none()); // establish review stability window
         let mut at=NOW+32;
         for round in 0..6 {
@@ -286,18 +500,58 @@ mod tests {
                 d["materials"][0]["text"]=json!(format!("New evidence {round}"));
                 super::super::reconcile_stale(&mut d,at+2);
                 assert!(claim(&mut d,at+2).unwrap().is_none());
+                if round<5 {add_initial(&mut d,round/2+1);}
             }
             at+=33;
         }
         assert!(list(&d,"operations").is_empty()&&list(&d,"approvals").is_empty());
     }
     #[test]
+    fn parallel_refill_observes_review_stability_then_drains_without_starvation() {
+        let mut d=held();enabled(&mut d);add_initial(&mut d,0);add_initial(&mut d,1);add_initial(&mut d,2);
+        let next=|d:&mut Value,at| {
+            super::super::reconcile_claim_state(d,at).unwrap();
+            super::super::claim_reconciled(d,at,None,2).unwrap()
+        };
+        let (first,_)=next(&mut d,NOW+1).unwrap();
+        assert_eq!(row(&d,"jobs",&first).unwrap()["purpose"],"auto_prepare");
+        assert_eq!(d["items"][0]["autoRevalidation"]["status"],"settling");
+        let (second,_)=next(&mut d,NOW+2).expect("settling review does not idle the second worker");
+        let snapshot=d.clone();
+        assert!(!ready(&d,NOW+30).unwrap());assert!(ready(&d,NOW+31).unwrap());assert_eq!(d,snapshot,"preview is pure");
+        finish_automatic(&mut d,&first,NOW+32);
+        add_initial(&mut d,3);
+        assert!(next(&mut d,NOW+33).is_none(),"stable review drains instead of refilling the free slot");
+        assert!(row(&d,"items","fresh-2").unwrap()["autoPreparation"]["jobId"].is_null());
+        finish_automatic(&mut d,&second,NOW+34);
+        let (review,_)=next(&mut d,NOW+35).expect("review gets the next turn once existing owners finish");
+        assert_eq!(row(&d,"jobs",&review).unwrap()["purpose"],PURPOSE);
+        assert!(list(&d,"operations").is_empty()&&list(&d,"approvals").is_empty());
+    }
+    #[test]
+    fn ineligible_review_does_not_drain_parallel_preparation() {
+        for block in ["disabled","operator_draft","unknown_operation","source_changed"] {
+            let mut d=held();enabled(&mut d);add_initial(&mut d,0);add_initial(&mut d,1);
+            assert!(claim(&mut d,NOW+1).unwrap().is_none());
+            let (first,_)=super::super::claim_reconciled(&mut d,NOW+2,None,2).unwrap().unwrap();
+            match block {
+                "disabled"=>d["settings"]["autoPreparation"]["revalidation"]["enabled"]=json!(false),
+                "operator_draft"=>d["items"][0]["draft"]=json!("Operator text"),
+                "unknown_operation"=>d["operations"].as_array_mut().unwrap().push(json!({"id":"uncertain","itemId":"i","status":"unknown"})),
+                _=>d["materials"][0]["text"]=json!("Changed again while settling"),
+            }
+            assert!(!ready(&d,NOW+32).unwrap(),"{block}");
+            let (second,_)=super::super::claim_reconciled(&mut d,NOW+32,None,2).unwrap().unwrap();
+            assert_ne!(first,second);assert_eq!(row(&d,"jobs",&second).unwrap()["purpose"],"auto_prepare","{block}");
+        }
+    }
+    #[test]
     fn fairness_blocked_review_never_idles_initial_work_or_bypasses_protections() {
-        for block in ["settling","disabled","old_provider","operator_draft","protected_proposal"] {
+        for block in ["settling","disabled","invalid_provider","operator_draft","protected_proposal"] {
             let mut d=held();enabled(&mut d);add_initial(&mut d,1);
             match block {
                 "disabled"=>d["settings"]["autoPreparation"]["revalidation"]["enabled"]=json!(false),
-                "old_provider"=>d["items"][0]["providerObservedAt"]=json!(super::super::stamp(NOW-601)),
+                "invalid_provider"=>d["items"][0]["providerObservedAt"]=json!(super::super::stamp(NOW+94)),
                 "operator_draft"=>d["items"][0]["draft"]=json!("Preserve operator draft"),
                 "protected_proposal"=>d["proposals"].as_array_mut().unwrap().push(json!({"id":"protected","itemId":"i","status":"unknown"})),
                 _=>{}
@@ -326,18 +580,31 @@ mod tests {
     #[test]
     fn fairness_failed_review_yields_initial_without_repeating_consumed_source() {
         let mut d=held();enabled(&mut d);add_initial(&mut d,1);add_initial(&mut d,2);
+        // held() retains the original completed preparation that produced the
+        // stale candidate. The fairness pass adds two independent family jobs.
+        let original_initial_jobs=list(&d,"jobs").iter().filter(|j|j["purpose"]=="auto_prepare").count();
+        assert_eq!(original_initial_jobs,1);
         assert!(claim(&mut d,NOW+1).unwrap().is_none());
         let (review,_)=super::super::claim(&mut d,NOW+32).unwrap().unwrap();
         assert_eq!(row(&d,"jobs",&review).unwrap()["purpose"],PURPOSE);
         failed(&mut d,&review,"ASSISTANT_INVALID_RESEARCH",NOW+33).unwrap();
         row_mut(&mut d,"jobs",&review).unwrap()["status"]=json!("failed");
-        for at in [NOW+34,NOW+36] {
-            let (initial,_)=super::super::claim(&mut d,at).unwrap().unwrap();
-            assert_eq!(row(&d,"jobs",&initial).unwrap()["purpose"],"auto_prepare");
-            finish_automatic(&mut d,&initial,at+1);
-        }
+        let (initial,_)=super::super::claim(&mut d,NOW+34).unwrap().unwrap();
+        assert_eq!(row(&d,"jobs",&initial).unwrap()["purpose"],"auto_prepare");
+        assert_eq!(row(&d,"jobs",&initial).unwrap()["prepareBundle"]["itemIds"],json!(["fresh-1"]),
+            "initial preparation yields to the first ready family without mixing independent posts");
+        assert!(super::super::claim(&mut d,NOW+35).unwrap().is_none(),"one active lane");
+        finish_automatic(&mut d,&initial,NOW+35);
+        let (next,_)=super::super::claim(&mut d,NOW+36).unwrap().unwrap();
+        assert_eq!(row(&d,"jobs",&next).unwrap()["purpose"],"auto_prepare");
+        assert_eq!(row(&d,"jobs",&next).unwrap()["prepareBundle"]["itemIds"],json!(["fresh-2"]),
+            "later independent family remains queued and consumed sources are not repeated");
+        finish_automatic(&mut d,&next,NOW+37);
+        assert!(super::super::claim(&mut d,NOW+38).unwrap().is_none());
         assert_eq!(list(&d,"jobs").iter().filter(|j|j["purpose"]==PURPOSE).count(),1);
+        assert_eq!(list(&d,"jobs").iter().filter(|j|j["purpose"]=="auto_prepare").count(),original_initial_jobs+2);
         assert_eq!(d["items"][0]["autoRevalidation"]["status"],"held");
+        assert!(list(&d,"operations").is_empty()&&list(&d,"approvals").is_empty());
     }
     #[test]
     fn status_distinguishes_current_workflow_all_active_jobs_and_legacy_outcomes() {
@@ -380,7 +647,7 @@ mod tests {
         assert_eq!(d["proposals"][0],old);
         assert_eq!(d["items"][0]["autoPreparation"]["status"],"stale");
         assert!(crate::prepare_bundle::current(&d,&row(&d,"jobs",&job).unwrap()["prepareBundle"]).is_ok());
-        let result=super::super::complete(&mut d,&job,&response(),NOW+33).unwrap();
+        let result=complete_with_captured_result(&mut d,&job,&response(),NOW+33).unwrap();
         assert_eq!(result["status"],"prepared");assert_eq!(d["proposals"][0],old);
         assert_eq!(d["proposals"].as_array().unwrap().len(),2);
         assert_eq!(d["proposals"][1]["prepareRunId"],job);
@@ -398,8 +665,9 @@ mod tests {
         assert_eq!(request["previousDecision"]["proposalId"],old["id"]);
         assert_eq!(d["proposals"][0],old);
         assert_eq!(row(&d,"jobs","chat").unwrap()["status"],"running");
+        let captured=captured_result(&mut d,&job,&response()).unwrap();
         d["branches"][0]["messages"][0]["text"]=json!("Changed source during review");
-        let result=super::super::complete(&mut d,&job,&response(),NOW+33).unwrap();
+        let result=super::super::complete(&mut d,&job,&captured,NOW+33).unwrap();
         assert_eq!(result["status"],"stale");
         assert_eq!(result["rejectionCode"],"bundle_no_longer_current");
         assert_eq!(d["proposals"],json!([old]));
@@ -412,8 +680,11 @@ mod tests {
                 let mut active=json!({"id":"other","kind":"assistant","refId":"other-item","status":status});
                 if let Some(purpose)=purpose {active["purpose"]=json!(purpose);}
                 d["jobs"].as_array_mut().unwrap().push(active);
+                let jobs=d["jobs"].clone();let proposals=d["proposals"].clone();
                 assert!(claim(&mut d,NOW+1).unwrap().is_none(),"{purpose:?}/{status}");
-                assert!(d["items"][0]["autoRevalidation"].is_null(),"{purpose:?}/{status}");
+                assert_eq!(d["items"][0]["autoRevalidation"]["status"],"settling","{purpose:?}/{status}");
+                assert!(d["items"][0]["autoRevalidation"]["jobId"].is_null());
+                assert_eq!(d["jobs"],jobs);assert_eq!(d["proposals"],proposals);
                 d["jobs"].as_array_mut().unwrap().pop();
                 assert!(claim(&mut d,NOW+1).unwrap().is_none());
                 assert_eq!(d["items"][0]["autoRevalidation"]["status"],"settling");
@@ -425,6 +696,7 @@ mod tests {
     fn source_changes_and_manual_edits_reject_inflight_result_without_losing_saved_text() {
         for change in ["text","draft","override","edited","proposal"] {
             let mut d=held();let (job,_)=start(&mut d);let old=d["proposals"][0].clone();
+            let captured=captured_result(&mut d,&job,&response()).unwrap();
             match change {
                 "text"=>d["branches"][0]["messages"][0]["text"]=json!("Edited source"),
                 "draft"=>d["items"][0]["draft"]=json!("Human draft"),
@@ -433,7 +705,7 @@ mod tests {
                 _=>d["proposals"].as_array_mut().unwrap().push(json!({"id":"manual","itemId":"i","status":"draft","text":"Human proposal"})),
             }
             let draft=d["items"][0]["draft"].clone();
-            let result=super::super::complete(&mut d,&job,&response(),NOW+34).unwrap();
+            let result=super::super::complete(&mut d,&job,&captured,NOW+34).unwrap();
             assert_eq!(result["status"],"stale");assert_eq!(d["proposals"][0],old);assert_eq!(d["items"][0]["draft"],draft);
             let code=match change {"text"=>"bundle_no_longer_current","draft"=>"operator_draft_present",
                 "override"=>"human_override_present","edited"=>"operator_draft_edited",_=>"protected_proposal_present"};
@@ -468,7 +740,7 @@ mod tests {
     fn still_needs_attention_is_a_durable_result_not_a_retry_loop() {
         let mut d=held();let (job,_)=start(&mut d);
         let result=json!({"text":"Need verified price","sources":[],"assessments":[{"itemId":"i","outcome":"needs_attention","reason":"Нужна подтверждённая цена"}],"proposals":[]});
-        assert_eq!(super::super::complete(&mut d,&job,&result,NOW+33).unwrap()["status"],"needs_attention");
+        assert_eq!(complete_with_captured_result(&mut d,&job,&result,NOW+33).unwrap()["status"],"needs_attention");
         row_mut(&mut d,"jobs",&job).unwrap()["status"]=json!("completed");
         let before=d.clone();
         assert!(super::super::claim(&mut d,NOW+34).unwrap().is_none());
@@ -497,7 +769,7 @@ mod tests {
             let (job,_)=claim(&mut d,at+31).unwrap().unwrap();
             let digest=row(&d,"jobs",&job).unwrap()["sourceDigest"].as_str().unwrap().to_owned();
             assert!(digests.insert(digest));
-            assert_eq!(super::super::complete(&mut d,&job,&response(),at+32).unwrap()["status"],"prepared");
+            assert_eq!(complete_with_captured_result(&mut d,&job,&response(),at+32).unwrap()["status"],"prepared");
             row_mut(&mut d,"jobs",&job).unwrap()["status"]=json!("completed");
             d["materials"][0]["text"]=json!(format!("New evidence revision {number}"));
             super::super::reconcile_stale(&mut d,at+33);
@@ -518,7 +790,7 @@ mod tests {
         crate::merge_snapshot(&mut d,&json!({"items":[incoming]})).unwrap();
         assert_eq!(d["items"][0]["autoRevalidation"]["jobId"],job);
         assert_eq!(crate::prepare_bundle::review_fingerprint(&d,"i").unwrap(),source);
-        assert_eq!(super::super::complete(&mut d,&job,&response(),NOW+34).unwrap()["status"],"prepared");
+        assert_eq!(complete_with_captured_result(&mut d,&job,&response(),NOW+34).unwrap()["status"],"prepared");
     }
     #[test]
     fn changed_provider_branch_keeps_review_pointer_but_rejects_old_result() {
@@ -529,12 +801,13 @@ mod tests {
         crate::merge_snapshot(&mut d,&json!({"items":[incoming.clone()]})).unwrap();
         let (job,_)=start(&mut d);
         let saved=d["proposals"][0].clone();
+        let captured=captured_result(&mut d,&job,&response()).unwrap();
         incoming["contextObservedAt"]=json!(super::super::stamp(NOW+33));
         let mut changed_branch=d["branches"][0].clone();
         changed_branch["messages"][0]["text"]=json!("Changed provider evidence");
         crate::merge_snapshot(&mut d,&json!({"items":[incoming],"branches":[changed_branch]})).unwrap();
         assert_eq!(d["items"][0]["autoRevalidation"]["jobId"],job);
-        let outcome=super::super::complete(&mut d,&job,&response(),NOW+34).unwrap();
+        let outcome=super::super::complete(&mut d,&job,&captured,NOW+34).unwrap();
         assert_eq!(outcome["status"],"stale");
         assert_eq!(outcome["rejectionCode"],"bundle_no_longer_current");
         assert_eq!(d["proposals"][0]["text"],saved["text"]);
@@ -543,8 +816,9 @@ mod tests {
     #[test]
     fn missing_running_review_pointer_has_a_durable_specific_rejection() {
         let mut d=held();let (job,_)=start(&mut d);
+        let captured=captured_result(&mut d,&job,&response()).unwrap();
         d["items"][0].as_object_mut().unwrap().remove("autoRevalidation");
-        let outcome=super::super::complete(&mut d,&job,&response(),NOW+34).unwrap();
+        let outcome=super::super::complete(&mut d,&job,&captured,NOW+34).unwrap();
         assert_eq!(outcome["status"],"stale");
         assert_eq!(outcome["rejectionCode"],"review_job_pointer_changed");
         assert_eq!(row(&d,"jobs",&job).unwrap()["prepareOutcome"],outcome);
@@ -552,13 +826,21 @@ mod tests {
     }
     fn paid_lost_pointer()->Value {
         let mut d=held();let (job,_)=start(&mut d);
-        let outcome=json!({"status":"stale","itemId":"i","reason":"Revalidation source or operator draft changed"});
+        let request=row(&d,"jobs",&job).unwrap()["prepareBundle"]["request"].clone();
+        let mut result=crate::engine_prepare::tests::single_pass_result(response());
+        // Match the actual captured triage route before creating paid evidence.
+        if let Some(contract)=request.get("researchLimitContract") {
+            result["runMetadata"]["researchLimitContract"]=contract.clone();
+        }else{result["runMetadata"].as_object_mut().unwrap().remove("researchLimitContract");}
+        crate::model_material_receipt::fixture_result(&mut d,&job,&request,&mut result).unwrap();
+        crate::preparation_review::record_first(&mut d,&job,&result,&super::super::stamp(NOW+33)).unwrap();
+        d["items"][0].as_object_mut().unwrap().remove("autoRevalidation");
+        let outcome=super::super::complete(&mut d,&job,&result,NOW+34).unwrap();
+        assert_eq!(outcome["status"],"stale");
+        assert_eq!(outcome["rejectionCode"],"review_job_pointer_changed");
         let stored=row_mut(&mut d,"jobs",&job).unwrap();
         stored["status"]=json!("completed");
-        stored["prepareOutcome"]=outcome.clone();
         stored["result"]=outcome;
-        stored["preparationStages"]=json!({"first":{"status":"completed","result":response(),"reviewRequired":false}});
-        d["items"][0].as_object_mut().unwrap().remove("autoRevalidation");
         d
     }
     #[test]
@@ -579,6 +861,10 @@ mod tests {
         assert_eq!(stored["prepareOutcome"]["status"],"prepared");
         assert_eq!(stored["recovery"]["originalPrepareOutcome"],before["jobs"][1]["prepareOutcome"]);
         assert_eq!(stored["preparationStages"],before["jobs"][1]["preparationStages"]);
+        assert_eq!(stored["retainedEvidence"],before["jobs"][1]["retainedEvidence"]);
+        assert_eq!(stored["modelMaterialReceipts"],before["jobs"][1]["modelMaterialReceipts"]);
+        assert_eq!(d["proposals"][1]["modelMaterialReceipt"],before["jobs"][1]["preparationStages"]["first"]["result"]["modelMaterialReceipt"]);
+        crate::proposal_current(&d,&d["proposals"][1]).expect("paid replay preserves current material provenance");
         assert!(d["approvals"].as_array().unwrap().is_empty());assert!(d["operations"].as_array().unwrap().is_empty());
         let after=d.clone();
         assert_eq!(crate::recover_rejected_revalidation_plan(&mut d,true,NOW+35).unwrap()["eligibleCount"],0);
@@ -586,24 +872,51 @@ mod tests {
     }
     #[test]
     fn paid_rejection_recovery_holds_changed_or_unverified_work() {
-        for change in ["draft","approved","operation","source","expired","newer_initial","missing_review","invalid_result","wrong_reason","requested_restart"] {
+        for change in ["draft","approved","operation","source","invalid_observation","newer_initial","newer_group_initial","missing_review","invalid_result","wrong_reason","wrong_code","requested_restart"] {
             let mut d=paid_lost_pointer();
             match change {
                 "draft"=>d["items"][0]["draft"]=json!("Human draft"),
                 "approved"=>d["proposals"][0]["status"]=json!("approved"),
                 "operation"=>d["operations"]=json!([{"id":"op","itemId":"i","status":"completed"}]),
                 "source"=>d["branches"][0]["messages"][0]["text"]=json!("Changed source"),
-                "expired"=>d["items"][0]["providerObservedAt"]=json!(super::super::stamp(NOW-700)),
+                "invalid_observation"=>d["items"][0]["providerObservedAt"]=json!(super::super::stamp(NOW+95)),
                 "newer_initial"=>d["jobs"].as_array_mut().unwrap().push(json!({"id":"newer","kind":"assistant","purpose":"auto_prepare","refId":"i","status":"completed"})),
+                "newer_group_initial"=>d["jobs"].as_array_mut().unwrap().push(json!({"id":"newer-group","kind":"assistant","purpose":"auto_prepare","refId":"other","status":"completed","prepareBundle":{"itemIds":["other","i"]}})),
                 "missing_review"=>d["jobs"][1]["preparationStages"]["first"]["reviewRequired"]=json!(true),
                 "invalid_result"=>d["jobs"][1]["preparationStages"]["first"]["result"]=json!({"not":"a model result"}),
-                "wrong_reason"=>d["jobs"][1]["prepareOutcome"]["reason"]=json!("Other rejection"),
+                "wrong_reason"=>{
+                    // Historical outcomes have no code and require the exact reason.
+                    d["jobs"][1]["prepareOutcome"].as_object_mut().unwrap().remove("rejectionCode");
+                    d["jobs"][1]["prepareOutcome"]["reason"]=json!("Other rejection");
+                },
+                "wrong_code"=>d["jobs"][1]["prepareOutcome"]["rejectionCode"]=json!("bundle_no_longer_current"),
                 _=>d["items"][0]["autoRevalidation"]=json!({"status":"requested","restartRunId":"newer"}),
             }
             let before=d.clone();
             let plan=crate::recover_rejected_revalidation_plan(&mut d,true,NOW+34).unwrap();
             assert_eq!(plan["eligibleCount"],0,"{change}");
             assert_eq!(d,before,"{change}");
+        }
+    }
+    #[test]
+    fn grouped_nonfirst_recipient_cannot_restart_or_gain_fresh_budget() {
+        for state in ["running","failed","completed"] {
+            let mut d=failed_initial();
+            d["jobs"][0]["refId"]=json!("other");
+            d["jobs"][0]["prepareBundle"]["itemIds"]=json!(["other","i"]);
+            d["jobs"][0]["status"]=json!(state);
+            let before=d.clone();
+            for fresh in [false,true] {
+                let plan=crate::preparation_restart::plan_context(&mut d,"group-restart",false,NOW+1,Some(&["i".into()]),fresh).unwrap();
+                assert_eq!(plan["eligibleCount"],0);
+                assert_eq!(plan["skipped"][0]["reason"],if state=="running"{"active_or_recorded_operation"}else{"group_review_required"});
+                assert_eq!(d,before);
+            }
+            d["items"][0]["autoPreparation"]["status"]=json!("needs_attention");
+            assert_eq!(eligibility_block(&d,&d["items"][0],NOW+1,false),Some("group_review_required"));
+            enabled(&mut d);
+            assert!(claim(&mut d,NOW+1).unwrap().is_none());
+            assert_eq!(d["jobs"].as_array().unwrap().len(),1);
         }
     }
     #[test]
@@ -621,6 +934,10 @@ mod tests {
         assert_eq!(summary["mode"],"continuous");
         assert!(summary["configuration"].get("dailyLimit").is_none());
         assert_eq!(summary["candidateCount"],1);
+        let brief=status_summary(&d,NOW+40);
+        assert!(brief["candidateCount"].is_null(),"summary must not report zero for an unevaluated real candidate");
+        assert_eq!(brief["eligibility"]["status"],"not_evaluated");
+        assert_eq!(brief["currentWorkflow"],summary["currentWorkflow"]);
         assert_eq!(summary["claimedLast24Hours"],0);
         assert_eq!(d,before);
     }
@@ -650,11 +967,13 @@ mod tests {
         assert!(claim(&mut d,NOW+34).unwrap().is_none());
         assert!(claim(&mut d,NOW+100).unwrap().is_none());
         assert_eq!(list(&d,"jobs").len(),2);
-        // A different explicit operator run may request one fresh attempt.
+        // An interrupted reserved attempt retains its paid ownership. A new
+        // operator receipt does not establish that the original model stopped.
         crate::preparation_restart::plan(&mut d,"fresh-2",true,NOW+101).unwrap();
         assert!(claim(&mut d,NOW+102).unwrap().is_none());
-        assert!(claim(&mut d,NOW+133).unwrap().is_some());
-        assert_eq!(list(&d,"jobs").len(),3);
+        assert!(claim(&mut d,NOW+133).unwrap().is_none());
+        assert_eq!(list(&d,"jobs").len(),2);
+        assert_eq!(row(&d,"jobs",&job).unwrap()["scopeReservation"]["ownerJobId"],job);
     }
     #[test]
     fn restart_holds_operator_work_and_unverified_provenance() {
@@ -690,7 +1009,12 @@ mod tests {
         assert_eq!(row(&d,"jobs",&job).unwrap()["restartRunId"],"real");
     }
     fn failed_initial()->Value {
-        let mut d=held();d["materials"]=json!([]);d["proposals"]=json!([]);
+        let mut d=initial_fixture();
+        let (job,_)=super::super::claim(&mut d,NOW).unwrap().unwrap();
+        // An archival known failure predates reservation/material contracts.
+        // Build that archive before any paid capture, rather than rewriting a
+        // successfully retained modern response into failed history.
+        legacy_two_pass_request(&mut d,&job);
         let old=d["jobs"][0]["id"].clone();
         d["jobs"][0]["status"]=json!("failed");
         d["jobs"][0]["error"]=json!("ASSISTANT_INVALID_RESEARCH");
@@ -792,14 +1116,14 @@ mod tests {
         assert_eq!(request["previousDecision"]["text"],"");assert_eq!(request["previousDecision"]["outcome"],"needs_attention");
         assert_eq!(request["branches"][0]["messages"][0]["text"],"Current corrected context");
         assert!(d["proposals"].as_array().unwrap().is_empty());assert_eq!(d["jobs"][0],before["jobs"][0]);assert_eq!(d["jobs"][1],before["jobs"][1]);
-        let outcome=complete(&mut d,&job,&response(),NOW+34).unwrap();
+        let outcome=complete_with_captured_result(&mut d,&job,&response(),NOW+34).unwrap();
         assert_eq!(outcome["status"],"prepared");assert_eq!(d["proposals"].as_array().unwrap().len(),1);
         assert_eq!(d["proposals"][0]["prepareRunId"],job);assert!(crate::proposal_current(&d,&d["proposals"][0]).is_ok());
         assert!(d["approvals"].as_array().unwrap().is_empty());assert!(d["operations"].as_array().unwrap().is_empty());
     }
     #[test]
     fn fresh_context_rechecks_source_binding_and_operator_work_before_claim() {
-        for change in ["source","target","account","binding","tampered","draft","edited","operation","proposal","newer","scope"] {
+        for change in ["source","target","account","binding","tampered","draft","edited","operation","proposal","newer","newer_group","scope"] {
             let mut d=failed_held_with_changed_source();let ids=vec!["i".into()];
             crate::preparation_restart::plan_context(&mut d,"fresh",true,NOW+1,Some(&ids),true).unwrap();
             assert!(claim(&mut d,NOW+2).unwrap().is_none());
@@ -814,8 +1138,10 @@ mod tests {
                 "operation"=>d["operations"]=json!([{"itemId":"i","status":"succeeded"}]),
                 "proposal"=>d["proposals"]=json!([{"itemId":"i","status":"approved"}]),
                 "newer"=>d["jobs"].as_array_mut().unwrap().push(json!({"id":"newer","refId":"i","purpose":"auto_prepare","status":"failed"})),
+                "newer_group"=>d["jobs"].as_array_mut().unwrap().push(json!({"id":"newer","refId":"other","purpose":"auto_prepare","status":"failed","prepareBundle":{"itemIds":["other","i"]}})),
                 _=>d["preparationRuns"][0]["requestedItemIds"]=json!(["other"]),
             }
+            d=serde_json::from_str(&d.to_string()).unwrap();
             let jobs=d["jobs"].clone();let proposals=d["proposals"].clone();
             assert!(claim(&mut d,NOW+33).unwrap().is_none(),"{change}");
             assert_eq!(d["jobs"],jobs,"{change}");assert_eq!(d["proposals"],proposals,"{change}");
@@ -845,4 +1171,33 @@ mod tests {
         crate::preparation_restart::plan_context(&mut d,"fresh",true,NOW+101,Some(&ids),true).unwrap();
         assert!(claim(&mut d,NOW+140).unwrap().is_none());assert_eq!(list(&d,"jobs").len(),3);
     }
+    #[test]
+    fn stale_moderation_history_never_becomes_a_public_reply(){
+        for kind in ["hide","delete"]{
+            let mut d=held();d["proposals"][0]["kind"]=json!(kind);d["proposals"][0]["text"]=json!("");
+            let (_,decision)=previous(&d,&d["items"][0]).unwrap();
+            assert_eq!(decision["outcome"],kind);assert_eq!(decision["text"],"");
+            assert_eq!(decision["proposalId"],d["proposals"][0]["id"]);
+        }
+    }
+
+    #[test]
+    fn fact_only_observation_starts_debounce_then_review_gets_one_fair_turn(){
+        let mut d=held();enabled(&mut d);let before_jobs=d["jobs"].clone();let before_auto=d["items"][0]["autoPreparation"].clone();
+        // The fact-tail tick observes before returning to drain a busy lane.
+        observe(&mut d,NOW+1).unwrap();
+        assert_eq!(d["items"][0]["autoRevalidation"]["observedAt"],super::super::stamp(NOW+1));
+        assert_eq!(d["jobs"],before_jobs);assert_eq!(d["items"][0]["autoPreparation"],before_auto);
+        let lookup=crate::new_job(&mut d,"assistant","public_fact_followup").unwrap();
+        row_mut(&mut d,"jobs",&lookup).unwrap()["purpose"]=json!("public_fact_followup");
+        let jobs=d["jobs"].clone();observe(&mut d,NOW+32).unwrap();
+        assert!(ready(&d,NOW+32).unwrap());assert!(claim(&mut d,NOW+32).unwrap().is_none());
+        assert_eq!(d["jobs"],jobs);assert_eq!(d["items"][0]["autoPreparation"],before_auto);
+        row_mut(&mut d,"jobs",&lookup).unwrap()["status"]=json!("completed");
+        let (review,_)=claim(&mut d,NOW+33).unwrap().unwrap();
+        assert_eq!(row(&d,"jobs",&review).unwrap()["purpose"],PURPOSE);
+        let claimed=d["jobs"].clone();assert!(claim(&mut d,NOW+34).unwrap().is_none());assert_eq!(d["jobs"],claimed);
+        assert_eq!(d["items"][0]["autoPreparation"],before_auto);
+    }
+
 }

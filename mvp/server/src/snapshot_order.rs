@@ -10,12 +10,17 @@ pub(super) fn ordered(d:&Value,snapshot:&Value)->ApiResult<Value>{
     let mut dropped_branches=HashSet::new();let mut dropped_posts=HashSet::new();
     let mut kept_branches=HashSet::new();let mut kept_posts=HashSet::new();
     if let Some(items)=output["items"].as_array_mut(){
+        let prior_index = std::cell::OnceCell::new();
         let mut accepted=Vec::with_capacity(items.len());
         for mut item in items.drain(..){
             for key in ["contextObservedAt","providerStatusObservedAt"]{
                 if !item[key].is_null()&&timestamp(&item[key]).is_none(){return Err(internal("Invalid provider observation timestamp"));}
             }
-            let old=list(d,"items").iter().find(|old|old["id"]==item["id"]);
+            let (old_rows, old_index) = prior_index.get_or_init(|| {
+                let rows = list(d,"items");
+                (rows, snapshot_domain::first_rows(rows))
+            });
+            let old=snapshot_domain::position(old_rows,old_index,&item["id"]).map(|position|&old_rows[position]);
             let context_time=timestamp(&item["contextObservedAt"]);
             let status_time=timestamp(&item["providerStatusObservedAt"]);
             let stale=old.is_some_and(|old|{

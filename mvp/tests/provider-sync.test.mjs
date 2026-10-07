@@ -9,6 +9,33 @@ const item=(id,date,status='new')=>({id,created_at:date,status,text:id,author:{n
 const context=i=>({item:i,parent:{id:'post',text:'post'},officialReplies:[]});
 const cursorFor=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
 
+test('page context identity mismatch stays scoped to the requested ID and never imports the returned ID',async()=>{
+  const reader=()=>({listQueue:async()=>({items:[item('requested',window.until)],nextCursor:null}),getThreadContext:async()=>context(item('foreign',window.until))});
+  const result=await collectReadPage(req,['a'],reader,helpers);
+  assert.deepEqual(result.items,[]);
+  assert.deepEqual(result.skipped,[{objectId:'a',itemId:'requested',code:'TARGET_IDENTITY_MISMATCH'}]);
+  assert.deepEqual(result.queueAccounting.observations,[{objectId:'a',itemId:'requested',contextRequired:true}]);
+  assert.equal(result.hasMore,false);assert.equal(result.coverage.complete,false);
+});
+
+test('duplicate page IDs fetch once per object and preserve separate object scopes',async()=>{
+  const calls=[];
+  const reader=objectId=>({listQueue:async()=>({items:[item('same',window.until),item('same',window.until)],nextCursor:null}),getThreadContext:async id=>{calls.push(`${objectId}:${id}`);return context(item(id,window.until));}});
+  const result=await collectReadPage(req,['a','b'],reader,helpers);
+  assert.deepEqual(calls,['a:same','b:same']);assert.equal(result.items.length,2);
+  assert.equal(result.queueAccounting.duplicateQueueCount,2);
+  assert.deepEqual(result.queueAccounting.observations,[{objectId:'a',itemId:'same',contextRequired:true},{objectId:'b',itemId:'same',contextRequired:true}]);
+});
+
+test('overlapping moving pages retain repeated IDs as traversal evidence without snapshot certification',async()=>{
+  const reader=()=>({listQueue:async q=>({items:[item('same',window.until)],nextCursor:q.cursor?null:'next'}),getThreadContext:async id=>context(item(id,window.until))});
+  const first=await collectReadPage(req,['a'],reader,helpers);
+  const last=await collectReadPage({...req,cursor:first.cursor},['a'],reader,helpers);
+  assert.deepEqual(first.queueAccounting.observations,last.queueAccounting.observations);
+  assert.equal(last.hasMore,false);
+  assert.notEqual(last.snapshotConsistent,true);
+});
+
 test('archive page size is bounded and pinned to its cursor without changing ordinary reads',async()=>{
   const archive={...req,mode:'closed',pageSize:100};
   const {contract}=readCursor(archive,['a']);

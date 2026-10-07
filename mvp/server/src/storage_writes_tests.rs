@@ -1,5 +1,91 @@
 use super::*;
 
+#[test]
+fn bounded_schedule_preserves_spent_repair_without_requiring_omitted_child() {
+    let root=json!({"id":"origin","kind":"assistant","status":"running","refId":"",
+        "preparationStages":{"repairBudget":{"schemaVersion":1,"maxRounds":1,"consumedRounds":1,
+            "authority":"admitted_workflow_v1"},"answeringRepairs":[{
+                "originatingAnsweringAttemptId":"origin","roundOrdinal":1,"childJobId":"completed-child",
+                "planSha256":"saved"}]}});
+    let before=json!({"sync":{},"jobs":[root],"items":[]});
+    let mut after=before.clone();
+    after["jobs"].as_array_mut().unwrap().push(json!({"id":"next-sync","kind":"sync","status":"queued","refId":""}));
+    validate_scope(&before,&after,&Scope::Schedule).unwrap();
+    validate_scope(&before,&after,&Scope::SourceClaim).unwrap();
+    let mut changed=before.clone();changed["jobs"][0]["status"]=json!("completed");
+    validate_scope(&before,&changed,&Scope::Job("origin")).unwrap();
+    changed["jobs"][0]["preparationStages"]["repairBudget"]["consumedRounds"]=json!(0);
+    assert!(validate_scope(&before,&changed,&Scope::Job("origin")).is_err());
+}
+
+#[test]
+fn bounded_schedule_cannot_mint_repair_or_frame_authority() {
+    let before=json!({"sync":{},"jobs":[],"items":[]});
+    for field in ["originatingAnsweringAttemptId","roundOrdinal","answeringRepairPlan","repairPaidIntent",
+        "frameNeed","framePlan","frameLease","frameResult"] {
+        let mut after=before.clone();
+        let mut job=json!({"id":"new","kind":"assistant","status":"queued","refId":""});
+        job[field]=Value::Null;
+        after["jobs"]=json!([job]);
+        assert!(validate_scope(&before,&after,&Scope::Schedule).is_err(),"{field}");
+        assert!(validate_scope(&before,&after,&Scope::SourceClaim).is_err(),"{field}");
+    }
+    for purpose in ["answering_repair","targeted_video_frames"] {
+        let mut after=before.clone();
+        after["jobs"]=json!([{"id":"new","kind":"assistant","status":"queued","refId":"","purpose":purpose}]);
+        assert!(validate_scope(&before,&after,&Scope::Schedule).is_err());
+    }
+}
+
+#[tokio::test]
+#[ignore = "read-only exact BAW standby timing; PGPASSWORD supplied privately"]
+async fn postgres_metadata_read_live_readonly_probe() {
+    let url = std::env::var("COMMUNITYHERO_METADATA_READ_LIVE_URL").expect("explicit read-only probe URL");
+    assert_eq!(url, "postgresql://ch_migrate@127.0.0.1:55439/communityhero_knowledge_baw_standby_20260922");
+    let reader = PgPoolOptions::new().max_connections(1)
+        .after_connect(|connection, _| Box::pin(async move {
+            sqlx::query("SET default_transaction_read_only = on").execute(connection).await?;
+            Ok(())
+        })).connect(&url).await.unwrap();
+    let database: String = sqlx::query_scalar("SELECT current_database()")
+        .fetch_one(&reader).await.unwrap();
+    assert_eq!(database, "communityhero_knowledge_baw_standby_20260922");
+    // This test constructs a read-only pool directly: Database::postgres would
+    // acquire the application writer lease and is deliberately not called.
+    let db = Database::Postgres { writer: reader.clone(), reader };
+    let mut full_ms = Vec::new();
+    let mut metadata_ms = Vec::new();
+    let mut bytes = (0, 0);
+    for iteration in 0..3 {
+        let started = std::time::Instant::now();
+        let (full, scoped, first_ms, second_ms) = if iteration % 2 == 0 {
+            let full = db.read().await.unwrap();
+            let first_ms = started.elapsed().as_secs_f64() * 1000.0;
+            let started = std::time::Instant::now();
+            let scoped = db.read_metadata().await.unwrap();
+            (full, scoped, first_ms, started.elapsed().as_secs_f64() * 1000.0)
+        } else {
+            let scoped = db.read_metadata().await.unwrap();
+            let first_ms = started.elapsed().as_secs_f64() * 1000.0;
+            let started = std::time::Instant::now();
+            let full = db.read().await.unwrap();
+            (full, scoped, first_ms, started.elapsed().as_secs_f64() * 1000.0)
+        };
+        assert_eq!(scoped["account"], full["account"]);
+        assert!(TABLES.iter().all(|table| scoped.get(table).is_none()));
+        bytes = (full.to_string().len(), scoped.to_string().len());
+        if iteration % 2 == 0 {
+            full_ms.push(first_ms); metadata_ms.push(second_ms);
+        } else {
+            metadata_ms.push(first_ms); full_ms.push(second_ms);
+        }
+    }
+    full_ms.sort_by(f64::total_cmp);
+    metadata_ms.sort_by(f64::total_cmp);
+    eprintln!("metadata read parity: full bytes {} ms {:?}; scoped bytes {} ms {:?}", bytes.0, full_ms, bytes.1, metadata_ms);
+    db.close().await;
+}
+
 async fn sqlite() -> (Database, tempfile::TempDir) {
     let folder = tempfile::tempdir().unwrap();
     let pool = crate::open_db(&folder.path().join("workspace.sqlite"))
@@ -157,6 +243,9 @@ async fn rejected_or_unchanged_scope_never_writes() {
         unreachable!()
     };
     sqlx::query("CREATE TRIGGER reject_write BEFORE UPDATE ON workspace BEGIN SELECT RAISE(ABORT,'write attempted'); END").execute(pool).await.unwrap();
+    let before = db.read().await.unwrap();
+    assert_eq!(db.read_source_status().await.unwrap(), project(&before, &Scope::SourceClaim).unwrap());
+    assert_eq!(db.read().await.unwrap(), before);
     assert!(
         !db.change_job_observed("running", |_| Ok(()))
             .await
@@ -173,10 +262,46 @@ async fn rejected_or_unchanged_scope_never_writes() {
         .unwrap_err();
     assert!(error.1.contains("read-only"));
     assert!(
-        db.change_status_observed(&vec![json!({"objectId":"x","itemId":"y"}); 801], |_| Ok(()))
+        db.change_status_observed(&vec![json!({"objectId":"x","itemId":"y"}); STATUS_ROUTE_LIMIT+1], |_| Ok(()))
             .await
             .is_err()
     );
+}
+
+/// Exact disposable clone only: never accepts a production or standby URL.
+/// The writer transaction is rolled back; no claim or history is committed.
+#[tokio::test]
+#[ignore = "requires explicit isolated v48 source-reader clone URL"]
+async fn postgres_source_status_reader_survives_held_writer() {
+    let url = std::env::var("COMMUNITYHERO_SOURCE_READ_TEST_URL").expect("explicit isolated clone URL");
+    assert_eq!(url, "postgresql://ch_migrate@127.0.0.1:55439/communityhero_point_read_test_v48_20260926", "refusing non-test URL");
+    let check = PgPoolOptions::new().max_connections(1).connect(&url).await.unwrap();
+    let name: String = sqlx::query_scalar("SELECT current_database()").fetch_one(&check).await.unwrap();
+    assert_eq!(name, "communityhero_point_read_test_v48_20260926", "refusing non-test database");
+    check.close().await;
+    let db = Database::postgres(&url).await.unwrap();
+    let before = db.read().await.unwrap();
+    // This is also the SQLite source-read projection, including all empty
+    // history placeholders, source fields and ordered full active-job payloads.
+    let expected = project(&before, &Scope::SourceClaim).unwrap();
+    let Database::Postgres { writer, reader } = &db else { unreachable!() };
+    let mut held = writer.begin().await.unwrap();
+    sqlx::query("SELECT id FROM communityhero.workspaces WHERE id=$1 FOR UPDATE")
+        .bind(WORKSPACE).fetch_one(&mut *held).await.unwrap();
+    sqlx::query("UPDATE communityhero.workspaces SET metadata=jsonb_set(metadata,'{v48UncommittedReadProbe}','true'::jsonb) WHERE id=$1")
+        .bind(WORKSPACE).execute(&mut *held).await.unwrap();
+    let started = std::time::Instant::now();
+    let observed = tokio::time::timeout(Duration::from_secs(5), db.read_source_status()).await
+        .expect("source read must not wait for held writer").unwrap();
+    let read_ms = started.elapsed().as_secs_f64()*1000.0;
+    assert_eq!(observed, expected);
+    assert!(observed.get("v48UncommittedReadProbe").is_none());
+    let readonly: String = sqlx::query_scalar("SHOW default_transaction_read_only").fetch_one(reader).await.unwrap();
+    assert_eq!(readonly, "on");
+    held.rollback().await.unwrap();
+    assert_eq!(db.read().await.unwrap(), before, "source read must not mutate claims or history");
+    println!("SOURCE_READER_PROBE {}", json!({"readMs":read_ms,"items":expected["items"].as_array().unwrap().len(),"activeJobs":expected["jobs"].as_array().unwrap().len(),"writerHeld":true,"claimMutation":false}));
+    db.close().await;
 }
 
 #[tokio::test]
@@ -203,6 +328,28 @@ async fn failed_job_metadata_commit_rolls_back_both() {
         .is_err()
     );
     assert_eq!(db.read().await.unwrap(), before);
+}
+
+#[tokio::test]
+async fn source_reader_preserves_scoped_validation_without_writing() {
+    let (db, _folder) = sqlite().await;
+    db.change(|d| { seed(d); Ok(()) }).await.unwrap();
+    let baseline = db.read().await.unwrap();
+    let Database::Sqlite(pool) = &db else { unreachable!() };
+    for case in 0..4 {
+        let mut malformed = baseline.clone();
+        match case {
+            0 => malformed["sync"] = json!(false),
+            1 => malformed["items"][1]["id"] = malformed["items"][0]["id"].clone(),
+            2 => { malformed["items"][0].as_object_mut().unwrap().remove("id"); },
+            _ => malformed["jobs"][1]["kind"] = json!(17),
+        }
+        let projected = project(&malformed, &Scope::SourceClaim).unwrap();
+        assert!(validate_scope(&projected, &projected, &Scope::SourceClaim).is_err(), "old scoped-read contract must reject case {case}");
+        sqlx::query("UPDATE workspace SET payload=? WHERE id=1").bind(malformed.to_string()).execute(pool).await.unwrap();
+        assert!(db.read_source_status().await.is_err(), "reader must reject case {case}");
+        assert_eq!(db.read().await.unwrap(), malformed, "read must not repair or mutate malformed state");
+    }
 }
 
 /// Writes only to an explicitly named disposable clone. Probe jobs/clocks remain

@@ -1,6 +1,8 @@
 import {bindEmojiPicker,emojiButton} from './emoji-picker.js';
 import {mediaPreparationHold,replyReadiness,updateMediaActionControls} from './preparation-readiness.js';
 import {requireOperator,revokeOperatorSession} from './operator-session.js';
+import {readAccountNavigation,bindAccountNavigation,bindAccountPageRestore,loadAccountState} from './account-navigation.js';
+import {workspacePath} from './workspace-path.js';
 import {buildAssistantContext} from './assistant-context.js';
 import {bindAnalyticsTooltips} from './analytics-tooltip.js';
 import {analyticsKinds, analyticsSnapshot} from './analytics-snapshot.js';
@@ -8,6 +10,7 @@ import {channelBadge} from './social-icons.js';
 import {sortDiscussions} from './post-topics.js';
 import {authorHistory} from './author-history.js';
 import {createMvpConnection} from './mvp-connection.js';
+import {queueCoveragePresentation,loadedQueueCountLabel} from './queue-coverage.js';
 import {displayInstructions} from './active-instructions.js';
 import {createEntityIndex} from './entity-index.js';
 import {chronologicalSiblings} from './thread-order.js';
@@ -20,13 +23,25 @@ import {restoreInPrototype, undoPrototypeRestore} from './assistant-actions.js';
 import {concepts as capeConcepts} from './hero-cape-combinations.js';
 import {arrivalAnimationIds,arrivalCandidateIds,arrivalGenerationSignature,projectQueueArrivals} from './queue-arrivals.js';
 import {bindCommentVideoErrors,commentMediaHtml} from './comment-media.js';
+import {captureTopicReading} from './topic-reading.js';
 const liveReadMode = false;
 let mvp;
 let assistantNavigationRevision = 0;
 const shell = document.querySelector('#shell');
-const operator = await requireOperator(shell);
-const storageKey = operator.id==='local-owner' ? 'communityhero-mvp-original-workshop-v1' : `communityhero-operator-${operator.id}-v1`;
 const demoHeader=document.querySelector('.app-header'),brandNode=demoHeader.querySelector('.wordmark');
+let accountNav,leavingAccount=false;
+bindAccountPageRestore(window,{isLeaving:()=>leavingAccount,getConnection:()=>mvp,reload:()=>location.reload(),onError:error=>console.error(error)});
+try { accountNav = await readAccountNavigation(); }
+catch (error) { shell.textContent=error.message; throw error; }
+document.title = `CommunityHero · ${accountNav.account}`;
+const accountControl=bindAccountNavigation(demoHeader,accountNav,()=>{
+  if(mvp){rememberReading();persist();mvp.leaveAccount();}
+  leavingAccount=true;
+  shell.inert=true;
+});
+const operator = await requireOperator(shell);
+const accountState = loadAccountState(localStorage,accountNav.account,operator.id,operator.storageGeneration??null);
+const storageKey = accountState.key;
 brandNode.setAttribute('aria-label','CommunityHero — обзор');brandNode.title='CommunityHero — обзор';
 brandNode.innerHTML=`<span class="brand-emblem" aria-hidden="true">${capeConcepts.find(({id})=>id==='cape-2').svg.replace('<svg ', '<svg focusable="false" ')}</span><span class="brand-name">CommunityHero</span>`;
 let bar = null;
@@ -34,8 +49,7 @@ if (false) {
   bar = document.createElement('div'); bar.id = 'study-bar'; bar.className = 'study-bar';
   bar.setAttribute('aria-label','Учебные задания'); document.querySelector('.app-header').after(bar);
 }
-let data, icons, saved = {}, editSession = false, readingObserver, composerObserver;
-try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch {}
+let data, icons, saved = accountState.saved, editSession = false, readingObserver, composerObserver;
 let queueArrivalProjection={visible:[],processing:[],arrivals:{}},queueArrivalSignature=null,knownRemoteItemIds=new Set(),queueArrivalEntryIds=new Set(),queueArrivalTimer=null;
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const icon = name => icons[name] || '';
@@ -485,11 +499,10 @@ function rememberTopicReading() {
   const panel=shell.querySelector('.topic-panel[data-topic-key]'),key=panel?.dataset.topicKey;
   pendingTopicFocus=null;
   if(!key)return;
-  const pane=panel.querySelector('.topic-scroll');
-  const details=[...panel.querySelectorAll('.topic-instructions details[data-rule-version]')];
   const previous=topicReading.get(key)||{top:0,open:[],sources:[]};
-  topicReading.set(key,{top:pane?.scrollTop||0,open:details.length?details.filter(node=>node.open).map(node=>node.dataset.ruleVersion):previous.open,
-    sources:details.length?details.filter(node=>node.querySelector('.instruction-source')?.open).map(node=>node.dataset.ruleVersion):previous.sources});
+  const reading=captureTopicReading(panel,previous);
+  if(!reading)return;
+  topicReading.set(key,reading);
   const active=document.activeElement;
   if(active&&panel.contains(active))pendingTopicFocus={key,version:active.closest('details[data-rule-version]')?.dataset.ruleVersion||null,id:active.id||null};
 }
@@ -684,7 +697,7 @@ function selectItem(id, reveal = true) {
   saved.navOpen = true;
   const hash = `#item/${encodeURIComponent(id)}`;
   if (location.hash !== hash) history.pushState(null,'',hash);
-  
+
   persist(); render({focusMessage:reveal ? itemById(id).targetId : null, focusControl:reveal ? `#message-${itemById(id).targetId}` : null});
   shell.querySelector('[data-item][aria-current="true"]')?.scrollIntoView({block:'nearest'});
 }
@@ -901,10 +914,17 @@ window.addEventListener('keydown',event=>{
     event.preventDefault(); toggleNavigation(true);
   }
 });
+function queueCoverage() {
+  return mvp?.queueCoverage(saved.view)||queueCoveragePresentation({},saved.view);
+}
+function listCountHtml() {
+  const processing=processingRecordsForView().length;
+  return `${esc(loadedQueueCountLabel(viewItems().length,hasListConditions()))} · ${basisLabels[dateBasis(saved.view,filtersFor())].toLocaleLowerCase('ru')}${processing?`<span class="list-processing">Готовим: ${processing}</span>`:''}`;
+}
 function navigationHtml() {
   const records = queueRecords();
   const counts = Object.fromEntries(Object.keys(labels).map(view => [view,filterList(records,{view,outcome:'all',query:'',filters:filtersFor(view)}).length]));
-  const queues=Object.entries(labels).map(([view,label], index) => `<a class="nav-view" href="#view/${view}" data-view="${view}" aria-label="${label}" title="${label}" ${!isOverview() && saved.view === view ? 'aria-current="page"' : ''}>${icon(['CircleAlert','Check','Clock3','CheckCheck','X'][index])}<span class="nav-text">${label}</span><span class="count">${counts[view]}</span></a>`).join('');
+  const queues=Object.entries(labels).map(([view,label], index) => `<a class="nav-view" href="#view/${view}" data-view="${view}" aria-label="${label}" title="${label}" ${!isOverview() && saved.view === view ? 'aria-current="page"' : ''}>${icon(['CircleAlert','Check','Clock3','CheckCheck','X'][index])}<span class="nav-text">${label}</span><span class="count" title="Количество среди загруженных комментариев с учётом условий списка.">${counts[view]}</span></a>`).join('');
   return `<button class="nav-backdrop" aria-label="Закрыть навигацию" tabindex="-1"></button><aside class="navigation" aria-label="Навигация"><div class="nav-brand-slot"></div><nav id="primary-navigation"><button class="nav-group overview-nav" id="toggle-overview" aria-expanded="${saved.overviewOpen!==false}" aria-controls="overview-views"><span class="comments-glyph" aria-hidden="true">${icon('Layers')}<span class="comments-disclosure">${icon('ChevronDown')}</span></span><span class="nav-text">Обзор</span></button><div class="work-views ${saved.overviewOpen===false?'is-collapsed':''}" id="overview-views" role="group" aria-label="Разделы обзора" ${saved.overviewOpen===false?'inert aria-hidden="true"':''}><div class="work-views-content">${[['discussions','Обсуждения','MessagesSquare'],['analytics','Аналитика','Layers'],['history','История действий','Clock3']].map(([key,label,glyph])=>`<a class="nav-view" href="#overview${key==='discussions'?'':'/'+key}" aria-label="${label}" title="${label}" ${isOverview()&&overviewSection()===key?'aria-current="page"':''}>${icon(glyph)}<span class="nav-text">${label}</span></a>`).join('')}</div></div><button class="nav-group" id="toggle-comments" aria-expanded="${!!saved.navOpen}" aria-controls="work-views"><span class="comments-glyph" aria-hidden="true">${icon('Inbox')}<span class="comments-disclosure">${icon('ChevronDown')}</span></span><span class="nav-text">Комментарии</span></button><div class="work-views ${saved.navOpen ? '' : 'is-collapsed'}" id="work-views" role="group" aria-label="Очереди комментариев" ${saved.navOpen ? '' : 'inert aria-hidden="true"'}><div class="work-views-content">${queues}</div></div></nav><div class="nav-footer"><span class="avatar">О</span><div>Оператор</div><button class="icon-button nav-collapse" id="toggle-nav" aria-controls="primary-navigation" aria-expanded="${!navigationCollapsed()}" aria-label="${navigationCollapsed()?'Развернуть навигацию':'Свернуть навигацию'}" title="${navigationCollapsed()?'Развернуть навигацию':'Свернуть навигацию'}">${icon('PanelRight')}</button></div></aside>`;
 }
 function queueTagsHtml(state,item) {
@@ -975,20 +995,26 @@ function messagesHtml(item) {
   const roots = root ? [root] : children.get(null)||[];
   return roots.map(m=>renderNode(m,0)).join('');
 }
+function confirmedReplyHtml(item) {
+  const reply=mvp?.confirmedReply?.(item);
+  return reply?`<aside class="mvp-confirmed-reply" aria-label="Подтверждённый опубликованный ответ"><strong>Ответ опубликован · результат проверен</strong><p>${esc(reply.text)}</p></aside>`:'';
+}
 function composerHtml(item) {
   const state = stateFor(item), target = messagesFor(item).find(message => message.id === item.targetId), stale = state.draftContext !== contextVersion(item), staleGenerated=state._staleGenerated&&!state.manualEdited;
   if (!isOpen(state)) return completionHtml(item);
   const mediaHold=mediaPreparationHold(item),readiness=replyReadiness(item,state);
+  const disposition=state._preparationDisposition||item.preparationDisposition;
+  const dispositionHtml=disposition?`<div class="stale" role="status"><strong>${esc(disposition.label)}</strong><p>${esc(disposition.detail)}</p><button id="review-operation-history">Проверить историю действий</button></div>`:'';
   const published=replyFor(recordFor(item));
   const closeLabel=published?'Завершить обработку':'Закрыть без ответа';
-  const closeButton=`<button id="close-comment" class="close-comment" ${mediaHold?'disabled':''} title="${published?'Переместить в закрытые. Ранее опубликованный ответ сохранится.':'Закрыть комментарий без отправки ответа.'} Черновик сохранится.">${closeLabel}</button>`;
+  const closeButton=`<button id="close-comment" class="close-comment" ${mediaHold||disposition?.blocksActions?'disabled':''} title="${esc(disposition?.blocksActions?disposition.detail:published?'Переместить в закрытые. Ранее опубликованный ответ сохранится.':'Закрыть комментарий без отправки ответа. Черновик сохранится.')}">${closeLabel}</button>`;
   const returned=state.events?.some(event=>event.type==='reopened');
   const replyStatus=published ? (state.waitingReason ? 'Ответ опубликован · ждём уточнение' : returned ? 'Возвращён в работу · ответ опубликован' : 'Есть предыдущий ответ') : '';
-  const draftStatus=mediaHold?.label||(stale||staleGenerated?'Нужна перепроверка':replyStatus||'Черновик · не отправлен');
+  const draftStatus=mediaHold?.label||disposition?.label||(stale||staleGenerated?'Нужна перепроверка':replyStatus||'Черновик · не отправлен');
   const draftStatusTitle=[...new Set([state.waitingReason||replyStatus,draftStatus].filter(Boolean))].join(' · ');
   const recipient=`Кому: ${target.author}`;
-  if (state.decision === 'no_reply' || state.editorCollapsed) return `<section class="composer" aria-label="${state.editorCollapsed ? 'Свёрнутый черновик' : 'Решение без ответа'}"><div class="input-surface editor-surface no-reply"><div class="decision-copy"><h3>${icon('Check')} ${state.editorCollapsed ? 'Черновик свёрнут' : published ? 'Ответ уже опубликован' : 'Предложение: без ответа'}</h3>${published ? `<div class="decision-context">${returned?'Возвращён в работу':'Есть предыдущий ответ'} · можно завершить без нового сообщения.</div>` : ''}</div><div class="composer-actions decision-actions">${closeButton}<button id="change-decision" class="primary-close">${state.replyStarted || state.draft ? 'Продолжить ответ' : 'Подготовить ответ'}</button></div></div></section>`;
-  return `<section class="composer" aria-label="Черновик ответа"><div class="input-surface editor-surface">${staleGenerated ? `<div class="stale" role="status">${esc(item.autoPreparation?.sourceChangeReason||'Сохранённый ответ требует проверки. Его текст доступен для правок и обсуждения.')}<div><button id="discuss-saved-draft">Обсудить с ассистентом</button><button id="confirm-saved-draft">Я проверил — оставить этот текст</button></div></div>` : ''}${stale ? `<div class="stale" role="status">Новая реплика может изменить ответ. Ваш текст сохранён.<div><button id="see-new">Прочитать реплику</button><button id="update-draft">Предложить обновление</button><button id="confirm-current">Я проверил — оставить мой текст</button></div></div>` : ''}<label class="sr-only" for="draft">Черновик — ${esc(target.author)}</label><textarea id="draft" aria-describedby="draft-status" placeholder="Написать ответ…" spellcheck="false">${esc(state.draft)}</textarea><div class="composer-actions reply-actions"><div class="edit-tools" role="group" aria-label="Правки черновика">${emojiButton('draft-emoji')}<button class="icon-button" id="undo" aria-label="Отменить правку" title="Отменить правку" ${state.history.length ? '' : 'disabled'}>${icon('Undo2')}</button><button class="icon-button" id="redo" aria-label="Повторить правку" title="Повторить правку" ${state.redo.length ? '' : 'disabled'}><span class="redo-glyph">${icon('Undo2')}</span></button>${item.decision === 'no_reply' ? `<button id="collapse-draft" class="icon-button" aria-label="Свернуть черновик" title="Свернуть черновик — текст сохранится">${icon('ChevronDown')}</button>` : ''}</div>${closeButton}<div class="composer-submit">${sendButton('reply',readiness.disabled,readiness.reason)}</div></div>${state.note && state.note!==state._preparationNote ? `<p class="save-note">${esc(state.note)}</p>` : ''}</div><footer class="composer-meta-footer" aria-label="Сведения о черновике"><strong class="composer-recipient" title="${esc(recipient)}">${esc(recipient)}</strong><span id="draft-status" data-media-hold="${mediaHold?'true':''}" title="${esc(draftStatusTitle)}">${esc(draftStatus)}</span></footer></section>`;
+  if (state.decision === 'no_reply' || state.editorCollapsed) return `<section class="composer" aria-label="${state.editorCollapsed ? 'Свёрнутый черновик' : 'Решение без ответа'}"><div class="input-surface editor-surface no-reply">${dispositionHtml}<div class="decision-copy"><h3>${icon('Check')} ${state.editorCollapsed ? 'Черновик свёрнут' : published ? 'Ответ уже опубликован' : 'Предложение: без ответа'}</h3>${published ? `<div class="decision-context">${returned?'Возвращён в работу':'Есть предыдущий ответ'} · можно завершить без нового сообщения.</div>` : ''}</div><div class="composer-actions decision-actions">${closeButton}<button id="change-decision" class="primary-close">${state.replyStarted || state.draft ? 'Продолжить ответ' : 'Подготовить ответ'}</button></div></div></section>`;
+  return `<section class="composer" aria-label="Черновик ответа"><div class="input-surface editor-surface">${dispositionHtml}${staleGenerated ? `<div class="stale" role="status">${esc(item.autoPreparation?.sourceChangeReason||'Сохранённый ответ требует проверки. Его текст доступен для правок и обсуждения.')}<div><button id="discuss-saved-draft">Обсудить с ассистентом</button><button id="confirm-saved-draft" ${disposition?.blocksActions?'disabled':''}>Я проверил — оставить этот текст</button></div></div>` : ''}${stale ? `<div class="stale" role="status">Новая реплика может изменить ответ. Ваш текст сохранён.<div><button id="see-new">Прочитать реплику</button><button id="update-draft">Предложить обновление</button><button id="confirm-current">Я проверил — оставить мой текст</button></div></div>` : ''}<label class="sr-only" for="draft">Черновик — ${esc(target.author)}</label><textarea id="draft" aria-describedby="draft-status" placeholder="Написать ответ…" spellcheck="false">${esc(state.draft)}</textarea><div class="composer-actions reply-actions"><div class="edit-tools" role="group" aria-label="Правки черновика">${emojiButton('draft-emoji')}<button class="icon-button" id="undo" aria-label="Отменить правку" title="Отменить правку" ${state.history.length ? '' : 'disabled'}>${icon('Undo2')}</button><button class="icon-button" id="redo" aria-label="Повторить правку" title="Повторить правку" ${state.redo.length ? '' : 'disabled'}><span class="redo-glyph">${icon('Undo2')}</span></button>${item.decision === 'no_reply' ? `<button id="collapse-draft" class="icon-button" aria-label="Свернуть черновик" title="Свернуть черновик — текст сохранится">${icon('ChevronDown')}</button>` : ''}</div>${closeButton}<div class="composer-submit">${sendButton('reply',readiness.disabled,readiness.reason)}</div></div>${state.note && state.note!==state._preparationNote ? `<p class="save-note">${esc(state.note)}</p>` : ''}</div><footer class="composer-meta-footer" aria-label="Сведения о черновике"><strong class="composer-recipient" title="${esc(recipient)}">${esc(recipient)}</strong><span id="draft-status" data-media-hold="${mediaHold?'true':''}" title="${esc(draftStatusTitle)}">${esc(draftStatus)}</span></footer></section>`;
 }
 function updateDecisionReadiness() {
   const item=selectedItem();if(!item)return;
@@ -1006,7 +1032,9 @@ function updateDecisionReadiness() {
     const count=shell.querySelector(`[data-filter="${key}"] .outcome-count`);if(count)count.textContent=counts[key];
   }
   const count=shell.querySelector('.list-count');
-  if(count)count.textContent=`Найдено: ${viewItems().length} · ${basisLabels[dateBasis(saved.view,filtersFor())].toLocaleLowerCase('ru')}`;
+  if(count){count.innerHTML=listCountHtml();count.title=queueCoverage().countTitle;}
+  const coverage=shell.querySelector('.list-coverage');
+  if(coverage)coverage.textContent=queueCoverage().note;
   listObserver?.disconnect();queue.innerHTML=rowsHtml();bindRows();
   queue.querySelector('[data-clear-list]')?.addEventListener('click',clearListConditions);
   queue.scrollTop=anchor?.scrollTop||0;
@@ -1036,7 +1064,7 @@ function workspaceHtml(item) {
   const postSubtitle=(post.excerpt||post.text||'').startsWith(post.title.replace(/…$/,''))?post.channel:(post.excerpt||post.text||post.channel);
   const details=reason?`<details class="selected-reason" ${state.selectedReasonOpen?'open':''}><summary><span>Почему такое решение</span>${icon('ChevronDown')}</summary><div class="reason-body"><p>${esc(reason)}</p></div></details>`:'';
   const sourceLink=/^https?:\/\//i.test(post.sourceUrl||'')?`<a href="${esc(post.sourceUrl)}" target="_blank" rel="noopener noreferrer">Открыть публикацию ${icon('ArrowUpRight')}</a>`:'';
-  const content=state.postPaneOpen?`<article class="post-pane" aria-label="Исходная публикация"><button id="return-thread" class="text-action">${icon('ArrowLeft')} Вернуться к обсуждению</button><div class="post-pane-meta">${channelBadge(post.channel)}<span>${esc(post.channel)}</span></div><h2 id="post-pane-title" tabindex="-1">${esc(post.title)}</h2>${thumbnail?`<img class="post-expanded-media" src="${esc(thumbnail)}" data-thumbnail-fallbacks="${thumbnailFallbacks}" alt="Превью публикации" decoding="async" referrerpolicy="no-referrer">`:''}<div class="post-pane-text" data-reading-block="post-text">${esc(post.text||post.excerpt||'Текст публикации недоступен.')}</div>${sourceLink}${postTranscriptHtml(post,item)}</article>`:`${threadControlsHtml(item)}${details}${messagesHtml(item)}`;
+  const content=state.postPaneOpen?`<article class="post-pane" aria-label="Исходная публикация"><button id="return-thread" class="text-action">${icon('ArrowLeft')} Вернуться к обсуждению</button><div class="post-pane-meta">${channelBadge(post.channel)}<span>${esc(post.channel)}</span></div><h2 id="post-pane-title" tabindex="-1">${esc(post.title)}</h2>${thumbnail?`<img class="post-expanded-media" src="${esc(thumbnail)}" data-thumbnail-fallbacks="${thumbnailFallbacks}" alt="Превью публикации" decoding="async" referrerpolicy="no-referrer">`:''}<div class="post-pane-text" data-reading-block="post-text">${esc(post.text||post.excerpt||'Текст публикации недоступен.')}</div>${sourceLink}${postTranscriptHtml(post,item)}</article>`:`${threadControlsHtml(item)}${details}${messagesHtml(item)}${confirmedReplyHtml(item)}`;
   return `<main class="workspace ${saved.ai ? 'with-ai' : ''}" aria-label="Рабочая область"><section class="detail ${state.postPaneOpen?'showing-post':''}" data-context-item="${esc(item.id)}" aria-label="Разговор и решение"><header class="detail-head"><button class="icon-button back" id="back-list" aria-label="К списку">${icon('ArrowLeft')}</button><button class="source source-toggle" id="toggle-post" aria-controls="central-reading-pane" aria-expanded="${!!state.postPaneOpen}" title="${state.postPaneOpen?'Вернуться к обсуждению':'Открыть исходный пост'}"><span class="post-thumbnail-slot">${thumbnail?`<img class="post-thumbnail" src="${esc(thumbnail)}" data-thumbnail-fallbacks="${thumbnailFallbacks}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:''}<span class="post-thumbnail-fallback" aria-hidden="true">${icon('FileText')}</span></span><span class="source-copy"><strong>${esc(post.title)}</strong><span>${esc(postSubtitle)}</span></span><span class="source-chevron">${icon('ChevronDown')}</span></button>${listOwnsAssistantToggle()?'':assistantToggleHtml()}</header>${retainedContextHtml(item)}<div class="thread-scroll" id="central-reading-pane" data-reading-surface="${state.postPaneOpen?'post':'thread'}"><div class="thread-content">${content}</div></div>${state.postPaneOpen?'':composerHtml(item)}</section></main>`;
 }
 function postTranscriptHtml(post,item) {
@@ -1193,7 +1221,7 @@ function bindNavigation() {
       saved.navCollapsed=true; persist(); updateNavigationLayout();
     }
   });
-  shell.querySelector('.nav-brand-slot').append(brandNode);demoHeader.remove();
+  shell.querySelector('.nav-brand-slot').append(brandNode,accountControl);demoHeader.remove();
   shell.querySelector('#toggle-overview').addEventListener('click',()=>{
     saved.overviewOpen=saved.overviewOpen===false;persist();updateNavigationLayout();
   });
@@ -1534,7 +1562,8 @@ function bindWorkspace(item) {
   };
   shell.querySelector('#undo')?.addEventListener('click', () => restore(state.history,state.redo));
   shell.querySelector('#redo')?.addEventListener('click', () => restore(state.redo,state.history));
-  shell.querySelector('#confirm-saved-draft')?.addEventListener('click',()=>{assistantNavigationRevision++;state.manualEdited=true;state._staleGenerated=false;state.draftContext=contextVersion(item);persist();render();mvp.saveDraft(item).catch(()=>{});});
+  shell.querySelector('#review-operation-history')?.addEventListener('click',()=>mvp.openHistory());
+  shell.querySelector('#confirm-saved-draft')?.addEventListener('click',()=>{if(state._preparationDisposition?.blocksActions)return;assistantNavigationRevision++;state.manualEdited=true;state._staleGenerated=false;state.draftContext=contextVersion(item);persist();render();mvp.saveDraft(item).catch(()=>{});});
   shell.querySelector('#discuss-saved-draft')?.addEventListener('click',()=>{if(!saved.mvpAiInput)saved.mvpAiInput='Проверь сохранённый ответ с учётом текущего обсуждения: '+state.draft;persist();render();setAssistantOpen(true);});
   shell.querySelector('#see-new')?.addEventListener('click', () => revealMessage(item,branchFor(item).extraReply.id));
   shell.querySelector('#update-draft')?.addEventListener('click', () => propose(item,'updated'));
@@ -1618,8 +1647,8 @@ try {
       return false;
     },
     onActorChange:()=>{topicReading.clear();overviewReportReading.clear();persist();mvp.stop();shell.textContent='Пользователь изменился. Перезагружаем рабочее место…';location.reload();return true;},
-    icon,esc,persist,filtersFor,operator,logout:async()=>{persist();mvp.stop();await revokeOperatorSession(operator);location.reload();}});
-  [data,icons]=await Promise.all([mvp.load(),fetch('/icons.json').then(r=>{if(!r.ok)throw Error('Icons unavailable');return r.json();})]);
+    icon,esc,persist,filtersFor,operator,account:accountNav.account,basePath:accountNav.basePath,logout:async()=>{persist();mvp.stop();await revokeOperatorSession(operator);location.reload();}});
+  [data,icons]=await Promise.all([mvp.load(),fetch(workspacePath('/icons.json',accountNav.basePath)).then(r=>{if(!r.ok)throw Error('Icons unavailable');return r.json();})]);
   mvp.hydrate(undefined,{repaint:false});
   const hashId=decodeURIComponent(location.hash.replace(/^#item\//,''));
   refreshQueueArrivalProjection({initial:true,selectedId:itemById(hashId)?hashId:saved.selected});
@@ -1635,9 +1664,8 @@ try {
     else {const view=location.hash.match(/^#view\/(\w+)$/)?.[1];if(labels[view])navigateView(view,false);}
   });
   window.addEventListener('pagehide',()=>{rememberReading();persist();mvp.stop();});
-  window.addEventListener('pageshow',event=>{if(event.persisted){mvp.start();void mvp.refresh({background:true}).catch(error=>console.error(error));}});
 } catch(error) {
-  shell.innerHTML='<p class="empty" role="alert">Не удалось загрузить рабочее место LikeAvto. Обновите страницу. '+esc(error.message)+'</p>';
+  shell.innerHTML='<p class="empty" role="alert">Не удалось загрузить рабочее место '+esc(accountNav.account)+'. Обновите страницу. '+esc(error.message)+'</p>';
   console.error(error);
 }
 
@@ -1687,8 +1715,7 @@ function chipsHtml() {
   if(['closed','deleted'].includes(saved.view)&&f.dateField==='created') chips.push(['dateField','По дате комментария']);
   if(f.period==='week') chips.push(['period','Последние 7 дней']);
   else if(f.from||f.to) chips.push(['period',`${basisLabels[dateBasis(saved.view,f)]}: ${f.from || '…'} — ${f.to || '…'} (МСК)`]);
-  const processing=processingRecordsForView().length;
-  return `<div class="list-conditions">${chips.map(([key,label])=>`<span class="condition-control" role="group" aria-label="${esc(label)}"><button class="condition-value" data-edit-condition="${key}" aria-label="Изменить условие: ${esc(label)}" title="Изменить: ${esc(label)}"><span>${esc(label)}</span></button><button class="condition-remove" data-remove-condition="${key}" aria-label="Убрать условие: ${esc(label)}" title="Убрать условие">${icon('X')}</button></span>`).join('')}${hasListConditions()?'<button class="clear-conditions" data-clear-list>Сбросить</button>':''}</div><p class="list-count" role="status">Найдено: ${viewItems().length} · ${basisLabels[dateBasis(saved.view,f)].toLocaleLowerCase('ru')}${processing?`<span class="list-processing">Готовим: ${processing}</span>`:''}</p>${dateBasis(saved.view,f)==='closed'&&!f.from&&!f.to&&f.period!=='week'?'<p class="list-date-note">Без даты закрытия — в конце, по дате комментария.</p>':''}`;
+  return `<div class="list-conditions">${chips.map(([key,label])=>`<span class="condition-control" role="group" aria-label="${esc(label)}"><button class="condition-value" data-edit-condition="${key}" aria-label="Изменить условие: ${esc(label)}" title="Изменить: ${esc(label)}"><span>${esc(label)}</span></button><button class="condition-remove" data-remove-condition="${key}" aria-label="Убрать условие: ${esc(label)}" title="Убрать условие">${icon('X')}</button></span>`).join('')}${hasListConditions()?'<button class="clear-conditions" data-clear-list>Сбросить</button>':''}</div><p class="list-count" role="status" title="${esc(queueCoverage().countTitle)}">${listCountHtml()}</p><p class="list-coverage" role="status">${esc(queueCoverage().note)}</p>${dateBasis(saved.view,f)==='closed'&&!f.from&&!f.to&&f.period!=='week'?'<p class="list-date-note">Без даты закрытия — в конце, по дате комментария.</p>':''}`;
 }
 function refreshList(focusControl = '#search') {
   assistantNavigationRevision++;

@@ -20,6 +20,31 @@ test('discussion and research use interactive; triage and review use preparation
     assert.equal(assistantLaneForRequest(prepared),'preparation');
 });
 
+test('preparation worker slots are bounded transport selectors, never request fields',()=>{
+ const prepared={triage:true};
+ assert.equal(assistantLaneForRequest(prepared,{}),'preparation');
+ for(let slot=0;slot<8;slot++)assert.equal(assistantLaneForRequest(prepared,{COMMUNITYHERO_PREPARE_WORKERS:'8',COMMUNITYHERO_PREPARE_WORKER_SLOT:String(slot)}),slot===0?'preparation':`preparation-${slot}`);
+ assert.equal(assistantLaneForRequest({...prepared,payload:{workerSlot:7,visualSelection:{workerSlot:7}}},{}),'preparation');
+ for(const env of [{COMMUNITYHERO_PREPARE_WORKERS:'9'},{COMMUNITYHERO_PREPARE_WORKERS:'0'},{COMMUNITYHERO_PREPARE_WORKERS:'2',COMMUNITYHERO_PREPARE_WORKER_SLOT:'2'},
+  {COMMUNITYHERO_PREPARE_WORKERS:'2',COMMUNITYHERO_PREPARE_WORKER_SLOT:'01'},{COMMUNITYHERO_PREPARE_WORKER_SLOT:'1'},{COMMUNITYHERO_PREPARE_WORKER_SLOT:'../x'}])
+  assert.throws(()=>assistantLaneForRequest(prepared,env),{code:'ASSISTANT_INVALID_REQUEST'});
+ for(const other of [{triage:false},{triage:true,research:true},{triage:false,editorial:true}])assert.throws(()=>assistantLaneForRequest(other,{COMMUNITYHERO_PREPARE_WORKER_SLOT:'0',COMMUNITYHERO_PREPARE_WORKERS:'1'}),{code:'ASSISTANT_INVALID_REQUEST'});
+});
+
+test('fixed preparation slots overlap but duplicate slot retains exclusive lock',async()=>{
+ const base=await scratch();let release,entered;
+ const ready=new Promise(resolve=>entered=resolve),hold=new Promise(resolve=>release=resolve);
+ try{
+  const first=withAssistantLane(base,'preparation',async()=>{entered();await hold;});await ready;
+  await withAssistantLane(base,'preparation-1',async home=>{
+   assert.equal(path.dirname(home),path.join(base,'preparation-1'));
+   await assert.rejects(withAssistantLane(base,'preparation-1',async()=>assert.fail('Duplicate slot entered')),{code:'ASSISTANT_BUSY'});
+  });
+  await assert.rejects(withAssistantLane(base,'preparation-8',async()=>assert.fail('Unbounded slot entered')),{code:'ASSISTANT_INVALID_REQUEST'});
+  release();await first;
+ }finally{release?.();await removeScratch(base);}
+});
+
 test('separate fake processes can overlap across lanes while same-lane calls remain bounded',async()=>{
   const base=await scratch();
   let entered;const firstEntered=new Promise(resolve=>entered=resolve);

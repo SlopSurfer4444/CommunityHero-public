@@ -3,10 +3,16 @@ use super::*;
 fn actor() -> Actor { Actor::local_owner("recovery-test") }
 
 fn reviewed(d: &mut Value) -> String {
+    // Recovery faults must reach execution admission, with the fixture gate
+    // explicitly open rather than changing test_app or production defaults.
+    connection_gate::fixture_open(d).unwrap();
     d["items"] = json!([{"id":"item-1","itemId":"comment-1","objectId":"11391","postKey":"11391:post-1",
         "conversationKey":"11391:comment-1","contextEvidenceDigest":"a".repeat(64),"providerStatus":"new",
         "revision":1,"workflow":"prepared","draft":"Exact answer","author":"Customer","text":"Question"}]);
     d["conversations"] = json!([{"id":"chat","operatorId":"local-owner","messages":[{"id":"request","role":"user","text":"Send prepared"}]}]);
+    crate::tests::create_post_fixture(d,"item-1").unwrap();
+    let proposal = create_proposal(d, &json!({"itemId":"item-1","expectedRevision":1,"kind":"reply_and_close","text":"Exact answer"})).unwrap();
+    crate::editorial_review::fixture_accept(d, proposal["id"].as_str().unwrap()).unwrap();
     let review = prepare(d, &actor(), "chat", "request", &json!({"mode":"execute_prepared","items":[{"id":"item-1","revision":1}]})).unwrap();
     d["conversations"][0]["messages"].as_array_mut().unwrap().push(json!({"id":"confirmation","role":"user","text":"Да, выполняй"}));
     review["reviewId"].as_str().unwrap().to_owned()
@@ -21,6 +27,9 @@ async fn stop_tasks(app: &App) {
 }
 
 fn review(d: &Value) -> &Value { &d["conversations"][0]["actionReviews"][0] }
+fn execution_job(d:&Value)->&Value {
+    list(d,"jobs").iter().find(|job|job["kind"]=="execute").expect("exact execution job")
+}
 
 #[tokio::test]
 async fn every_committed_boundary_recovers_once_without_readmission() {
@@ -37,7 +46,7 @@ async fn every_committed_boundary_recovers_once_without_readmission() {
         if let Database::Sqlite(pool) = &app.db { pool.close().await; }
         app.db = Database::Sqlite(open_db(&temp.path().join("workspace.sqlite")).await.unwrap());
         let before = app.read().await.unwrap();
-        app.change(|d| { crate::recover(d); recover_execution_receipts(d) }).await.unwrap();
+        app.change(|d| { crate::recover(d).unwrap(); recover_execution_receipts(d) }).await.unwrap();
         let recovered = app.read().await.unwrap();
         assert_eq!(list(&before,"approvals").len(),list(&recovered,"approvals").len(),"{fault}");
         assert_eq!(list(&before,"operations").len(),list(&recovered,"operations").len(),"{fault}");
@@ -55,7 +64,7 @@ async fn every_committed_boundary_recovers_once_without_readmission() {
             }
             _ => {
                 assert_eq!(review(&recovered)["status"],"admitted","{fault}: {}",review(&recovered));
-                assert_eq!(review(&recovered)["execution"]["jobId"],recovered["jobs"][0]["id"]);
+                assert_eq!(review(&recovered)["execution"]["jobId"],execution_job(&recovered)["id"]);
                 assert_eq!(list(&recovered,"operations").len(),1);
                 assert_eq!(review(&recovered)["outcome"]["terminal"],true);
                 assert_ne!(review(&recovered)["outcome"]["externalOutcome"],"succeeded");
@@ -94,7 +103,7 @@ async fn recovery_rejects_cross_actor_revision_route_attempt_and_job_evidence() 
             5 => d["approvals"][0]["approvalAuthority"]["generation"] = json!("rotated"),
             6 => d["operations"][0]["target"]["objectId"] = json!("other-account"),
             7 => d["operations"][0]["action"]["reply"] = json!("Changed response"),
-            8 => { let duplicate=d["jobs"][0].clone(); d["jobs"].as_array_mut().unwrap().push(duplicate); },
+            8 => { let duplicate=execution_job(&d).clone(); d["jobs"].as_array_mut().unwrap().push(duplicate); },
             9 => d["conversations"][0]["messages"][2]["text"] = json!("No"),
             _ => d["operations"][0]["dispatchAuthority"]["executed"]["actorId"] = json!("other-operator"),
         }
@@ -124,13 +133,13 @@ async fn legacy_missing_identity_is_unknown_and_late_exact_evidence_recovers() {
     recover_execution_receipts(&mut legacy).unwrap();
     assert_eq!(review(&legacy)["status"],"admitted","legacy exact known approval can be joined");
     let mut d=base.clone();
-    d["operations"][0]["status"]=json!("unknown");d["jobs"][0]["status"]=json!("interrupted");
+    let job_id=execution_job(&d)["id"].as_str().unwrap().to_owned();
+    d["operations"][0]["status"]=json!("unknown");row_mut(&mut d,"jobs",&job_id).unwrap()["status"]=json!("interrupted");
     recover_execution_receipts(&mut d).unwrap();
     assert_eq!(review(&d)["outcome"]["externalOutcome"],"unknown");
     assert_eq!(review(&d)["outcome"]["terminal"],true);
     let message_id=review(&d)["resultMessageId"].clone();
     d["operations"][0]["status"]=json!("succeeded");
-    let job_id=d["jobs"][0]["id"].as_str().unwrap().to_owned();
     refresh_execution_receipts(&mut d,&job_id).unwrap();
     assert_eq!(review(&d)["outcome"]["externalOutcome"],"succeeded");
     assert_eq!(review(&d)["resultMessageId"],message_id);
@@ -155,7 +164,7 @@ process.stdout.write(JSON.stringify({ok:true,result}));"#.replace("__LOG__",&jso
     tokio::time::timeout(std::time::Duration::from_secs(15),async {
         loop {
             let d=app.read().await.unwrap();
-            if d["jobs"][0]["status"]=="completed" { break; }
+            if execution_job(&d)["status"]=="completed" { break; }
             tokio::time::sleep(std::time::Duration::from_millis(20)).await;
         }
     }).await.unwrap();
@@ -164,7 +173,7 @@ process.stdout.write(JSON.stringify({ok:true,result}));"#.replace("__LOG__",&jso
     assert_eq!(effects.lines().filter(|line|serde_json::from_str::<Value>(line).unwrap()["operation"]=="execute").count(),1);
     if let Database::Sqlite(pool)=&app.db{pool.close().await;}
     app.db=Database::Sqlite(open_db(&temp.path().join("workspace.sqlite")).await.unwrap());
-    for _ in 0..3 {app.change(|d|{crate::recover(d);recover_execution_receipts(d)}).await.unwrap();}
+    for _ in 0..3 {app.change(|d|{crate::recover(d).unwrap();recover_execution_receipts(d)}).await.unwrap();}
     assert!(execute_review(app.clone(),actor(),"chat","confirmation",&json!({"reviewId":rid})).await.is_err());
     let d=app.read().await.unwrap();
     assert_eq!(review(&d)["outcome"]["externalOutcome"],"unknown");

@@ -8,7 +8,7 @@ import { prepareAssistantRequest, validateAssistantResult, recoverInterruptedJob
 
 test('generation provenance binds actual instructions and input without retaining input text',()=>{
   const a=generationMetadata('private text',true,17.2),b=generationMetadata('private text',true,40),c=generationMetadata('changed',true),chat=generationMetadata('private text',false);
-  assert.equal(a.model,'gpt-6-astra');
+  assert.equal(a.model,'gpt-6.1-sol');
   assert.equal(a.reasoningEffort,'low');
   assert.equal(a.inputSha256,b.inputSha256);
   assert.equal(a.instructionSha256,b.instructionSha256);

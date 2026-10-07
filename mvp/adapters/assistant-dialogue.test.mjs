@@ -11,7 +11,7 @@ test('both preparation passes distinguish useful engagement from no-question aut
   }
   assert.match(reviewInstructions(),/close may\s+become reply/);
   assert.match(reviewInstructions(),/Never manufacture\s+a question/);
-  assert.match(generationMetadata('',true).promptVersion,/v14-imported-rule-semantics/);
+  assert.match(generationMetadata('',true).promptVersion,/v19-intent-scoped-evidence/);
 });
 test('discussion search contract is read-only bounded and does not pretend it already ran',()=>{
   const prompt=assistantInstructions();

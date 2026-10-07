@@ -1,5 +1,8 @@
 // Access codes live only in the submitted request; the server owns the session cookie.
-function operatorFrom(payload) {
+import {workspaceBasePath,workspacePath} from './workspace-path.js';
+import {createWorkspaceGenerationFence} from './workspace-generation.js';
+const sessionBasePath=workspaceBasePath();
+function operatorFrom(payload,response) {
   const actor = payload?.operator ?? payload;
   if (!actor || typeof actor.id !== 'string' || !actor.id || typeof actor.name !== 'string'
       || typeof actor.role !== 'string') throw new Error('invalid-session');
@@ -8,18 +11,19 @@ function operatorFrom(payload) {
     name: actor.name,
     role: actor.role,
     csrfToken: typeof payload?.csrfToken === 'string' ? payload.csrfToken : actor.csrfToken ?? '',
+    storageGeneration:createWorkspaceGenerationFence().observe(payload,response,{initial:true}),
   };
 }
 
 async function readSession() {
-  const response = await fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' });
+  const response = await fetch(workspacePath('/api/session',sessionBasePath), { credentials: 'same-origin', cache: 'no-store' });
   if (response.status === 401) return null;
   // Only the pre-auth local development server may use this staged-rollout fallback.
   if (response.status === 404 && globalThis.location?.hostname === '127.0.0.1') {
     return { id: 'local-owner', name: 'Владелец', role: 'owner', csrfToken: '' };
   }
   if (!response.ok) throw new Error('session-unavailable');
-  return operatorFrom(await response.json());
+  return operatorFrom(await response.json(),response);
 }
 
 /** Resolve only after this browser has its own authenticated operator session. */
@@ -66,7 +70,7 @@ export async function requireOperator(shell) {
       let token = input.value.trim();
       input.value = '';
       try {
-        const request = fetch('/api/session/login', {
+        const request = fetch(workspacePath('/api/session/login',sessionBasePath), {
           method: 'POST',
           credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
@@ -102,7 +106,7 @@ export async function requireOperator(shell) {
 
 /** Revoke this browser's cookie session without touching shared drafts. */
 export async function revokeOperatorSession(operator) {
-  const response = await fetch('/api/session/logout', {
+  const response = await fetch(workspacePath('/api/session/logout',sessionBasePath), {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'X-CSRF-Token': operator?.csrfToken ?? '' },

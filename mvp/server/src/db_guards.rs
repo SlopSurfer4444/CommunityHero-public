@@ -34,6 +34,29 @@ pub(crate) async fn require_schema(pool: &PgPool) -> ApiResult<()> {
 /// Omitted collections are allowed only on both sides of a bounded projection.
 /// Present collections must be complete, ordered history, never a filtered slice.
 pub(crate) fn validate_change(before: &Value, after: &Value) -> ApiResult<()> {
+    validate_change_mode(before, after, false)
+}
+pub(crate) fn validate_change_mode(before: &Value, after: &Value, allow_retained_recovery_delta: bool) -> ApiResult<()> {
+    crate::predecessor_recovery::validate_reserved_change(before,after)?;
+    crate::working_generation::validate_change(before,after)?;
+    crate::continuous_preparation::validate_change(before,after)?;
+    crate::connection_gate::validate_change(before,after)?;
+    crate::external_reconciliation::validate_change(before,after)?;
+    crate::runtime_paid_result::validate_change(before,after)?;
+    crate::model_material_receipt::validate_change(before,after)?;
+    crate::proposal_source_rebind::validate_change(before,after)?;
+    crate::answering_repair_plan::validate_change(before,after)?;
+    crate::media_analysis::validate_workspace_change(before,after).map_err(|error|crate::internal(&error))?;
+    let conductor=crate::performance::Span::new("history.validation.conductor");
+    crate::conductor_authority::validate_change(before, after)?;
+    drop(conductor);
+    let reservations=crate::performance::Span::new("history.validation.reservations");
+    crate::preparation_reservations::validate_change(before,after)?;
+    drop(reservations);
+    let retained=crate::performance::Span::new("history.validation.retained_registry");
+    crate::retained_paid_recovery_registry::validate_change(before,after,allow_retained_recovery_delta)?;
+    drop(retained);
+    let history=crate::performance::Span::new("history.validation.audit_approvals");
     for table in ["audit", "approvals"] {
         if before.get(table).is_none() && after.get(table).is_none() {
             continue;
@@ -86,6 +109,7 @@ pub(crate) fn validate_change(before: &Value, after: &Value) -> ApiResult<()> {
             }
         }
     }
+    drop(history);
     Ok(())
 }
 

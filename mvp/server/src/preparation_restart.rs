@@ -46,16 +46,36 @@ fn automatic_job<'a>(d:&'a Value,p:&Value)->Option<&'a Value> {
         || origin["prepareBundleId"]!=bundle["id"] || origin["prepareBundleDigest"]!=bundle["digest"] {return None;}
     Some(job)
 }
+// Membership is a protection boundary, never evidence authorizing a result.
+pub(crate) fn job_targets(job:&Value,item_id:&Value)->bool {
+    job["refId"]==*item_id || job["prepareBundle"]["itemIds"].as_array().is_some_and(|ids|ids.contains(item_id))
+}
+pub(crate) fn grouped_previous(d:&Value,item:&Value)->bool {
+    let belongs=|job:&Value|job["purpose"]=="auto_prepare"
+        && job["prepareBundle"]["itemIds"].as_array().is_some_and(|ids|ids.len()>1&&ids.contains(&item["id"]));
+    let proposals=list(d,"proposals");
+    // Historical decisions are retained for audit. Only the currently selected
+    // decision and current job can constrain this item's next preparation.
+    let selected=proposals.iter().rev().find(|p|p["itemId"]==item["id"]&&p["status"]=="draft")
+        .or_else(||item["autoPreparation"]["savedProposalId"].as_str()
+            .and_then(|id|proposals.iter().find(|p|p["id"]==id&&p["itemId"]==item["id"])));
+    item["autoPreparation"]["jobId"].as_str().and_then(|id|row(d,"jobs",id).ok()).is_some_and(belongs)
+        || selected.and_then(|p|p["prepareRunId"].as_str().or_else(||p["recovery"]["prepareRunId"].as_str()))
+            .and_then(|id|row(d,"jobs",id).ok()).is_some_and(belongs)
+}
 fn guard(d:&Value,item:&Value)->Result<(), &'static str> {
     if !matches!(item["workflow"].as_str(),Some("attention"|"prepared"))
         || !matches!(item["providerStatus"].as_str(),Some("new"|"inprogress")) {return Err("not_open");}
     if item["draftEdited"]==true || !item["draft"].as_str().unwrap_or("").trim().is_empty()
         || !item["autoPreparation"]["humanOverrideAt"].is_null() {return Err("operator_edit");}
-    if list(d,"jobs").iter().any(|j|j["refId"]==item["id"]&&matches!(j["status"].as_str(),Some("queued"|"running")))
+    if list(d,"jobs").iter().any(|j|job_targets(j,&item["id"])&&matches!(j["status"].as_str(),Some("queued"|"running")))
         || list(d,"operations").iter().any(|o|o["itemId"]==item["id"]) {return Err("active_or_recorded_operation");}
     let proposals:Vec<&Value>=list(d,"proposals").iter().filter(|p|p["itemId"]==item["id"]).collect();
     if proposals.iter().any(|p| matches!(p["status"].as_str(),Some("approved"|"dispatching"|"unknown"|"succeeded"))
         || p["origin"].is_object() || p["history"].as_array().is_some_and(|h|!h.is_empty())) {return Err("protected_proposal");}
+    // A fresh generation must not silently obtain a new per-item budget from
+    // a previously spent grouped job. Same-job completed review recovery is separate.
+    if grouped_previous(d,item) {return Err("group_review_required");}
     if proposals.iter().any(|p|p["status"]=="draft"&&automatic_job(d,p).is_none()) {return Err("manual_or_unverified_proposal");}
     Ok(())
 }
@@ -170,7 +190,7 @@ fn fresh_error_job<'a>(d:&'a Value,item:&Value)->Result<&'a Value,&'static str> 
         item["autoPreparation"]["jobId"].as_str()
     } else {None}.ok_or("no_failed_preparation")?;
     let job=row(d,"jobs",id).map_err(|_|"failed_job_missing")?;
-    if list(d,"jobs").iter().rev().find(|j|j["refId"]==item["id"]
+    if list(d,"jobs").iter().rev().find(|j|job_targets(j,&item["id"])
         && matches!(j["purpose"].as_str(),Some("auto_prepare"|"auto_revalidate"))).is_none_or(|j|j["id"]!=id) {return Err("failed_job_superseded");}
     Ok(job)
 }
@@ -214,7 +234,7 @@ pub(crate) fn fresh_context_previous(d:&Value,item:&Value)->Option<(Value,Value)
     let job=row(d,"jobs",proof["jobId"].as_str()?).ok()?;
     guard(d,item).ok()?;
     if fresh_proof(d,item,job).ok()?!=*proof {return None;}
-    if list(d,"jobs").iter().rev().find(|j|j["refId"]==item["id"]
+    if list(d,"jobs").iter().rev().find(|j|job_targets(j,&item["id"])
         &&matches!(j["purpose"].as_str(),Some("auto_prepare"|"auto_revalidate"))).is_none_or(|j|j["id"]!=job["id"]) {return None;}
     Some((job["prepareBundle"].clone(),json!({"itemId":item["id"],"prepareRunId":job["id"],"proposalId":null,
         "outcome":"needs_attention","text":"","reason":job["error"],"freshContext":true})))

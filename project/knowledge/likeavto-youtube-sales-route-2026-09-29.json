@@ -1,0 +1,13 @@
+{
+  "status": "candidate_not_installed",
+  "company": "LikeAvto",
+  "publicSynthetic": true,
+  "install": {
+    "body": {
+      "requestId": "synthetic-sales-route-example",
+      "title": "Synthetic company instruction",
+      "text": "Synthetic example only: ask for missing vehicle details before answering a price question.",
+      "postKey": null
+    }
+  }
+}

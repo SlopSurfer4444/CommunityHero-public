@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "ruleId": "SHARED-MODERATION-ABUSE-20260928",
+  "publicSynthetic": true,
+  "title": "Synthetic moderation example",
+  "text": "Synthetic example mentioning людей и групп; no real company moderation policy is included.",
+  "accounts": {
+    "likeavto": {
+      "displayAccount": "LikeAvto",
+      "requestId": "shared-abuse-moderation-20260928-likeavto-v1"
+    },
+    "baw": {
+      "displayAccount": "BAW Russia",
+      "requestId": "shared-abuse-moderation-20260928-baw-v1"
+    }
+  }
+}

@@ -69,10 +69,11 @@ fn keys(post_keys: Option<&[String]>) -> ApiResult<Vec<String>> {
     Ok(keys.to_vec())
 }
 fn root(account: Option<String>, metadata_account: Option<String>, binding: Option<String>) -> ApiResult<Value> {
-    if account.as_deref()!=Some("LikeAvto") || metadata_account!=account {
+    if account.is_none() || metadata_account!=account {
         return Err(internal("Instruction workspace identity mismatch"));
     }
-    let mut value=json!({"account":"LikeAvto","posts":[],"materials":[],"knowledge_entries":[],"knowledge_versions":[]});
+    let mut value=json!({"account":account,"posts":[],"materials":[],"knowledge_entries":[],"knowledge_versions":[]});
+    crate::accounts::Profile::from_workspace(&value)?;
     if let Some(binding)=binding {value["connectorBinding"]=parse(&binding)?;}
     crate::active_binding(&value)?;
     Ok(value)
@@ -126,7 +127,7 @@ impl Database {
                 if record.try_get::<bool,_>("execution_enabled")? {return Err(internal("PostgreSQL pilot execution must remain disabled"));}
                 let mut value=root(record.try_get("account")?,record.try_get("metadata_account")?,record.try_get("binding")?)?;
                 let candidates:Vec<(String,String,i64)>=sqlx::query_as(PG_CANDIDATES)
-                    .bind(WORKSPACE).bind(all).bind(&keys).bind("LikeAvto").bind((MAX_RULES+1) as i64)
+                    .bind(WORKSPACE).bind(all).bind(&keys).bind(value["account"].as_str().unwrap()).bind((MAX_RULES+1) as i64)
                     .fetch_all(&mut *tx).await?;
                 check_candidates(&candidates)?;
                 let ids:Vec<&str>=candidates.iter().map(|(id,_,_)|id.as_str()).collect();
@@ -150,7 +151,7 @@ impl Database {
                 let mut value=root(account.clone(),account,record.try_get("binding")?)?;
                 let key_json=json!(keys).to_string();
                 let candidates:Vec<(String,String,i64)>=sqlx::query_as(SQLITE_CANDIDATES)
-                    .bind(WORKSPACE).bind(all).bind(&key_json).bind("LikeAvto").bind((MAX_RULES+1) as i64)
+                    .bind(WORKSPACE).bind(all).bind(&key_json).bind(value["account"].as_str().unwrap()).bind((MAX_RULES+1) as i64)
                     .fetch_all(&mut *tx).await?;
                 check_candidates(&candidates)?;
                 let ids=json!(candidates.iter().map(|(id,_,_)|id).collect::<Vec<_>>()).to_string();
@@ -170,7 +171,7 @@ impl Database {
         crate::knowledge::validate_catalog(&value).map_err(internal)?;
         // Do not normalize/rewrite any version or hash. The exact account scope
         // is checked after structural validation as well as in SQL predicates.
-        if value["knowledge_versions"].as_array().unwrap().iter().any(|v|v["scope"]["account"]!="LikeAvto") {
+        if value["knowledge_versions"].as_array().unwrap().iter().any(|v|v["scope"]["account"]!=value["account"]) {
             return Err(internal("Instruction version account mismatch"));
         }
         // Keep the empty collection explicit for the existing rule-only domain path.

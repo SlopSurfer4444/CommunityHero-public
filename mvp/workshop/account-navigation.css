@@ -1,0 +1,12 @@
+.account-navigation { margin-left: auto; display: inline-flex; align-items: center; flex-shrink: 0; }
+.account-navigation select, .account-navigation-current { color: #554c69; font: inherit; font-size: 13px; font-weight: 600; }
+.account-navigation select { max-width: 220px; padding: 7px 28px 7px 12px; border: 1px solid #e2deeb; border-radius: 9px; background-color: #fff; cursor: pointer; }
+.account-navigation select:focus-visible { outline: 2px solid #8c72c4; outline-offset: 2px; }
+.account-navigation select:disabled { opacity: .6; cursor: wait; }
+.account-navigation-current { padding: 7px 12px; }
+.navigation .account-navigation { display: block; margin: 3px 0 0; }
+.navigation .account-navigation select { width: 100%; max-width: 100%; }
+.nav-collapsed .account-navigation select { width: 36px; padding-left: 4px; font-size: 0; }
+.nav-collapsed .account-navigation select option { font-size: 13px; }
+.nav-collapsed .account-navigation-current { display: none; }
+@media (max-width: 600px) { .account-navigation select { max-width: 140px; } }

@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import { CommunityHeroClient, CliError, loadSessionCookie, settleMaterialsImport, waitForJob } from './client.mjs';
-import { generateProposals, readCheckpoint, runScan, runWorkflow } from './workflow.mjs';
+import { CommunityHeroClient, CliError, DEFAULT_REQUEST_TIMEOUT_MS, LOCAL_ADMISSION_TIMEOUT_MS, checkpointError, executeAdmissionResult, executeRejection, localAdmissionPayloadHash, loadSessionCookie, settleMaterialsImport, waitForJob } from './client.mjs';
+import { generateProposals, readCheckpoint, runEditorialReview, runScan, runWorkflow } from './workflow.mjs';
 import { runQueue } from './queue.mjs';
+import { readReviewedReferences, runBulk } from './bulk.mjs';
+import { runMaintenance, maintenanceError } from './maintenance.mjs';
+import { nativeProgress, resultExitCode } from './read-observer.mjs';
 
 function usage() {
   return `CommunityHero headless CLI
@@ -11,6 +14,9 @@ function usage() {
 Usage: node mvp/cli/communityhero.mjs <command> --account LikeAvto [options]
 
 Commands:
+  maintenance --plan PATH --plan-sha SHA256 --action status|register-target|begin|checkpoint
+              --invocation ID [--owner-epoch N] [--request-timeout-ms N]
+              Native prestop only; account is the exact plan slug; timeout defaults to 600000 ms.
   health                         Check server liveness
   status                         Show engine binding and workspace summary
   capabilities                   Show provider capabilities
@@ -20,31 +26,43 @@ Commands:
   materials [--wait]             Import account policy/materials through Rust
   history                        Show durable jobs and operation ledger
   sync [--mode open|closed] [--cursor VALUE] [--wait]
+  context-refresh --item LOCAL_ID [--wait]  Refresh one saved target and branch
+  context-refresh --item LOCAL_ID --job JOB_ID [--wait]  Inspect/poll without reposting
   scan --out PATH|--checkpoint PATH [--statuses CSV] [--resume PATH]
        [--page-size N] [--max-pages N] [--max-items N] [--max-elapsed-ms N]
   proposals [--status draft]     List proposal metadata
   inspect --proposal|--item|--approval|--operation ID
-  prepare --item ID [...] [--instruction TEXT|--instruction-file PATH]
+  prepare --item ID [...] [--checkpoint PATH] | --resume PATH
+          [--instruction TEXT|--instruction-file PATH]
   propose --item ID --kind close|reply_and_close|hide|delete [--text TEXT|--text-file PATH]
           [--allow-closed-reply]
   approve --proposal ID@REV [...] [--execute] [--wait]
-  execute --approval ID [--wait]
+  editorial-review --proposal ID@REV [...] --checkpoint PATH | --resume PATH
+  execute --approval ID --request-id ID [--wait]
+          [--reevaluate --evaluation-id REJECTED_ID]  Requires the exact durable rejection
   readback [--operation ID]      Inspect operation outcomes (no mutation)
   reconcile --operation ID [--wait]
   run --item ID [...] [--instruction TEXT|--instruction-file PATH]
-      [--autonomous] [--execute] [--checkpoint PATH] [--resume PATH]
+      [--autonomous] [--execute] [--workflow-mode prepare_review_only] [--checkpoint PATH] [--resume PATH]
   queue --checkpoint PATH [--resume PATH] [--batch-size N] [--max-cycles N]
-        [--autonomous] [--execute] [--instruction TEXT|--instruction-file PATH]
+        [--autonomous] [--execute] [--workflow-mode prepare_review_only] [--instruction TEXT|--instruction-file PATH]
+  bulk --proposals-file PATH --checkpoint PATH | --resume PATH
+       [--batch-size N<=100] [--execute] [--partial-admission]
+       [--continuation-policy stop-on-mixed|continue-independent]
 
 Global: --base-url URL (default http://127.0.0.1:4186), --account NAME,
---session-file PATH, --poll-ms N, --max-polls N, --request-timeout-ms N.
+--session-file PATH, --poll-ms N, --max-polls N (optional observation limit),
+--request-timeout-ms N (1..3600000; default ${DEFAULT_REQUEST_TIMEOUT_MS}, allowlisted loopback admission POST ${LOCAL_ADMISSION_TIMEOUT_MS}).
+Waiting follows the existing job until terminal status or Ctrl-C; it never resends a POST.
+Durably admitted groups emit prepare.ready and update the checkpoint while other groups run.
+Autonomous run drains ready batches through its existing approval/execution flags.
 Session secrets are accepted only from --session-file or COMMUNITYHERO_SESSION.`;
 }
 
 function parse(argv) {
   const options = { item: [], proposal: [] };
   const positional = [];
-  const boolean = new Set(['wait', 'execute', 'autonomous', 'allow-closed-reply', 'help']);
+  const boolean = new Set(['wait', 'execute', 'autonomous', 'reevaluate', 'allow-closed-reply', 'partial-admission', 'help']);
   const repeat = new Set(['item', 'proposal']);
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
@@ -72,7 +90,8 @@ function safeSummary(snapshot) {
     sync: snapshot.sync, items: count('items'), draftProposals: count('proposals', 'draft'),
     runningJobs: (snapshot.jobs || []).filter(row => ['running', 'queued'].includes(row.status)).length,
     operations: Object.fromEntries(['dispatching', 'unknown', 'stale', 'succeeded'].map(status => [status, count('operations', status)])),
-    externalWritesEnabled: snapshot.settings?.externalWritesEnabled === true
+    externalWritesEnabled: snapshot.settings?.externalWritesEnabled === true,
+    progress: nativeProgress(snapshot.progress)
   };
 }
 
@@ -83,6 +102,7 @@ function exactRef(value) {
 }
 
 function output(value) { process.stdout.write(`${JSON.stringify(value, null, 2)}\n`); }
+function outcome(value) { process.exitCode = resultExitCode(value); output(value); }
 function progress(value) { process.stderr.write(`${JSON.stringify({ at: new Date().toISOString(), ...value })}\n`); }
 
 async function textOption(options) {
@@ -106,12 +126,29 @@ async function main() {
   const { command, options } = parse(process.argv.slice(2));
   if (!command || options.help) { process.stdout.write(`${usage()}\n`); return; }
   const cookie = await loadSessionCookie({ sessionFile: options['session-file'] });
+  if (command === 'maintenance') {
+    try {
+      const result = await runMaintenance({
+        planPin: { path: options.plan, sha256: options['plan-sha'] },
+        action: options.action, invocationId: options.invocation, account: options.account,
+        baseUrl: options['base-url'], cookie,
+        ownerEpoch: options['owner-epoch'] === undefined ? undefined : numberOption(options['owner-epoch'], undefined, 'owner-epoch'),
+        timeoutMs: numberOption(options['request-timeout-ms'], undefined, 'request-timeout-ms')
+      });
+      output(result); if (result.status === 'unresolved') process.exitCode = 4;
+    } catch (error) {
+      output({ status: 'refused-or-incomplete', ...maintenanceError(error), stopAuthorized: false });
+      process.exitCode = 1;
+    }
+    return;
+  }
   const pollMs = numberOption(options['poll-ms'], 1000, 'poll-ms');
-  const maxPolls = numberOption(options['max-polls'], 120, 'max-polls');
-  const client = new CommunityHeroClient({ baseUrl: options['base-url'], account: options.account, cookie, timeoutMs: numberOption(options['request-timeout-ms'], 15_000, 'request-timeout-ms') });
+  const maxPolls = numberOption(options['max-polls'], undefined, 'max-polls');
   const controller = new AbortController();
+  const client = new CommunityHeroClient({ baseUrl: options['base-url'], account: options.account, cookie, timeoutMs: numberOption(options['request-timeout-ms'], undefined, 'request-timeout-ms'), signal: controller.signal });
   process.once('SIGINT', () => controller.abort());
-  const wait = async jobId => waitForJob(client, jobId, { pollMs, maxPolls, signal: controller.signal, onPoll: job => progress({ event: 'job.poll', jobId, status: job.status }) });
+  const wait = async (jobId, waitOptions = {}) => waitForJob(client, jobId, { pollMs, maxPolls, signal: controller.signal,
+    ...waitOptions, onPoll: job => progress({ event: 'job.poll', jobId, status: job.status }) });
 
   if (command === 'health') return output(await client.health());
   if (command === 'status') {
@@ -145,6 +182,20 @@ async function main() {
     const result = await client.sync(body); progress({ event: 'sync.started', jobId: result.jobId });
     return output(options.wait ? await wait(result.jobId) : result);
   }
+  if (command === 'context-refresh') {
+    if (options.item.length !== 1) throw new CliError('context-refresh requires exactly one --item', { code: 'USAGE' });
+    const itemId = options.item[0];
+    const launched = options.job ? null : await client.refreshItemContext(itemId);
+    if (launched) progress({ event: 'context-refresh.started', itemId, jobId: launched.jobId, deduplicated: launched.deduplicated });
+    const jobId = options.job || launched.jobId;
+    if (options.job) {
+      const job = await client.contextRefreshJob(itemId, jobId);
+      if (!options.wait) return output({ jobId, itemId, status: job.status, result: job.result || null });
+    } else if (!options.wait) return output(launched);
+    const settled = await waitForJob(client, jobId, { pollMs, maxPolls, signal: controller.signal,
+      includeSnapshot: false, onPoll: job => progress({ event: 'job.poll', jobId: job.id, status: job.status }) });
+    return output({ ...(launched || { jobId, itemId }), status: settled.job.status, result: settled.job.result || null });
+  }
   if (command === 'scan') {
     if (!options.out && !options.checkpoint) throw new CliError('scan requires --out or --checkpoint so coverage and resume are durable', { code: 'USAGE' });
     const request = {
@@ -173,15 +224,22 @@ async function main() {
     return output({ account: snapshot.account, proposals: rows });
   }
   if (command === 'inspect') {
-    const kinds = ['proposal', 'item', 'approval', 'operation'].filter(key => options[key]);
-    if (kinds.length !== 1) throw new CliError('inspect requires exactly one entity selector', { code: 'USAGE' });
-    const snapshot = await client.bootstrap(); const id = Array.isArray(options[kinds[0]]) ? options[kinds[0]][0] : options[kinds[0]];
-    const key = `${kinds[0]}s`; const row = (snapshot[key] || []).find(value => value.id === id);
-    if (!row) throw new CliError(`${kinds[0]} ${id} not found`, { code: 'NOT_FOUND' });
-    return output({ account: snapshot.account, [kinds[0]]: row });
+    const selectors = ['proposal', 'item', 'approval', 'operation'].flatMap(kind =>
+      (Array.isArray(options[kind]) ? options[kind] : options[kind] === undefined ? [] : [options[kind]])
+        .map(id => ({ kind, id })));
+    if (selectors.length !== 1 || !selectors[0].id.trim()) throw new CliError('inspect requires exactly one entity selector', { code: 'USAGE' });
+    const { kind, id } = selectors[0];
+    const snapshot = await client.bootstrap();
+    const row = (snapshot[`${kind}s`] || []).find(value => value.id === id);
+    if (!row) throw new CliError(`${kind} ${id} not found`, { code: 'NOT_FOUND' });
+    return output({ account: snapshot.account, [kind]: row });
   }
   if (command === 'prepare') {
-    const state = await generateProposals(client, options.item, { instruction: await instructionOption(options), checkpointPath: options.checkpoint, pollMs, maxPolls, signal: controller.signal, onProgress: progress });
+    if (options.resume && options.checkpoint && resolve(options.resume) !== resolve(options.checkpoint)) throw new CliError('Resume must update its original checkpoint', { code: 'USAGE' });
+    const checkpoint = options.resume ? await readCheckpoint(options.resume) : null;
+    if (checkpoint && options.item.length && JSON.stringify([...new Set(options.item)]) !== JSON.stringify(checkpoint.itemIds))
+      throw new CliError('Resume item selection differs from its checkpoint', { code: 'USAGE' });
+    const state = await generateProposals(client, checkpoint?.itemIds || options.item, { checkpoint, instruction: await instructionOption(options), checkpointPath: options.checkpoint || options.resume, pollMs, maxPolls, signal: controller.signal, onProgress: progress });
     return output({ mode: 'prepare-only', checkpoint: state });
   }
   if (command === 'propose') {
@@ -191,6 +249,11 @@ async function main() {
     const kind = options.kind || 'reply_and_close'; const supplied = await textOption(options); const text = kind === 'close' ? '' : (supplied ?? item.draft ?? '');
     return output(await client.createProposal({ itemId: item.id, expectedRevision: item.revision, kind, text, ...(options['allow-closed-reply'] ? { allowClosedReply: true } : {}) }));
   }
+  if (command === 'editorial-review') {
+    if (!options.resume && !options.proposal.length) throw new CliError('editorial-review requires --proposal or --resume', { code: 'USAGE' });
+    return output(await runEditorialReview(client, options.proposal.map(exactRef), { checkpointPath: options.checkpoint,
+      resumePath: options.resume, pollMs, maxPolls, signal: controller.signal, onProgress: progress }));
+  }
   if (command === 'approve') {
     if (!options.proposal.length) throw new CliError('approve requires --proposal ID@REV', { code: 'USAGE' });
     const approval = await client.createApproval(options.proposal.map(exactRef));
@@ -199,8 +262,19 @@ async function main() {
     return output(options.wait ? await wait(launched.jobId) : { approval, ...launched });
   }
   if (command === 'execute') {
-    if (!options.approval) throw new CliError('execute requires --approval', { code: 'USAGE' });
-    const launched = await client.execute(options.approval);
+    if (!options.approval || !/^[A-Za-z0-9_-]{1,160}$/u.test(options['request-id'] || ''))
+      throw new CliError('execute requires --approval and exact --request-id', { code: 'USAGE' });
+    const requestId = options['request-id']; let reevaluate;
+    if (options.reevaluate) {
+      if (!/^[A-Za-z0-9_-]{1,160}$/u.test(options['evaluation-id'] || ''))
+        throw new CliError('Re-evaluation requires the rejected exact --evaluation-id', { code: 'USAGE' });
+      const receipt = executeRejection(await client.localAdmission('execute', requestId), {
+        approvalId: options.approval, requestId, payloadHash: localAdmissionPayloadHash({ approvalId: options.approval }), account: client.account });
+      if (!receipt.reevaluationAvailable) throw new CliError('Local re-evaluation budget is exhausted', { code: 'REJECTED_LOCAL_ADMISSION', details: receipt });
+      if (receipt.evaluationId !== options['evaluation-id']) throw new CliError('Re-evaluation must name the latest rejected evaluation', { code: 'USAGE' });
+      reevaluate = { evaluationId: receipt.evaluationId, receiptSha256: receipt.receiptSha256 };
+    } else if (options['evaluation-id']) throw new CliError('--evaluation-id requires --reevaluate', { code: 'USAGE' });
+    const launched = executeAdmissionResult(await client.execute(options.approval, requestId, { reevaluate }), options.approval, requestId);
     return output(options.wait ? await wait(launched.jobId) : launched);
   }
   if (command === 'readback') {
@@ -214,28 +288,40 @@ async function main() {
     if (!op) throw new CliError(`Operation ${options.operation} not found`, { code: 'NOT_FOUND' });
     if (op.status !== 'unknown') throw new CliError(`Operation ${op.id} is ${op.status}, not unknown`, { code: 'STALE_OR_CONFLICT' });
     const launched = await client.reconcile(op.id);
-    return output(options.wait ? await wait(launched.jobId) : launched);
+    return output(options.wait ? await wait(launched.jobId, { includeSnapshot: false }) : launched);
+  }
+  if (command === 'bulk') {
+    if (!options.resume && !options['proposals-file']) throw new CliError('bulk requires --proposals-file or --resume', { code: 'USAGE' });
+    const references = options['proposals-file'] ? await readReviewedReferences(options['proposals-file']) : [];
+    return outcome(await runBulk(client, references, {
+      checkpointPath: options.checkpoint, resumePath: options.resume,
+      batchSize: numberOption(options['batch-size'], 100, 'batch-size'), execute: options.execute,
+      ...(options['partial-admission'] === undefined ? {} : { partialAdmission: options['partial-admission'] }),
+      ...(options['continuation-policy'] === undefined ? {} : { continuationPolicy: options['continuation-policy'] }),
+      pollMs, maxPolls, signal: controller.signal, onProgress: progress
+    }));
   }
   if (command === 'queue') {
     const result = await runQueue(client, {
       checkpointPath: options.checkpoint, resumePath: options.resume,
       batchSize: numberOption(options['batch-size'], 60, 'batch-size'),
       maxCycles: numberOption(options['max-cycles'], 1000, 'max-cycles'),
-      instruction: await instructionOption(options), autonomous: options.autonomous, execute: options.execute,
+      instruction: await instructionOption(options), autonomous: options.autonomous, execute: options.execute, workflowMode: options['workflow-mode'],
       pollMs, maxPolls, signal: controller.signal, onProgress: progress
     });
-    return output(result);
+    return outcome(result);
   }
   if (command === 'run' || command === 'drain') {
     if (!options.resume && !options.item.length) throw new CliError('run requires --item or --resume', { code: 'USAGE' });
-    const result = await runWorkflow(client, options.item, { checkpointPath: options.checkpoint, resumePath: options.resume, instruction: await instructionOption(options), autonomous: options.autonomous, execute: options.execute, reconcileUnknown: command === 'drain', pollMs, maxPolls, signal: controller.signal, onProgress: progress });
-    return output(result);
+    const result = await runWorkflow(client, options.item, { checkpointPath: options.checkpoint, resumePath: options.resume, instruction: await instructionOption(options), autonomous: options.autonomous, execute: options.execute, workflowMode: options['workflow-mode'], reconcileUnknown: command === 'drain', pollMs, maxPolls, signal: controller.signal, onProgress: progress });
+    return outcome(result);
   }
   throw new CliError(`Unknown command: ${command}`, { code: 'USAGE' });
 }
 
 main().catch(error => {
   const value = error instanceof CliError ? error : new CliError(error.message || String(error), { code: 'UNEXPECTED' });
-  process.stderr.write(`${JSON.stringify({ error: { code: value.code, message: value.message, status: value.status, details: value.details } })}\n`);
-  process.exitCode = value.code === 'USAGE' ? 2 : value.code === 'UNKNOWN_MUTATION_OUTCOME' ? 4 : value.code === 'STOPPED' ? 130 : 1;
+  process.stderr.write(`${JSON.stringify({ error: checkpointError(value) })}\n`);
+  process.exitCode = value.code === 'USAGE' ? 2 : ['UNKNOWN_MUTATION_OUTCOME', 'REJECTED_LOCAL_ADMISSION', 'NETWORK_ERROR', 'READ_TIMEOUT', 'INVALID_RESPONSE', 'POLL_LIMIT', 'JOB_NOT_FOUND', 'INVALID_REVIEW_COVERAGE', 'INCOMPLETE_OPERATION_COVERAGE', 'INVALID_EXECUTION_CLOSURE', 'INVALID_PREPARE_JOB'].includes(value.code)
+    || value.code === 'HTTP_ERROR' && value.status >= 500 ? 4 : value.code === 'STOPPED' ? 130 : 1;
 });

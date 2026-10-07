@@ -24,7 +24,7 @@ fn contract_request(value:&str)->bool {
 }
 // Company archive identities are aliases for the old Angry.Space connection.
 // They are never provider IDs for a native social-network connection.
-fn imported_cases(catalog:&crate::knowledge::Catalog<'_>,binding:&crate::ConnectorBinding,author:&str,platform:&str)
+fn imported_cases(catalog:&crate::knowledge::Catalog<'_>,binding:&crate::ConnectorBinding,author:&str,platform:&str,at:&chrono::DateTime<chrono::Utc>)
     ->Result<(Vec<Value>,Vec<Value>),&'static str> {
     let d=catalog.workspace();
     if binding.connector!=crate::connectors::ConnectorKind::AngrySpace {return Ok((vec![],vec![]));}
@@ -57,6 +57,13 @@ fn imported_cases(catalog:&crate::knowledge::Catalog<'_>,binding:&crate::Connect
         let digest=text(provenance,"recordSha256");
         if key.is_empty() || digest.len()!=64 || !digest.bytes().all(|b|b.is_ascii_hexdigit())
             || !seen.insert(key.to_owned()) {continue;}
+        // Apply the same optional, half-open knowledge window as the generic
+        // catalog selector. Historical speech dates remain a separate field.
+        let timestamp=|key:&str|version[key].as_str().map(|value|
+            chrono::DateTime::parse_from_rfc3339(value).map(|time|time.with_timezone(&chrono::Utc))
+                .map_err(|_|"Invalid knowledge timestamp")).transpose();
+        let from=timestamp("validFrom")?;let until=timestamp("validUntil")?;
+        if from.as_ref().is_some_and(|time|time>at)||until.as_ref().is_some_and(|time|time<=at){continue;}
         let created=metadata["created_at"].clone();
         if !created.is_string() && !created.is_i64() && !created.is_u64() {continue;}
         let base=json!({"id":key,"sourceRecordKey":key,"sourceRecordSha256":provenance["recordSha256"],
@@ -98,10 +105,13 @@ pub(crate) fn select(d:&Value,items:&[Value])->Result<Value,&'static str> {
     select_with_catalog(&crate::knowledge::Catalog::new(d)?,items)
 }
 pub(crate) fn select_with_catalog(catalog:&crate::knowledge::Catalog<'_>,items:&[Value])->Result<Value,&'static str> {
+    select_with_catalog_at(catalog,items,chrono::Utc::now())
+}
+fn select_with_catalog_at(catalog:&crate::knowledge::Catalog<'_>,items:&[Value],at:chrono::DateTime<chrono::Utc>)->Result<Value,&'static str> {
     if items.len()>100{return Err("Customer case selection exceeds 100 comments");}
     let d=catalog.workspace();
     let binding=crate::active_binding(d).map_err(|_|"Customer case account is not configured")?;
-    let until=chrono::Utc::now().timestamp_millis();
+    let until=at.timestamp_millis();
     let mut result=Vec::new();let mut selected=BTreeSet::new();
     for attached in items {
         let id=text(attached,"id");
@@ -114,25 +124,43 @@ pub(crate) fn select_with_catalog(catalog:&crate::knowledge::Catalog<'_>,items:&
         let author=text(target,"authorId");let platform=text(target,"platform");
         let mut case=json!({"itemId":id,"accountId":d["account"],"platform":platform,"authorId":author,
             "scope":"account_platform_author","historyComplete":false,"messages":[],"brandReplies":[],
-            "priorContractRequests":[],"omittedMessages":0,"omittedBrandReplies":0});
+            "priorContractRequests":[],"omittedMessages":0,"omittedBrandReplies":0,
+            "historyCoverage":{"version":1,"kind":"partial_observed_history","complete":false,"reasonCode":"history_identity_unproven",
+                "connectorBinding":binding.to_json(),"authorId":author,"platform":platform,"observedAt":null,"observationRefs":[],"publishedReplyRefs":[]}});
         // Older local fixtures/history may not retain enough provider routing
         // proof. Absence contributes no cross-post evidence; it need not block
         // ordinary preparation from the attached comment's existing context.
         if crate::bound_item(&binding,target).is_err(){
+            case["historyCoverage"]["reasonCode"]=json!("history_routing_unproven");
             case["status"]=json!("unsupported_binding");result.push(case);continue;
         }
         if author.is_empty()||platform.is_empty(){
+            case["historyCoverage"]["reasonCode"]=json!(if author.is_empty(){"history_author_id_missing"}else{"history_platform_missing"});
             case["status"]=json!(if author.is_empty(){"missing_author_id"}else{"missing_platform"});
             result.push(case);continue;
         }
         if author.len()>512||platform.len()>100{return Err("Customer case identity exceeds context limit");}
-        let (imported_customers,imported_published)=imported_cases(catalog,&binding,author,platform)?;
+        let (imported_customers,imported_published)=imported_cases(catalog,&binding,author,platform,&at)?;
         let mut history:Vec<&Value>=rows(d,"items").iter().filter(|i| i["id"]!=id
             && i["authorId"]==author && i["platform"]==platform && account_matches(d,i)
             && crate::bound_item(&binding,i).is_ok() && i["providerStatus"]!="deleted"
             && i["textUnavailable"]!=true && i["unavailable"]!=true
             && !text(i,"text").is_empty() && time(i).is_some_and(|at|at<=until)).collect();
         history.sort_by_key(|i|(time(i).unwrap(),text(i,"id")));
+        let mut observations=BTreeMap::<String,Value>::new();
+        for source in std::iter::once(target).chain(history.iter().rev().take(LIMIT).copied()){
+            let branch_id=text(source,"branchId");
+            let Some(branch)=rows(d,"branches").iter().find(|branch|branch["id"]==branch_id&&branch["postId"]==source["postId"])else{continue};
+            let observed=branch["observedAt"].as_str().and_then(|value|chrono::DateTime::parse_from_rfc3339(value).ok())
+                .filter(|observed|observed.timestamp_millis()<=until).map(|observed|observed.to_rfc3339());
+            observations.insert(branch_id.to_owned(),json!({"branchId":branch_id,"postId":source["postId"],"observedAt":observed,
+                "contextComplete":branch["contextComplete"]==true}));
+        }
+        let observation_refs=observations.into_values().collect::<Vec<_>>();
+        let observed_at=observation_refs.iter().filter_map(|reference|reference["observedAt"].as_str())
+            .filter_map(|value|chrono::DateTime::parse_from_rfc3339(value).ok()).max().map(|value|value.to_rfc3339());
+        case["historyCoverage"]["reasonCode"]=json!("history_partial_observed_not_full_export");
+        case["historyCoverage"]["observedAt"]=json!(observed_at);case["historyCoverage"]["observationRefs"]=json!(observation_refs);
         let mut replies=BTreeMap::<(String,String),Value>::new();
         // Resolve only explicit provider reply-to edges. A sibling brand message
         // in the same partial thread is not evidence of a reply to this customer.
@@ -183,6 +211,9 @@ pub(crate) fn select_with_catalog(catalog:&crate::knowledge::Catalog<'_>,items:&
         case["omittedMessages"]=json!(messages.len().saturating_sub(LIMIT));
         case["messages"]=json!(messages.into_iter().rev().take(LIMIT).collect::<Vec<_>>().into_iter().rev().collect::<Vec<_>>());
         case["brandReplies"]=json!(brand.into_iter().rev().take(LIMIT).collect::<Vec<_>>().into_iter().rev().collect::<Vec<_>>());
+        case["historyCoverage"]["publishedReplyRefs"]=json!(rows(&case,"brandReplies").iter().map(|reply|json!({"replyId":reply["id"],"sourceItemId":reply["sourceItemId"],
+            "providerObjectId":reply["providerObjectId"],"providerItemId":reply["providerItemId"],"inReplyToProviderItemId":reply["inReplyToProviderItemId"],
+            "sourceRecordKey":reply["sourceRecordKey"],"sourceRecordSha256":reply["sourceRecordSha256"]})).collect::<Vec<_>>());
         case["priorContractRequests"]=json!(contract.into_iter().collect::<Vec<_>>());
         case["status"]=json!("partial_observed_history");result.push(case);
     }
@@ -194,6 +225,7 @@ pub(crate) fn select_with_catalog(catalog:&crate::knowledge::Catalog<'_>,items:&
 mod tests {
     use super::*;
     use sha2::{Digest,Sha256};
+    include!("customer_case_validity_tests.rs");
     fn rehash_version(version:&mut Value) {
         let mut payload=version.clone();
         for key in ["id","hash","createdAt"] {payload.as_object_mut().unwrap().remove(key);}
@@ -297,6 +329,21 @@ mod tests {
         // Reviewing an older comment still needs a later, already observed
         // contract request made to the same customer on another post.
         assert_eq!(context(&older_target),c);
+    }
+    #[test]
+    fn coverage_names_actual_scoped_observation_and_reply_refs_without_full_history_claim(){
+        let mut d=data();d["branches"][0]["observedAt"]=json!("2026-09-28T12:00:00Z");
+        let current=context(&d);let coverage=&current[0]["historyCoverage"];
+        assert_eq!(coverage["reasonCode"],"history_partial_observed_not_full_export");assert_eq!(coverage["complete"],false);
+        assert_eq!(coverage["authorId"],"author:1");assert!(coverage["observedAt"].is_string());
+        assert_eq!(coverage["publishedReplyRefs"][0]["providerItemId"],"provider-reply");
+        assert_eq!(coverage["publishedReplyRefs"][0]["inReplyToProviderItemId"],"older");
+        assert!(rows(coverage,"observationRefs").len()<=LIMIT+1);assert!(rows(coverage,"publishedReplyRefs").len()<=LIMIT);
+        for author in [Value::Null,json!("")]{let mut unknown=d.clone();unknown["items"][1]["authorId"]=author;
+            let c=context(&unknown);assert_eq!(c[0]["historyCoverage"]["reasonCode"],"history_author_id_missing");
+            assert!(rows(&c[0]["historyCoverage"],"publishedReplyRefs").is_empty());assert!(rows(&c[0],"messages").is_empty());}
+        let mut undated=d;undated["branches"][0]["observedAt"]=json!("not-a-provider-observation");
+        assert!(context(&undated)[0]["historyCoverage"]["observedAt"].is_null());
     }
     #[test]
     fn scopes_to_author_platform_binding_account_and_known_past_dates() {

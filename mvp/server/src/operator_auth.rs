@@ -73,27 +73,45 @@ pub struct Auth {
     access_file: PathBuf,
     db: SqlitePool,
     attempts: Arc<Mutex<VecDeque<Instant>>>,
+    cookie_name: String,
+    cookie_path: String,
 }
 
 struct Operator {
     id: String,
     name: String,
     token_hash: String,
+    can_override_missing_media: bool,
 }
 
 impl Auth {
     /// No access file means remote access is disabled, not anonymous access.
     pub async fn load(data_dir: &Path) -> Result<Option<Self>, String> {
+        let base_path = match std::env::var("COMMUNITYHERO_BASE_PATH") {
+            Ok(value) => value,
+            Err(std::env::VarError::NotPresent) => "/".into(),
+            Err(_) => return Err("Invalid account base path".into()),
+        };
+        if !crate::account_navigation::valid_base_path(&base_path) {
+            return Err("Invalid account base path".into());
+        }
         let Some(path) = std::env::var_os("COMMUNITYHERO_ACCESS_FILE") else {
             return Ok(None);
         };
         if path.is_empty() {
             return Err("COMMUNITYHERO_ACCESS_FILE is empty".into());
         }
-        Self::open(data_dir, PathBuf::from(path)).await.map(Some)
+        Self::open_scoped(data_dir, PathBuf::from(path), &base_path).await.map(Some)
     }
 
     pub(crate) async fn open(data_dir: &Path, access_file: PathBuf) -> Result<Self, String> {
+        Self::open_scoped(data_dir, access_file, "/").await
+    }
+
+    pub(crate) async fn open_scoped(data_dir: &Path, access_file: PathBuf, base_path: &str) -> Result<Self, String> {
+        if !crate::account_navigation::valid_base_path(base_path) {
+            return Err("Invalid account base path".into());
+        }
         read_operators(&access_file)
             .await
             .map_err(|_| "Invalid operator access configuration".to_string())?;
@@ -116,6 +134,9 @@ impl Auth {
             access_file,
             db,
             attempts: Arc::new(Mutex::new(VecDeque::new())),
+            cookie_name: if base_path == "/" { COOKIE.into() }
+                else { format!("__Secure-communityhero_session_{}", &base_path[1..base_path.len()-1]) },
+            cookie_path: base_path.into(),
         })
     }
 
@@ -166,13 +187,13 @@ impl Auth {
         Ok(Login {
             actor: actor(&operator, &secret),
             set_cookie: format!(
-                "{COOKIE}={secret}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age={SESSION_SECONDS}"
+                "{}={secret}; Path={}; HttpOnly; Secure; SameSite=Strict; Max-Age={SESSION_SECONDS}", self.cookie_name, self.cookie_path
             ),
         })
     }
 
     pub async fn authenticate(&self, cookie_header: &str) -> Result<Option<Actor>, AuthError> {
-        let Some(secret) = session_secret(cookie_header) else {
+        let Some(secret) = scoped_session_secret(cookie_header, &self.cookie_name) else {
             return Ok(None);
         };
         let row = sqlx::query("SELECT operator_id, credential_hash FROM operator_sessions WHERE session_hash = ? AND expires_at > ?")
@@ -194,7 +215,7 @@ impl Auth {
     }
 
     pub async fn logout(&self, cookie_header: &str) -> Result<(), AuthError> {
-        if let Some(secret) = session_secret(cookie_header) {
+        if let Some(secret) = scoped_session_secret(cookie_header, &self.cookie_name) {
             sqlx::query("DELETE FROM operator_sessions WHERE session_hash = ?")
                 .bind(hash(secret))
                 .execute(&self.db)
@@ -218,8 +239,24 @@ impl Auth {
         }))
     }
 
-    pub fn clear_cookie() -> &'static str {
-        "__Host-communityhero_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0"
+    /// Missing-media overrides require an explicitly permitted personal operator
+    /// and the current credential/permission generation. Local-owner is never
+    /// an entry in this allow-list and cannot acquire this authority.
+    pub(crate) async fn can_override_missing_media(
+        &self,
+        id: &str,
+        generation: &str,
+    ) -> Result<bool, AuthError> {
+        let operators = read_operators(&self.access_file).await?;
+        Ok(operators.iter().any(|operator| {
+            operator.id == id
+                && operator.can_override_missing_media
+                && constant_time_equal(&authority_generation(operator), generation)
+        }))
+    }
+
+    pub fn clear_cookie(&self) -> String {
+        format!("{}=; Path={}; HttpOnly; Secure; SameSite=Strict; Max-Age=0", self.cookie_name, self.cookie_path)
     }
 }
 
@@ -235,10 +272,18 @@ fn actor(operator: &Operator, secret: &str) -> Actor {
 fn authority_generation(operator: &Operator) -> String {
     // Domain separation keeps this binding distinct from the configured access-
     // key hash. Neither raw access keys nor their configured hashes leave Auth.
-    hash(&format!(
-        "communityhero-dispatch-authority-v1:{}:{}",
-        operator.id, operator.token_hash
-    ))
+    if operator.can_override_missing_media {
+        hash(&format!(
+            "communityhero-dispatch-authority-media-override-v1:{}:{}",
+            operator.id, operator.token_hash
+        ))
+    } else {
+        // Absent/false preserves the existing generation for ordinary operators.
+        hash(&format!(
+            "communityhero-dispatch-authority-v1:{}:{}",
+            operator.id, operator.token_hash
+        ))
+    }
 }
 fn random_secret() -> String {
     // UUID v4 uses the OS CSPRNG. Three provide >256 random bits before SHA-256.
@@ -262,12 +307,15 @@ fn constant_time_equal(a: &str, b: &str) -> bool {
         == 0
 }
 fn session_secret(cookie_header: &str) -> Option<&str> {
+    scoped_session_secret(cookie_header, COOKIE)
+}
+fn scoped_session_secret<'a>(cookie_header: &'a str, cookie_name: &str) -> Option<&'a str> {
     if cookie_header.len() > 8192 {
         return None;
     }
     let mut values = cookie_header.split(';').filter_map(|part| {
         let (name, value) = part.trim().split_once('=')?;
-        (name == COOKIE).then_some(value)
+        (name == cookie_name).then_some(value)
     });
     let value = values.next()?;
     if values.next().is_some() || value.len() != 64 || !value.bytes().all(|b| b.is_ascii_hexdigit())
@@ -306,6 +354,11 @@ async fn read_operators(path: &Path) -> Result<Vec<Operator>, AuthError> {
                 .as_str()
                 .ok_or(AuthError::Unavailable)?
                 .to_ascii_lowercase();
+            let can_override_missing_media = match entry.get("canOverrideMissingMedia") {
+                None => false,
+                Some(Value::Bool(value)) => *value,
+                Some(_) => return Err(AuthError::Unavailable),
+            };
             if id.is_empty()
                 || id.len() > 64
                 || id == "local-owner"
@@ -326,6 +379,7 @@ async fn read_operators(path: &Path) -> Result<Vec<Operator>, AuthError> {
                 id: id.to_owned(),
                 name: name.to_owned(),
                 token_hash,
+                can_override_missing_media,
             })
         })
         .collect()
@@ -493,6 +547,67 @@ mod tests {
         );
     }
     #[tokio::test]
+    async fn missing_media_override_is_explicit_generation_bound_and_revocable() {
+        let (_dir, auth) = fixture().await;
+        let login = auth.login(TOKEN).await.unwrap();
+        let legacy_generation = login.actor.authority_generation.as_ref().unwrap();
+        assert_eq!(legacy_generation, &hash(&format!(
+            "communityhero-dispatch-authority-v1:alice:{}", hash(TOKEN)
+        )));
+        assert!(!auth.can_override_missing_media("alice", legacy_generation).await.unwrap());
+
+        tokio::fs::write(&auth.access_file, json!({"operators":[{
+            "id":"alice","name":"Alice","tokenHash":hash(TOKEN),"canOverrideMissingMedia":false
+        }]}).to_string()).await.unwrap();
+        assert!(auth.authority_is_current("alice", legacy_generation).await.unwrap());
+        assert!(!auth.can_override_missing_media("alice", legacy_generation).await.unwrap());
+
+        tokio::fs::write(&auth.access_file, json!({"operators":[{
+            "id":"alice","name":"Alice","tokenHash":hash(TOKEN),"canOverrideMissingMedia":true
+        }]}).to_string()).await.unwrap();
+        let permitted = auth.authenticate(&login.set_cookie).await.unwrap().unwrap();
+        let permitted_generation = permitted.authority_generation.as_ref().unwrap();
+        assert_ne!(permitted_generation, legacy_generation);
+        assert!(!auth.authority_is_current("alice", legacy_generation).await.unwrap());
+        assert!(!auth.can_override_missing_media("alice", legacy_generation).await.unwrap());
+        assert!(auth.can_override_missing_media("alice", permitted_generation).await.unwrap());
+        assert!(!auth.can_override_missing_media("unknown", permitted_generation).await.unwrap());
+        assert!(!auth.can_override_missing_media("local-owner", permitted_generation).await.unwrap());
+
+        // Display names do not grant or revoke authority.
+        tokio::fs::write(&auth.access_file, json!({"operators":[{
+            "id":"alice","name":"Renamed","tokenHash":hash(TOKEN),"canOverrideMissingMedia":true
+        }]}).to_string()).await.unwrap();
+        assert!(auth.can_override_missing_media("alice", permitted_generation).await.unwrap());
+        tokio::fs::write(&auth.access_file, json!({"operators":[{
+            "id":"alice","name":"Alice","tokenHash":hash(TOKEN),"canOverrideMissingMedia":false
+        }]}).to_string()).await.unwrap();
+        assert!(!auth.authority_is_current("alice", permitted_generation).await.unwrap());
+        assert!(!auth.can_override_missing_media("alice", permitted_generation).await.unwrap());
+        assert!(auth.authority_is_current("alice", legacy_generation).await.unwrap());
+
+        tokio::fs::write(&auth.access_file, json!({"operators":[{
+            "id":"alice","name":"Alice","tokenHash":hash("rotated"),"canOverrideMissingMedia":true
+        }]}).to_string()).await.unwrap();
+        assert!(!auth.can_override_missing_media("alice", permitted_generation).await.unwrap());
+        tokio::fs::write(&auth.access_file, "{\"operators\":[]}").await.unwrap();
+        assert!(!auth.can_override_missing_media("alice", permitted_generation).await.unwrap());
+    }
+    #[tokio::test]
+    async fn malformed_missing_media_override_permission_fails_closed() {
+        let (_dir, auth) = fixture().await;
+        let login = auth.login(TOKEN).await.unwrap();
+        let generation = login.actor.authority_generation.as_ref().unwrap();
+        for permission in [Value::Null, json!("true"), json!(1), json!([]), json!({})] {
+            tokio::fs::write(&auth.access_file, json!({"operators":[{
+                "id":"alice","name":"Alice","tokenHash":hash(TOKEN),"canOverrideMissingMedia":permission
+            }]}).to_string()).await.unwrap();
+            assert!(matches!(read_operators(&auth.access_file).await, Err(AuthError::Unavailable)));
+            assert_eq!(auth.can_override_missing_media("alice", generation).await, Err(AuthError::Unavailable));
+            assert!(matches!(auth.authenticate(&login.set_cookie).await, Err(AuthError::Unavailable)));
+        }
+    }
+    #[tokio::test]
     async fn login_attempts_are_bounded_and_wrong_keys_fail() {
         let (_dir, auth) = fixture().await;
         for _ in 0..LOGIN_LIMIT {
@@ -532,5 +647,39 @@ mod tests {
         assert!(session_secret(&format!("{COOKIE}={value}; {COOKIE}={value}")).is_none());
         let actor = Actor::local_owner("secret-csrf");
         assert!(!actor.public_json().to_string().contains("secret-csrf"));
+    }
+    #[tokio::test]
+    async fn prefixed_company_sessions_coexist_and_logout_is_scoped() {
+        let (first_dir, first) = fixture().await;
+        let (second_dir, second) = fixture().await;
+        let baw = Auth::open_scoped(first_dir.path(), first.access_file.clone(), "/baw/").await.unwrap();
+        let likeavto = Auth::open_scoped(second_dir.path(), second.access_file.clone(), "/likeavto/").await.unwrap();
+        let baw_login = baw.login(TOKEN).await.unwrap();
+        let likeavto_login = likeavto.login(TOKEN).await.unwrap();
+        assert!(baw_login.set_cookie.starts_with("__Secure-communityhero_session_baw="));
+        assert!(baw_login.set_cookie.contains("; Path=/baw/; HttpOnly; Secure; SameSite=Strict"));
+        let first_cookie=baw_login.set_cookie.split(';').next().unwrap();
+        let second_cookie=likeavto_login.set_cookie.split(';').next().unwrap();
+        let both=format!("{first_cookie}; {second_cookie}");
+        assert!(baw.authenticate(&both).await.unwrap().is_some());
+        assert!(likeavto.authenticate(&both).await.unwrap().is_some());
+        // A renamed token from another company's session store is still invalid.
+        let foreign=format!("{}={}",likeavto.cookie_name,first_cookie.split_once('=').unwrap().1);
+        assert!(likeavto.authenticate(&foreign).await.unwrap().is_none());
+        assert!(baw.authenticate(second_cookie).await.unwrap().is_none());
+        assert!(baw.authenticate(&format!("{first_cookie}; {first_cookie}")).await.unwrap().is_none());
+        baw.logout(&both).await.unwrap();
+        assert!(baw.authenticate(&both).await.unwrap().is_none());
+        assert!(likeavto.authenticate(&both).await.unwrap().is_some());
+        assert_eq!(baw.clear_cookie(),"__Secure-communityhero_session_baw=; Path=/baw/; HttpOnly; Secure; SameSite=Strict; Max-Age=0");
+        assert!(first.clear_cookie().starts_with("__Host-communityhero_session=; Path=/;"));
+    }
+    #[tokio::test]
+    async fn bad_cookie_path_is_rejected_before_opening_sessions() {
+        let dir=tempfile::tempdir().unwrap();
+        for path in ["/baw","//baw/","/baw/../","/baw%2f/","/baw/; Secure"] {
+            assert!(Auth::open_scoped(dir.path(),dir.path().join("not-present"),path).await.is_err());
+            assert!(!dir.path().join("operator-sessions.sqlite").exists());
+        }
     }
 }
